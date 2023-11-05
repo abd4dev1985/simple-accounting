@@ -44,7 +44,7 @@ class Set_Roles_Permissions extends Command
 
         $user= new  User ;
         $user->name = 'admin';
-        $user->email = 'abdyia@yahoo.com';
+        $user->email = env('ADMIN_EMAIL');
         $user->password = Hash::make(env('ADMIN_PASSWORD'));
         $user->save();
 
