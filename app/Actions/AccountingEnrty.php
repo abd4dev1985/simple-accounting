@@ -42,12 +42,14 @@ class AccountingEnrty
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
-            unset($line['account'] );
-            unset($line['currency_rate'] );
+            $line['customfields'] =  json_encode($line['customfields']) ;
+            unset($line['account']);
+            unset($line['currency_rate']);
             unset($line['currencey']);
             unset($line['cost_center']);
             return $line;
         });
+        
         $data = $data->toArray();
         EntrLines::upsert($data,['entry_id']);
         /*
@@ -102,8 +104,7 @@ class AccountingEnrty
                     $validator->errors()->add(
                         'lines.'.$key.'.account.id', 'there is no debit or crdit amount against account in line '.$key+1
                     );
-                }
-                
+                }  
             }
             //check the balance
             if ($total_credit_amount!=$total_debit_amount ) {
@@ -120,22 +121,9 @@ class AccountingEnrty
             // return $validator ;
          }
         
-        
         $validated_data = $validator->validated();
         return  $validated_data;
     
-         //get validated receipt id and lines
-        //$this->document_number=$validated_data['document_number'];
-        //$this->document_catagory_id=$validated_data['document_catagory_id'];
-
-        //$this->lines=collect($validated_data['lines']);
-        //$this->lines = $this->lines->keyBy('account_id');
-        //return $this->lines ;
-        
-    
-        
-      
-        
     }
    
     /**
@@ -151,14 +139,18 @@ class AccountingEnrty
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
+            $line['customfields'] =  json_encode($line['customfields']) ;
             unset($line['account'] );
             unset($line['currency_rate'] );
             unset($line['currencey']);
             unset($line['cost_center']);
             return $line;
         });
+       
         $data = $data->toArray();
-        EntrLines::upsert($data,['entry_id'],['account_id'],);
+        EntrLines::upsert($data,['id'],
+        ['account_id','debit_amount','credit_amount','description','currency_id','currency_rate','cost_center_id','customfields',]);
+        //dd("whate");
         $entry->refresh();
         return $entry ;
     }

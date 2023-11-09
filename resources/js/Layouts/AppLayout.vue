@@ -24,24 +24,24 @@ const shadowBackGround = ref(false);
 
 let screenWidth=ref(0);
 screenWidth.value= document.getElementById("app").offsetWidth
-let showSidebar = ref(screenWidth.value >=1009?true:false )
+let showSidebar = ref(screenWidth.value >=980?true:false )
 
 onMounted(() => {
     if (window !== undefined) {
         window.addEventListener('resize', ()=>{
         screenWidth.value= document.getElementById("app").offsetWidth
         console.log('kkkkk')
-        showSidebar.value = screenWidth.value >=1002?true:false 
+        showSidebar.value = screenWidth.value >=980?true:false 
+
         })
     }
 })
 
 function openSidebar(){
-    console.log("big screen")
-     if (screenWidth.value <=1009 ) {
+     if (screenWidth.value <=980 ) {
         showSidebar.value=true
         shadowBackGround.value=true
-        console.log("big screen")
+        console.log("small screen")
         console.log(shadowBackGround.value)
     }else{
         showSidebar.value=true
@@ -50,10 +50,11 @@ function openSidebar(){
     }
 }
 function closeSidebar(){
-    if (screenWidth.value <1009 ) {
+    if (screenWidth.value <980 ) {
         showSidebar.value=false
         shadowBackGround.value=false
-         console.log(shadowBackGround.value)
+        console.log(screenWidth.value)
+        console.log(shadowBackGround.value)
     }
 }
 function change_theme(){

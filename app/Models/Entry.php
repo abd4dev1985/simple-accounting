@@ -24,7 +24,7 @@ class Entry extends Model
     public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class)
-        ->withPivot('debit_amount', 'credit_amount','description','currency_id','currency_rate');
+        ->withPivot('id','debit_amount', 'credit_amount','description','currency_id','currency_rate','customfields');
     }
      /**
      * get cost center related entry to 

@@ -129,11 +129,9 @@ Route::get('/assignRole', function () {
 
 
 
-Route::get('/test_account_entry_mass', function (Request $request) {
-    $value = config('database.connections.tentant');
-   // return  $value;
-    $account= Account::all();
-    return  EntrLines::all(); ;
+Route::get('/migrate_force', function (Request $request) {
+    //Artisan::call('migrate --database=tentant --path=/database/migrations/2023_11_06_090053_create_custom_fields_table.php');
+    return "ok";
 })->middleware('CurrentDatabase');
 
 Route::middleware([

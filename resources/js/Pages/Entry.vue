@@ -1,7 +1,7 @@
 <script setup>
 
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { reactive ,computed,watch,onUpdated,ref } from 'vue'
+import { reactive ,computed,watch,onUpdated,ref,  } from 'vue'
 import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
@@ -21,6 +21,8 @@ let props =defineProps({
     accounts:{},
     document : {        },
     new_document_number:{     },
+    columns_count:{},
+    customfields:{type:Array },
     currencies : { type: Array , default:[]   },
     operation :{ type:String , default: 'update'  },
     delete_url:{},
@@ -29,7 +31,14 @@ let props =defineProps({
     next_document_url :{  },
 })
 
-console.log(props.accounts)
+function get_standard_object(){
+  let standard_object ={}
+    props.customfields.forEach(field => {
+      standard_object[field]=null
+    });
+    return standard_object 
+}
+
 //define computed props
 const page = usePage()
 // const errors = computed(() => page.props.errors)
@@ -51,7 +60,6 @@ let rows_count = 30 + Etry_Lines.length;
 let errorMassageModal = ref(false)
 
 let default_account=ref('')
-let collumns_count = 8
 
 
 // create array from the lines of receipt (form)
@@ -60,6 +68,7 @@ for (let index = 0; index < rows_count; index++) {
   if (Etry_Lines[index]) {
 
       lines[index] = {
+      id: Etry_Lines[index].id,
       debit_amount:Etry_Lines[index].debit_amount,
       credit_amount:Etry_Lines[index].credit_amount,
       account:Etry_Lines[index].account,
@@ -67,6 +76,7 @@ for (let index = 0; index < rows_count; index++) {
       currencey:currencies.filter((currencey)=> currencey.id ==Etry_Lines[index].currency_id)[0]  ,
       currency_rate:null,
       cost_center:Etry_Lines[index].cost_center,
+      customfields:JSON.parse(Etry_Lines[index].customfields ),
       } 
   } else {
 
@@ -78,6 +88,8 @@ for (let index = 0; index < rows_count; index++) {
     currencey:null,
     currency_rate:null,
     cost_center:null ,
+    customfields: get_standard_object(),
+
     }
     
   }
@@ -85,6 +97,7 @@ for (let index = 0; index < rows_count; index++) {
   
 }
 let form = ref(lines)
+console.log(form.value)
 const inputs=  useRemember(form.value ,document_number.value)
 
 let Equvalant_In_default_currney= computed(()=>{
@@ -108,9 +121,22 @@ const Entry_Totals =computed(()=>{
 });
 
 
-
 const rows = ref([])
 const scrollable_table = ref()
+
+let column_index=0
+
+
+function   get_columen_index(){
+ 
+    console.log("dd")
+    column_index ++
+    return column_index
+  
+    
+ 
+}
+
 const tableHeader=ref()
 
 
@@ -118,19 +144,10 @@ let keyboared_Navigation = ref(true)
 
 
 let TableObject =computed(()=>{
-  return {Table:scrollable_table.value ,TableHeader:tableHeader.value,Rows:rows.value, CollumnsCount:collumns_count}
+  return {
+    Table:scrollable_table.value ,TableHeader:tableHeader.value,Rows:rows.value,
+    CollumnsCount:props.columns_count + props.customfields.length}
 })
-const test_form= useForm({
-  name:'soso',
-  gender:'female',
-  document_number:(props.document)? props.document.number: props.new_document_number ,
-  document_date :  (props.document)? props.document.date : new Date()  ,
-  default_account :null,
-  lines:lines, 
-})
-console.log(test_form)
-
-
 
 //inforce value of an element inside array to be a number  
 function Force_Number_VALUE(array_objects,object_key ,index){
@@ -165,7 +182,51 @@ function remove_debit_amount(index) {
 }
 
 function submit() {
-   console.log('submit work here ')  
+  if (props.operation=="update") {
+    update_document()
+  }else{
+      create_document()
+  }
+  
+}
+
+function delete_document(){
+  router.delete(props.delete_url)
+}
+function  convert_date_to_sting(date){
+  if ( typeof date == 'string') {
+    return date
+  }else{ return date.toJSON().slice(0,10)                  }
+}
+function update_document() {
+  let data={
+    document_number:document_number.value ,
+    document_catagory_id:page.props.document_catagory.id  ,
+    lines:form.value ,
+    date: convert_date_to_sting(document_date.value) ,
+  }
+
+  router.put(props.update_url, data,{
+    onError:(errors)=>{
+      //errorMassageModal.value=true
+      for (const key in errors) {
+        if (Object.hasOwnProperty.call(errors, key)) {
+          severity_style.value ='bg-red-600 text-white'
+          let error = errors[key];
+          toast.add({ severity: 'danger', summary: 'Input Error', detail:error , life: 10000 });
+          console.log(error)
+        }
+      }
+    },
+    onSuccess: page => {
+      severity_style.value ='bg-green-400 text-white'
+      toast.add({ severity: 'success', summary: 'successfully updated', detail:'kkk' , life: 3000 });
+    },  
+  })
+    
+}
+
+function create_document(){
   let document_catagory = page.props.document_catagory 
   
   let URL= '/'+ document_catagory.type +'/document_catagories/'+document_catagory.id
@@ -174,7 +235,7 @@ function submit() {
     document_number:document_number.value ,
     document_catagory_id:document_catagory.id ,
     lines:form.value ,
-    date:document_date.value.toJSON().slice(0,10) ,
+    date: convert_date_to_sting(document_date.value),
   }
 
   router.post(URL, data,{
@@ -197,41 +258,7 @@ function submit() {
     },
     
   })
-    
 }
-
-function delete_document(){
-  router.delete(props.delete_url)
-}
-
-function update_document() {
-  let data={
-    document_number:document_number.value ,
-    document_catagory_id:page.props.document_catagory  ,
-    lines:form.value ,
-    // date:document_date.value.toJSON().slice(0,10) ,
-  }
-
-  router.put(props.update_url, data,{
-    onError:(errors)=>{
-      //errorMassageModal.value=true
-      for (const key in errors) {
-        if (Object.hasOwnProperty.call(errors, key)) {
-          severity_style.value ='bg-red-600 text-white'
-          let error = errors[key];
-          toast.add({ severity: 'danger', summary: 'Input Error', detail:error , life: 10000 });
-          console.log(error)
-        }
-      }
-    },
-    onSuccess: page => {
-      severity_style.value ='bg-green-400 text-white'
-      toast.add({ severity: 'success', summary: ' entry successfully updated', detail:'kkk' , life: 3000 });
-    },  
-  })
-    
-}
-
 
 
 </script>
@@ -240,7 +267,7 @@ function update_document() {
     <AppLayout title="Dashboard">
         <div class=" dark:bg-gray-800   shadow-xl sm:rounded-lg">
           <div class="grid grid-cols-5  tab:grid-cols-4 justify-items-start mt-0.5 mb-3 ">
-
+           
             <h1  class="text-xl text-gray-700 w-56 text-left px-4 ">
                 <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
             </h1>
@@ -284,6 +311,7 @@ function update_document() {
                   </template> 
               </AutoComplete>
             </div>
+            
             <!-- DATE INPUT   -->
             <div class="row-start-2  col-start-3 my-5">
               <label class="block text-sm font-semibold text-left" for="">Date </label>
@@ -306,11 +334,8 @@ function update_document() {
            
             
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
-
-              
-              
                <!-- entry table   -->
-               <div ref="scrollable_table"  class=" lg:h-[410px]  mx-auto relative  overflow-auto scrollbar max-w-3xl    " >
+               <div ref="scrollable_table"  class=" lg:h-[410px] md: mx-auto relative  overflow-auto scrollbar max-w-3xl    " >
                     <table class="   text-center border-collapse text-sm font-light">
                         
                             <thead ref="tableHeader" class="sticky top-0  z-20 bg-white border-b-2 font-medium dark:border-neutral-500">
@@ -323,7 +348,7 @@ function update_document() {
                                 <th scope="col" class=" py-4">Currencey</th>
                                 <th scope="col" class=" py-4">rate</th>
                                 <th scope="col" class=" py-4">cost center</th>
-                                <th scope="col" class="py-4">Heading</th>
+                                <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4">{{ field }}</th>
                                 </tr>
                             </thead>
                             
@@ -340,7 +365,7 @@ function update_document() {
 
                                   <td class="whitespace-nowrap  border border-gray-400 ">
                                     <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)"  
-                                    :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
                                   </td>
                                   
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
@@ -376,7 +401,6 @@ function update_document() {
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">
-
                                     <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=7
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center"
                                     :Suggestions="searchStore.available_cost_centers.value" >
@@ -385,7 +409,11 @@ function update_document() {
                                         <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
                                       </template>
                                     </ccc>
-                                    
+                                  </td>
+
+                                  <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
+                                    <ccc  v-model="form[index].customfields[field]" 
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=8  Format="text" />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">
@@ -420,7 +448,6 @@ function update_document() {
                     root:{class: 'opacity-95'},
                     content: { class:severity_style ,},
                     icon:{class: 'stroke-white fill-white'},
-
                 }"
             />
         </div>

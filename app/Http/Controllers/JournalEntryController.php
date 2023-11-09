@@ -20,6 +20,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Fluent ;
 use App\Actions\DatabaseManager;
 use App\Models\Account;
+use App\Models\CustomField;
+
 
 class JournalEntryController extends Controller
 {
@@ -48,12 +50,19 @@ class JournalEntryController extends Controller
     {
         $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
         $currencies=Currency::all();
+        $columns=[
+            'debit_amount'=>[1,'number','Debite'] ,
+            'credit_amount'=>[2,'number','Credite'] ,
+        ];
+
         return Inertia::render('Entry', [
             'currencies' =>$currencies,
-            'accounts' => Account::where('id','>',300)->paginate(100) ,
             'document_catagory'=> $document_catagory ,
             'new_document_number' =>$last_document_number + 1,
             'operation'=>'create',
+            'columns'=> $columns ,
+            'columns_count'=>8,
+            'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
             'default_account'=>[],
             'pervious_document_url' => route('entry.show',[
                 'document_catagory'=>$document_catagory->name,
@@ -67,7 +76,7 @@ class JournalEntryController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request)
     {
-        
+        //return $request;
         $AccountingEnrty= app(AccountingEnrty::class);
         $validated_data =  $AccountingEnrty->validate($request->all());
        // dd( $validated_data );
@@ -106,7 +115,6 @@ class JournalEntryController extends Controller
     { 
         $currencies=Currency::all();
         $entry = $document->entry ;
-
         $entry_lines = $entry->accounts->map(function($item){
             $item['pivot']['account'] =  ['id'=>$item['id']  ,'name'=>$item['name'] ];
             return $item['pivot'];
@@ -120,6 +128,8 @@ class JournalEntryController extends Controller
             'document' => $document ,
             'entry_lines' =>$entry_lines  ,
             'operation'=>'update',
+            'columns_count'=>8,
+            'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
             'delete_url'=>route('entry.delete',[
                 'document_catagory'=> $document_catagory->name,
                 'document'=>$document->number ,
@@ -153,15 +163,14 @@ class JournalEntryController extends Controller
      */
     public function update( Document_catagory $document_catagory ,Document $document,Request $request)
     {   
-        return 'update';
+        //dd($request->all());
         $AccountingEnrty= app(AccountingEnrty::class);
         $validated_data =  $AccountingEnrty->validate($request->all());
         if (  $AccountingEnrty->validation_is_failed) {  
             return back()->withErrors($AccountingEnrty->validator)->withInput();
         }
         $entry = $AccountingEnrty->UpdatLines($document->entry,$validated_data);
-        return    $entry  ;
-        
+        return back()->with('success','ok');
     }
 
     /**
@@ -173,6 +182,6 @@ class JournalEntryController extends Controller
         $entry->accounts()->detach(); 
         $entry->delete();
         Document::destroy($document->id);
-        return "deleted" ;
+        return redirect()->route('entry.create',['document_catagory'=>$document_catagory->name]) ;
     }
 }

@@ -24,8 +24,8 @@ export default {
                 // => @media (max-width: 900px) { ... }
                 'tab': {'min': '700px'},
                 // => @media (min-width: 800px) { ... }
-                'larg': {'min': '1000px'},
-                // => @media (min-width: 1010px) { ... }
+                'larg': {'min': '980px'},
+                // => @media (min-width: 980px) { ... }
             }
             ,    
             fontFamily: {

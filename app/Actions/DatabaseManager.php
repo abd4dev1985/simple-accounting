@@ -59,6 +59,8 @@ class DatabaseManager
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_08_29_102805_create_currencies_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_09_25_200333_create_cost_centers_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_09_29_230956_create_cache_table.php');
+      Artisan::call('migrate --database=tentant --path=/database/migrations/2023_11_06_090053_create_custom_fields_table.php');
+
 
       Document_catagory::upsert([
         ['name'=>'purchase_invoice','type' => 'purchase_invoice'],
