@@ -7,7 +7,9 @@ import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
-import DialogModal from '@/Components/DialogModal.vue';
+import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
+import SecondaryButton from '@/Components/SecondaryButton.vue'; 
+import DangerButton from '@/Components/DangerButton.vue';    
 import ccc from '@/Components/ccc.vue';
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
@@ -57,7 +59,7 @@ let form_have_been_adjusted = ref(false);
 
 let rows_count = 30 + Etry_Lines.length;
 
-let errorMassageModal = ref(false)
+let DeleteModal = ref(false)
 
 let default_account=ref('')
 
@@ -76,7 +78,7 @@ for (let index = 0; index < rows_count; index++) {
       currencey:currencies.filter((currencey)=> currencey.id ==Etry_Lines[index].currency_id)[0]  ,
       currency_rate:null,
       cost_center:Etry_Lines[index].cost_center,
-      customfields:JSON.parse(Etry_Lines[index].customfields ),
+      customfields: (Etry_Lines[index].customfields)? JSON.parse(Etry_Lines[index].customfields ): get_standard_object(),
       } 
   } else {
 
@@ -180,6 +182,19 @@ function remove_debit_amount(index) {
     form.value[index].debit_amount =null
   }
 }
+function clear_form(){
+  rows_count = 30 
+  lines=[]
+  for(let index = 0; index < rows_count; index++) {
+    lines[index] ={
+      debit_amount:null,credit_amount:null,account:null,description:null,currencey:null,
+      currency_rate:null,cost_center:null ,customfields: get_standard_object(),
+    }
+  }
+  form.value= lines
+  document_number.value=(props.document)? props.document.number: props.new_document_number
+
+}
 
 function submit() {
   if (props.operation=="update") {
@@ -191,7 +206,16 @@ function submit() {
 }
 
 function delete_document(){
-  router.delete(props.delete_url)
+  router.delete(props.delete_url,{
+    onSuccess: page => {
+      severity_style.value ='bg-green-400 text-white'
+      DeleteModal.value=false
+      toast.add({ severity: 'success', summary: 'successfully deleted', detail:'kkk' , life: 3000 });
+      clear_form()
+    },  
+
+  }
+  )
 }
 function  convert_date_to_sting(date){
   if ( typeof date == 'string') {
@@ -254,6 +278,7 @@ function create_document(){
     onSuccess: page => {
       severity_style.value ='bg-green-400 text-white'
       toast.add({ severity: 'success', summary: 'New entry added', detail:'kkk' , life: 3000 });
+      clear_form()
 
     },
     
@@ -266,7 +291,7 @@ function create_document(){
 <template>
     <AppLayout title="Dashboard">
         <div class=" dark:bg-gray-800   shadow-xl sm:rounded-lg">
-          <div class="grid grid-cols-5  tab:grid-cols-4 justify-items-start mt-0.5 mb-3 ">
+          <div class="grid grid-cols-5 dark:text-gray-200  tab:grid-cols-4 justify-items-start mt-0.5 mb-3 ">
            
             <h1  class="text-xl text-gray-700 w-56 text-left px-4 ">
                 <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
@@ -279,7 +304,7 @@ function create_document(){
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               <div class="text-center relative">
-                <label class="block  text-black font-semibold text-left text-sm " for="document_no">Entry #</label>
+                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no">Entry #</label>
                 <input v-model="document_number" id="document_no" form="myform" class="block text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
                 <!-- 
                 <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
@@ -294,7 +319,7 @@ function create_document(){
             
             <!-- Default Account Input   -->
             <div class="row-start-2 col-start-2 my-5">
-              <label class="block text-sm  text-gray-900 font-semibold text-left" for="">Default Account</label>
+              <label class="block text-sm font-semibold text-left" for="">Default Account</label>
               <AutoComplete v-model="default_account" :suggestions="searchStore.available_accounts.value"
                 @complete="searchStore.search_account" optionLabel="name" forceSelection 
                 :pt="{
@@ -336,11 +361,11 @@ function create_document(){
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
                <!-- entry table   -->
                <div ref="scrollable_table"  class=" lg:h-[410px] md: mx-auto relative  overflow-auto scrollbar max-w-3xl    " >
-                    <table class="   text-center border-collapse text-sm font-light">
+                    <table class=" dark:text-gray-200   text-center border-collapse text-sm font-light">
                         
-                            <thead ref="tableHeader" class="sticky top-0  z-20 bg-white border-b-2 font-medium dark:border-neutral-500">
+                            <thead ref="tableHeader" class="sticky top-0  z-20 dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
                                 <tr >
-                                <th scope="col" class=" py-4 sticky left-0 bg-white  z-20  ">#</th>
+                                <th scope="col" class=" py-4 sticky left-0 z-20  ">#</th>
                                 <th scope="col" class="py-4"> Debite</th>
                                 <th scope="col" class=" ">Credite</th>
                                 <th scope="col" class=" py-4">Account</th>
@@ -348,13 +373,13 @@ function create_document(){
                                 <th scope="col" class=" py-4">Currencey</th>
                                 <th scope="col" class=" py-4">rate</th>
                                 <th scope="col" class=" py-4">cost center</th>
-                                <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4">{{ field }}</th>
+                                <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4">{{ field }}  </th>
                                 </tr>
                             </thead>
                             
                             <tbody> 
-                                <tr v-for="(i,index) in rows_count " :key="index" ref="rows" class="  odd:bg-white even:bg-slate-200 dark:border-neutral-500">
-                                  <td class="sticky left-0 bg-white z-10  text-center font-medium border  border-gray-400">
+                                <tr v-for="(i,index) in rows_count " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700  ">
+                                  <td class="sticky left-0 bg-inherit z-10  text-center font-medium border  border-gray-400">
                                       <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
                                   </td>
 
@@ -436,7 +461,7 @@ function create_document(){
               <div  class="flex justify-end w-9/12  my-0.5 float-right  mr-9">
                 <Link @click.prevent="console.log(form_have_been_adjusted)" href="/create_entry/general_entry/documents" class=" p-2 mx-4 font-semibold rounded-md bg-black text-white "  >New  {{ form_have_been_adjusted }}</Link>
                 <button @click="update_document" class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Update</button>
-                <button @click="delete_document" class=" p-2 mx-4 font-semibold rounded-md bg-red-600 text-white "   >Delete</button>
+                <div @click="DeleteModal=true" class=" p-2 mx-4 font-semibold rounded-md bg-red-600 text-white "   >Delete</div>
                 <button class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Print</button>
                 <button class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "  type="submit" >save</button>
 
@@ -451,5 +476,28 @@ function create_document(){
                 }"
             />
         </div>
+        <!-- delete modal --> 
+        <ConfirmationModal :show="DeleteModal" @close="DeleteModal = false">
+          <template #title>
+              Delete Account
+          </template>
+
+          <template #content>
+              Are you sure you want to delete your account? Once your account is deleted, all of its resources and data will be permanently deleted.
+          </template>
+
+          <template #footer>
+              <SecondaryButton class="p-2 mx-4 font-semibold rounded-md"   @click="DeleteModal = false">
+                  Nevermind
+              </SecondaryButton>
+
+              <DangerButton class="p-2 mx-4 font-semibold rounded-md" @click="delete_document"  :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                  Delete Document
+              </DangerButton>
+          </template>
+        </ConfirmationModal>
+
+
+
     </AppLayout>
 </template>

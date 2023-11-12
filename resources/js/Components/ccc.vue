@@ -111,8 +111,8 @@ function focusLeft(Rows,row_index,collumn_index){
         @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"
         @keyup.right="focusRight(TableObject.Rows,rows_index,columns_index)"
         @focus="force_number"
-        class="bg-inherit text-transparent focus:text-gray-950 py-3 mobile:w-20 mobile:text-sm w-28 max-w-max text-center rounded-md ring-offset-1 focus:ring-2 "> 
-        <div @click="focus_input" class="block absolute group-focus-within:hidden  h-1/3 mobile:text-sm text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 ">
+        class="bg-inherit text-transparent focus:text-gray-950 dark:focus:text-gray-200 py-3 mobile:w-20 mobile:text-sm w-28 max-w-max text-center rounded-md ring-offset-1 focus:ring-2 "> 
+        <div @click="focus_input" class="block absolute group-focus-within:hidden   h-1/3 mobile:text-sm text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 ">
             {{ format_number(value) }}
         </div>                          
     </div>
@@ -123,7 +123,7 @@ function focusLeft(Rows,row_index,collumn_index){
     @keyup.up="focusUp(TableObject.Rows,rows_index,columns_index)"    @keyup.down="focusDown(TableObject.Rows,rows_index,columns_index)"
     @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"   @keyup.right="focusRight(TableObject.Rows,rows_index,columns_index)" 
     :pt="{
-      input: { class: 'bg-inherit py-2 h-full dark:bg-gray-700 dark:text-gray-200 text-gray-800  ring-offset-2  focus:ring-2 border-none ' },
+      input: { class: 'bg-inherit py-2 h-full  dark:text-gray-200 text-gray-800  ring-offset-2  focus:ring-2 border-none ' },
     }">
       <template #empty>
         <div   class="font-semibold p-3 border-2 border-blue-500">

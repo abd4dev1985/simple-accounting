@@ -68,6 +68,7 @@ Route::controller(JournalEntryController::class)->group(function () {
 });
 
 Route::get('/testcache', function () {
+    Cache::store('tentant')->put('last general_entry', 45);
    return Cache::store('tentant')->get('last general_entry');
 })->middleware('CurrentDatabase');
 

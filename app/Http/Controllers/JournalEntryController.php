@@ -179,6 +179,11 @@ class JournalEntryController extends Controller
     public function destroy(Document_catagory $document_catagory ,Document $document)
     {
         $entry=Entry::find($document->entry_id);
+        $last_document_number = Cache::store('tentant')->get('last '.$document_catagory->name);
+        if ( $last_document_number ==$document->number) {
+            $last_document_number=Document::where('number','<',$document->number)->orderBy('number','desc')->first();
+            Cache::store('tentant')->put('last '.$$document_catagory->name, $last_document_number);
+        }
         $entry->accounts()->detach(); 
         $entry->delete();
         Document::destroy($document->id);
