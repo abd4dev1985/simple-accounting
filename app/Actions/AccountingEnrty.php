@@ -43,8 +43,10 @@ class AccountingEnrty
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
             $line['customfields'] =  json_encode($line['customfields']) ;
+            //$line['equivalent_debit_amount'] = ($line['debit_amount'])? $line['debit_amount'] * $line['currency_rate']: null;
+            //$line['equivalent_credit_amount'] = ($line['credit_amount'])? $line['credit_amount*'] * $line['currency_rate']: null;
             unset($line['account']);
-            unset($line['currency_rate']);
+            //unset($line['currency_rate']);
             unset($line['currencey']);
             unset($line['cost_center']);
             return $line;
@@ -76,6 +78,7 @@ class AccountingEnrty
             'document_catagory_id' => ['required', 'numeric'],
             'lines.*.account' => 'nullable|array' ,
             'lines.*.cost_center' => 'nullable|array' ,
+            'lines.*.currency_rate' => 'required' ,
             'lines.*' => Rule::forEach(function ( $line, string $attribute) {
                 return [
                     Rule::excludeIf($line['account'] ==null && ( $line['debit_amount']==null && $line['credit_amount']==null))
@@ -97,8 +100,8 @@ class AccountingEnrty
             $total_credit_amount =0 ;
 
             foreach ($lines as $key=> $line) {
-                $total_debit_amount += $line['debit_amount'];
-                $total_credit_amount += $line['credit_amount'];
+                $total_debit_amount += $line['debit_amount']*$line['currency_rate'];
+                $total_credit_amount += $line['credit_amount']*$line['currency_rate'] ;
                 // check every line dose not have present account without amount against it (debit or credit)
                 if ($line['account'] !=null && ($line['debit_amount']==null && $line['credit_amount']==null) ) {
                     $validator->errors()->add(

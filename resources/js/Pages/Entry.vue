@@ -48,10 +48,8 @@ const currencies= (page.props.currencies)? page.props.currencies:[];
 const Etry_Lines = ( page.props.entry_lines)? page.props.entry_lines : [] ;
 
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
-//document_number= useRemember(document_number,'document_number')
 
 let document_date = ref( (props.document)? props.document.date : new Date()  )
-//document_date= useRemember(document_date)
 
 searchStore.available_currencies.value = currencies
 
@@ -75,8 +73,8 @@ for (let index = 0; index < rows_count; index++) {
       credit_amount:Etry_Lines[index].credit_amount,
       account:Etry_Lines[index].account,
       description:Etry_Lines[index].description,
-      currencey:currencies.filter((currencey)=> currencey.id ==Etry_Lines[index].currency_id)[0]  ,
-      currency_rate:null,
+      currencey:currencies.filter((currencey)=> currencey.id ==Etry_Lines[index].currency_id) [0]  ,
+      currency_rate:1,
       cost_center:Etry_Lines[index].cost_center,
       customfields: (Etry_Lines[index].customfields)? JSON.parse(Etry_Lines[index].customfields ): get_standard_object(),
       } 
@@ -88,7 +86,7 @@ for (let index = 0; index < rows_count; index++) {
     account:null,
     description:null,
     currencey:null,
-    currency_rate:null,
+    currency_rate:1,
     cost_center:null ,
     customfields: get_standard_object(),
 
@@ -96,21 +94,24 @@ for (let index = 0; index < rows_count; index++) {
     
   }
 
-  
 }
 let form = ref(lines)
-console.log(form.value)
-const inputs=  useRemember(form.value ,document_number.value)
 
-let Equvalant_In_default_currney= computed(()=>{
+function set_currencey_rate_line(rate,index ){
+  console.log(rate)
+  form.value[index].currency_rate = rate
+}
 
-  
-}) 
 
- watch( [document_number,document_date,form], () => {
+// watch( [document_number,document_date,form], () => {
  // form_have_been_adjusted.value=true
  // console.log('form updated')
-},  { deep: true },{ immediate: true })
+//},  { deep: true },{ immediate: true })
+
+//watch(form.value, () => {
+ // form_have_been_adjusted.value=true
+//console.log('form updated')
+//}  ,{ deep: true },{ immediate: true })
 
 const Entry_Totals =computed(()=>{
   let total_of_credit=0
@@ -130,19 +131,12 @@ let column_index=0
 
 
 function   get_columen_index(){
- 
     console.log("dd")
     column_index ++
     return column_index
-  
-    
- 
 }
 
 const tableHeader=ref()
-
-
-let keyboared_Navigation = ref(true)
 
 
 let TableObject =computed(()=>{
@@ -188,7 +182,7 @@ function clear_form(){
   for(let index = 0; index < rows_count; index++) {
     lines[index] ={
       debit_amount:null,credit_amount:null,account:null,description:null,currencey:null,
-      currency_rate:null,cost_center:null ,customfields: get_standard_object(),
+      currency_rate:1,cost_center:null ,customfields: get_standard_object(),
     }
   }
   form.value= lines
@@ -217,11 +211,13 @@ function delete_document(){
   }
   )
 }
+
 function  convert_date_to_sting(date){
   if ( typeof date == 'string') {
     return date
   }else{ return date.toJSON().slice(0,10)                  }
 }
+
 function update_document() {
   let data={
     document_number:document_number.value ,
@@ -261,7 +257,6 @@ function create_document(){
     lines:form.value ,
     date: convert_date_to_sting(document_date.value),
   }
-
   router.post(URL, data,{
     onError:(errors)=>{
       //errorMassageModal.value=true
@@ -272,16 +267,13 @@ function create_document(){
           toast.add({ severity: 'danger', summary: 'Input Error', detail:error , life: 10000 });
           console.log(error)
         }
-  
       }
     },
     onSuccess: page => {
       severity_style.value ='bg-green-400 text-white'
       toast.add({ severity: 'success', summary: 'New entry added', detail:'kkk' , life: 3000 });
       clear_form()
-
     },
-    
   })
 }
 
@@ -389,7 +381,7 @@ function create_document(){
                                   </td>
 
                                   <td class="whitespace-nowrap  border border-gray-400 ">
-                                    <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)"  
+                                    <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
                                   </td>
                                   
@@ -408,8 +400,9 @@ function create_document(){
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="text" />
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400">
-                                    <ccc v-model="form[index].currencey" :TableObject="TableObject"  :rows_index="index" :columns_index=5
+                                  <td class="whitespace-nowrap border border-gray-400 ">
+                                    <ccc v-model="form[index].currencey" :TableObject="TableObject" :rows_index="index" :columns_index=5
+                                    @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate"  :Default="currencies[0]"  
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
                                       <template #emptySuggestions>
                                         <div class=""> currencey <span class="text-blue-600">{{form[index].currencey }}</span> dose not exist </div>
@@ -417,12 +410,10 @@ function create_document(){
                                     </ccc>
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400">
-                                    
+                                  <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap border border-gray-400 " >
                                     <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=6 
-                                        Format="number" 
+                                    :Default ="form[index].currencey?.default_rate"  Format="number" 
                                     />
-                                    
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">

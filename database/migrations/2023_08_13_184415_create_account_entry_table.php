@@ -22,6 +22,8 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->integer('currency_id')->nullable();
             $table->decimal('currency_rate')->nullable();
+            //$table->decimal('equivalent_debit_amount')->nullable();
+            //$table->decimal('equivalent_credit_amount')->nullable();
             $table->integer('cost_center_id')->nullable();
             $table->timestamps();
         });

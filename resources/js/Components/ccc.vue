@@ -5,21 +5,38 @@ import searchStore from '../searchStore.vue';
 import { Link,  } from '@inertiajs/vue3';
 
 let props=  defineProps(['modelValue','TableObject','rows_index','columns_index',
-'Format','SearchFunction','Suggestions' ]);
+'Format','SearchFunction','Suggestions','Required','Default', ]);
 
-const emit = defineEmits(['update:modelValue','change'])
-
+const emit = defineEmits(['update:modelValue','change','UpdateCurrencyRate',])
+let Red_Alerte=ref(false)
 const value = computed({
   get() {
-    if (props.Format=='number') {
-      return ( isNaN(Number(props.modelValue))  && Number(props.modelValue) !=null  ) ?  null:props.modelValue     
-    }else{
-      return props.modelValue  
-    }
+    if (props.Format =='number' ) {
+      //console.log(Number(props.modelValue))
+      return  ( isNaN(Number(props.modelValue)) || Number(props.modelValue)==0  ) ? props.Default:props.modelValue  
+      //return  ( isNaN(Number(props.modelValue)) && Number(props.modelValue)!=null) ? props.Default:props.modelValue  
+
+    }else {
+      return props.modelValue ?? props.Default 
+   }
   },
   set(value) {
     emit('update:modelValue', value)
-    emit('change')
+    emit('change',value)
+    // emit UpdateCurrencyRate event
+    if (typeof value ==='object' && value !=null  ) {
+      if ('default_rate' in value ) {emit('UpdateCurrencyRate',value.default_rate)  }
+    }
+    // emit UpdateCurrencyRate event
+    if (props.Currency && value==null  ) {
+      emit('UpdateCurrencyRate',14000)
+    }
+
+    if (props.Required && value=='' ) {
+      Red_Alerte.value=true
+    }else{Red_Alerte.value=false}
+    
+
   }
 })
 let mytable 
@@ -44,17 +61,17 @@ function force_number(event){
 }
 
 function format_number( value ){
-  if (  typeof Number(value) == 'number' &&  Number(value) != 0    ) {
+  if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
     return formatter.format(value)
   }else{  
-    return value 
+    return null 
   }
 
 }
 
 function focus_input(event){
   event.target.previousElementSibling.focus()
-  console.log(event.target.previousElementSibling.value)
+  //console.log(event.target.previousElementSibling.value)
 }
 
 function focusDown(Rows,row_index,collumn_index)
@@ -104,17 +121,22 @@ function focusLeft(Rows,row_index,collumn_index){
 
 </script>
 <template>
-    <div v-if="props.Format=='number'"   class="relative group  ">
-        <input v-model="value" 
+    <div v-if="props.Format=='number'"  class="relative group">
+        <input v-model="value"   :class="{ 'border-red-600 border-2 focus:border-none': Red_Alerte}"
         @keydown.up.prevent="focusUp(TableObject.Rows,rows_index,columns_index)"
         @keydown.down.prevent="focusDown(TableObject.Rows,rows_index,columns_index)"
         @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"
         @keyup.right="focusRight(TableObject.Rows,rows_index,columns_index)"
-        @focus="force_number"
+        @focus="force_number" 
         class="bg-inherit text-transparent focus:text-gray-950 dark:focus:text-gray-200 py-3 mobile:w-20 mobile:text-sm w-28 max-w-max text-center rounded-md ring-offset-1 focus:ring-2 "> 
-        <div @click="focus_input" class="block absolute group-focus-within:hidden   h-1/3 mobile:text-sm text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 ">
+        <div v-if="Red_Alerte"  @click="focus_input"  class="block absolute group-focus-within:hidden   h-1/3 mobile:text-sm
+         text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 text-base text-red-600 ">
+             Required
+        </div> 
+        <div v-else  @click="focus_input"  class="block absolute group-focus-within:hidden   h-1/3 mobile:text-sm text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 ">
             {{ format_number(value) }}
-        </div>                          
+        </div>  
+
     </div>
 
     <AutoComplete  v-if="Format=='aoutcomplete'" v-model="value" :suggestions="Suggestions"

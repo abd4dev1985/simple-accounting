@@ -49,14 +49,12 @@ class JournalEntryController extends Controller
     public function create( Document_catagory $document_catagory )
     {
         $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
-        $currencies=Currency::all();
         $columns=[
             'debit_amount'=>[1,'number','Debite'] ,
             'credit_amount'=>[2,'number','Credite'] ,
         ];
 
         return Inertia::render('Entry', [
-            'currencies' =>$currencies,
             'document_catagory'=> $document_catagory ,
             'new_document_number' =>$last_document_number + 1,
             'operation'=>'create',
@@ -84,6 +82,7 @@ class JournalEntryController extends Controller
             return back()->withErrors($AccountingEnrty->validator)->withInput();
         }
         //return $validated_data;
+        //dd($validated_data);
         $entry = $AccountingEnrty->create($validated_data);
         $document = Document::create([ 
             'number'=> $validated_data['document_number'] ,
