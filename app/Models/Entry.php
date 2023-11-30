@@ -24,7 +24,7 @@ class Entry extends Model
     public function accounts(): BelongsToMany
     {
         return $this->belongsToMany(Account::class)
-        ->withPivot('id','debit_amount', 'credit_amount','description','currency_id','currency_rate','customfields');
+        ->withPivot('id','debit_amount', 'credit_amount','description','currency_id','currency_rate','customfields','date');
     }
      /**
      * get cost center related entry to 
@@ -32,7 +32,7 @@ class Entry extends Model
     public function cost_centers(): BelongsToMany
     {
         return $this->belongsToMany(CostCenter::class,'account_entry','entry_id','cost_center_id')
-        ->withPivot('debit_amount', 'credit_amount','description','account_id','currency_id','currency_rate');
+        ->withPivot('debit_amount', 'credit_amount','description','account_id','currency_id','currency_rate','date','customfields',);
     }
     
 

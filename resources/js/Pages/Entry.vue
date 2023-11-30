@@ -13,8 +13,11 @@ import DangerButton from '@/Components/DangerButton.vue';
 import ccc from '@/Components/ccc.vue';
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
+import { useWinBox } from 'vue-winbox'
 
 const toast = useToast();
+const createWindow = useWinBox()
+
 let severity_style= ref('');
 
 let props =defineProps({
@@ -355,9 +358,9 @@ function create_document(){
                <div ref="scrollable_table"  class=" lg:h-[410px] md: mx-auto relative  overflow-auto scrollbar max-w-3xl    " >
                     <table class=" dark:text-gray-200   text-center border-collapse text-sm font-light">
                         
-                            <thead ref="tableHeader" class="sticky top-0  z-20 dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
+                            <thead ref="tableHeader" class="sticky top-0   z-[20] dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
                                 <tr >
-                                <th scope="col" class=" py-4 sticky left-0 z-20  ">#</th>
+                                <th scope="col" class=" py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
                                 <th scope="col" class="py-4"> Debite</th>
                                 <th scope="col" class=" ">Credite</th>
                                 <th scope="col" class=" py-4">Account</th>

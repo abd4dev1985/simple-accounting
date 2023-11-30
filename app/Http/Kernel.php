@@ -69,6 +69,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'CurrentDatabase' => \App\Http\Middleware\CurrentDatabase::class,
         'Mytest' => \App\Http\Middleware\Mytest::class,
+        //'HandleInertiaRequests'=> \App\Http\Middleware\HandleInertiaRequests::class,
     ];
 
     /**
@@ -88,6 +89,7 @@ class Kernel extends HttpKernel
         \Illuminate\Routing\Middleware\ThrottleRequestsWithRedis::class,
         \Illuminate\Contracts\Session\Middleware\AuthenticatesSessions::class,
         \App\Http\Middleware\CurrentDatabase::class,
+       // \App\Http\Middleware\HandleInertiaRequests::class,
         \Illuminate\Routing\Middleware\SubstituteBindings::class,
         \Illuminate\Auth\Middleware\Authorize::class,
     ];

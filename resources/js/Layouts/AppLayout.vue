@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3';
+import LedgerBookForm from '@/pages/LedgerBookForm.vue';
 
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
@@ -11,15 +12,37 @@ import SideBar from '@/Components/SideBar.vue';
 import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
+import { useWinBox } from 'vue-winbox'
+import { VueWinBox } from 'vue-winbox'
+
 
 
 defineProps({
     title: String,
 });
-
 let theme =ref(localStorage.theme)
 const showingNavigationDropdown = ref(false);
 const shadowBackGround = ref(false);
+
+const createWindow = useWinBox()
+let LedgerBooks = ref([])
+let LedgerBooksIndex= ref(1)
+
+let OpenLedgerBook=()=>{
+    let winbox = createWindow({
+    mount: LedgerBooks.value[LedgerBooksIndex.value-1],
+    title: 'Ledger Book',
+    index:40,
+    class: 'bg-sky-600',
+    width: "75%" , height: "85%" ,
+    x: "center", y: "center",
+    })
+    LedgerBooksIndex.value++
+    //winbox.setUrl("http://127.0.0.1:8000/teams/create", function(){ 
+        /* extern page loaded */
+    //})
+}
+
 
 
 let screenWidth=ref(0);
@@ -30,12 +53,12 @@ onMounted(() => {
     if (window !== undefined) {
         window.addEventListener('resize', ()=>{
         screenWidth.value= document.getElementById("app").offsetWidth
-        console.log('kkkkk')
         showSidebar.value = screenWidth.value >=980?true:false 
 
         })
     }
 })
+
 
 function openSidebar(){
      if (screenWidth.value <=980 ) {
@@ -81,17 +104,24 @@ const switchToTeam = (team) => {
 const logout = () => {
     router.post(route('logout'));
 };
+
 </script>
 
 <template>
+     
     <!-- Shadow background-->
     <div @click="closeSidebar" v-show="shadowBackGround" class="fixed inset-0 overflow-y-auto px-4 py-6 sm:px-0 z-30 bg-gray-500 dark:bg-gray-900 opacity-75">
     </div>
 
+    
     <div>
         <Head :title="title" />
-
         <Banner />
+        <div class="hidden"  >
+            <div v-for="n in LedgerBooksIndex" ref="LedgerBooks">
+                <LedgerBookForm />
+            </div>
+        </div>
 
         <div class="relative min-h-screen bg-gray-100 dark:bg-gray-900 ">
             <nav class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
@@ -110,12 +140,12 @@ const logout = () => {
                                     Simpel Accounting
                                  </div>
                             </div>
-
                             <!-- Navigation Links -->
                             <div class="hidden space-x-8 sm:-my-px sm:ml-10 ">
                                 <NavLink :href="route('dashboard')" :active="route().current('dashboard')">
                                     Dashboarddddmmm
                                 </NavLink>
+                               
                             </div>
                         </div>
 
@@ -344,12 +374,12 @@ const logout = () => {
                     </div>
                 </div>
             </nav>
-             <div class="flex relative " >  
-                <!-- SIDE BAR-->
-                <div v-show="showSidebar" class="larg:relative flex-none fixed inset-y-0 start-0   w-56 bg-gray-800 min-h-screen z-30 text-gray-100 ">
-                    <!-- Logo -->
-                     <SideBar/>
 
+             <div class="flex relative " > 
+                <!-- SIDE BAR-->
+                <div v-show="showSidebar"  class="larg:relative  flex-none fixed inset-y-0 left-0  w-56 bg-gray-800 min-h-screen z-30 text-gray-100 ">
+                    <!-- Logo -->
+                     <SideBar @OpenLedgerBook="OpenLedgerBook"   />
                 </div>
                 <!-- Page Heading 
                     <header v-if="$slots.header" class="bg-pink-500 dark:bg-gray-800 shadow">
@@ -362,7 +392,10 @@ const logout = () => {
                 <main @click="closeSidebar" class=" flex-1 bg-gray-100 ">
                     <slot />
                 </main>
+               
+
             </div> 
         </div>
     </div>
+    
 </template>

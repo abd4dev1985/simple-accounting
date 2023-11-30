@@ -25,6 +25,7 @@ return new class extends Migration
             //$table->decimal('equivalent_debit_amount')->nullable();
             //$table->decimal('equivalent_credit_amount')->nullable();
             $table->integer('cost_center_id')->nullable();
+            $table->date('date');
             $table->timestamps();
         });
     }

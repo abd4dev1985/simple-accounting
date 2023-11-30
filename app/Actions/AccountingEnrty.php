@@ -38,12 +38,13 @@ class AccountingEnrty
         $entry = Entry::create([]);
 
          $data = collect($input['lines']);
-         $data= $data->map(function  (array $line ) use( $entry)  {
+
+         $data= $data->map(function  (array $line ) use( $entry,$input)  {
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
+            $line['date'] = $input['date'];
             $line['customfields'] =  json_encode($line['customfields']) ;
-            //$line['equivalent_debit_amount'] = ($line['debit_amount'])? $line['debit_amount'] * $line['currency_rate']: null;
             //$line['equivalent_credit_amount'] = ($line['credit_amount'])? $line['credit_amount*'] * $line['currency_rate']: null;
             unset($line['account']);
             //unset($line['currency_rate']);
@@ -138,10 +139,11 @@ class AccountingEnrty
     public function UpdatLines(Entry $entry ,array $input )
     {
          $data = collect($input['lines']);
-         $data= $data->map(function  (array $line ) use( $entry)  {
+         $data= $data->map(function  (array $line ) use( $entry,$input )  {
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
+            $line['date'] = $input['date'];
             $line['customfields'] =  json_encode($line['customfields']) ;
             unset($line['account'] );
             unset($line['currency_rate'] );
@@ -152,7 +154,8 @@ class AccountingEnrty
        
         $data = $data->toArray();
         EntrLines::upsert($data,['id'],
-        ['account_id','debit_amount','credit_amount','description','currency_id','currency_rate','cost_center_id','customfields',]);
+        ['account_id','debit_amount','credit_amount','description','currency_id','currency_rate',
+        'cost_center_id','customfields','date']);
         //dd("whate");
         $entry->refresh();
         return $entry ;

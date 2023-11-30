@@ -31,7 +31,7 @@ class EntrLines extends Model
     protected $fillable = [
         'account_id','entry_id','debit_amount',
         'credit_amount','description','currency_id',
-        'currency_rate','cost_center_id','customfields',
+        'currency_rate','cost_center_id','customfields','date',
     ];
 
     
