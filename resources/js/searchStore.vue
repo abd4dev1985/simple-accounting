@@ -19,7 +19,6 @@ let create_new_currencey_link=ref('');
 let create_new_costcenter_link=ref('');
 
 const search_account =(event)=>{
-    console.log(event)
     axios.post('/search/account',{searchForAccount:event.query})
     .then(function (response) {
         available_accounts.value=response.data  

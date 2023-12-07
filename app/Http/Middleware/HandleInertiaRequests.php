@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Inertia\Middleware;
 use App\Models\Currency;
 use App\Actions\DatabaseManager;
+use Illuminate\Support\Str;
+
 
 
 class HandleInertiaRequests extends Middleware
@@ -39,10 +41,17 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+
         // set current Database
         if ($request->user()) {
-            app(DatabaseManager::class)->currentDatabase($request);
-        }
+          app(DatabaseManager::class)->currentDatabase($request);
+        }  
+
+        if (Str::contains($request->url(),'team')) {
+            return array_merge(parent::share($request), [
+
+            ]);
+        }   
         
         return array_merge(parent::share($request), [
             'currencies' => ($request->user())? Currency::all():null,

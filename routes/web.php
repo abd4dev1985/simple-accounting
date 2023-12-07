@@ -15,6 +15,7 @@ use App\Models\Account;
 use App\Actions\ImportExcelFile;
 
 use App\Http\Controllers\JournalEntryController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\IncomePaymentReceiptController;
 use App\Models\Document_catagory;
@@ -66,6 +67,16 @@ Route::controller(JournalEntryController::class)->group(function () {
     Route::get('/create_entry/{document_catagory:name}/documents', 'create')->name('entry.create');
     Route::post('/entry/document_catagories/{document_catagory}', 'store')->name('entry.store');
 });
+
+Route::controller(PurchaseController::class)->group(function () {
+    Route::get('/purchase/{document_catagory:name}/documents/{document:number}', 'show')->name('purchase.show');
+    Route::put('/purchase/{document_catagory:name}/documents/{document:number}', 'update')->name('purchase.update');
+    Route::delete('/purchase/{document_catagory:name}/documents/{document:number}', 'destroy')->name('purchase.delete');
+    Route::get('/purchase/document_catagories/{document_catagory:name}/documents', 'index')->name('purchase.index');
+    Route::get('/create_purchase/{document_catagory:name}/documents', 'create')->name('purchase.create');
+    Route::post('/purchase/document_catagories/{document_catagory}', 'store')->name('purchase.store');
+});
+
 Route::controller(AccountsController::class)->group(function () {
     Route::get('/account/ledgerBookForm/{account?}','ledgerBook_form')->name('accounts.ledgerBookForm');
     Route::post('/account/ledgerBook/{account}','ledgerBook')->name('accounts.ledgerBook.result');

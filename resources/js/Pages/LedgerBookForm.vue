@@ -10,10 +10,8 @@ import SecondaryButton from '@/Components/SecondaryButton.vue';
 import ccc from '@/Components/ccc.vue';
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
-import { useWinBox } from 'vue-winbox'
 
 const toast = useToast();
-const createWindow = useWinBox()
 
 let severity_style= ref('');
 let account = ref('')
@@ -33,7 +31,7 @@ const items = ref([]);
         
         
         <h4 class="text-2xl" >LedgerBook</h4>
-        <!-- Default Account Input   -->
+        <!-- Default Account Input -->
         <div class=" my-5">
             <label class="block text-sm font-semibold text-left" for=""> Account</label>
             <AutoComplete v-model="account" :suggestions="searchStore.available_accounts.value"

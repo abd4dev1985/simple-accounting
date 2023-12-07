@@ -10,8 +10,6 @@ use App\Actions\AccountingEnrty;
 use Illuminate\Support\Facades\Cache;
 
 use App\Models\Account_entry ;
-use App\Http\Requests\StoreJournalEntryRequest;
-use App\Http\Requests\UpdateJournalEntryRequest;
 use App\Models\Entry;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
@@ -62,9 +60,9 @@ class JournalEntryController extends Controller
             'columns_count'=>8,
             'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
             'default_account'=>[],
-            'pervious_document_url' => route('entry.show',[
+            'pervious_document_url' => !($last_document_number)? null:route('entry.show',[
                 'document_catagory'=>$document_catagory->name,
-                'document'=>$last_document_number,
+                'document'=>$last_document_number ,
             ]),
         ]);
     }
