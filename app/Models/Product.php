@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Actions\DatabaseManager ;
 use Illuminate\Http\Request;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 
 class Product extends Model
 {
@@ -29,5 +30,28 @@ class Product extends Model
         $this->setConnection($currentDatabase);
     
     }
+    /**
+     * Get sales of product.
+     */
+    public function sales(): MorphToMany
+    {
+        return $this->morphedByMany(Sale::class, 'invoiceable')
+        ->withPivot('id','quantity','price','description',
+        'currency_id','currency_rate','customfields','date');
+        
+    }
+
+    /**
+     * Get purchases of product.
+     */
+    public function purchases(): MorphToMany
+    {
+        return $this->morphedByMany(Purchase::class, 'invoiceable')
+        ->withPivot('id','quantity','price','description',
+        'currency_id','currency_rate','customfields','date');
+    }
+
+
+
 
 }

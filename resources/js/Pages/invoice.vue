@@ -48,7 +48,7 @@ function get_standard_object(){
 const page = usePage()
 // const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
-const Etry_Lines = ( page.props.entry_lines)? page.props.entry_lines : [] ;
+const Invoice_Lines = ( page.props.entry_lines)? page.props.entry_lines : [] ;
 
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
 
@@ -58,7 +58,7 @@ searchStore.available_currencies.value = currencies
 
 let form_have_been_adjusted = ref(false);
 
-let rows_count = 30 + Etry_Lines.length;
+let rows_count = 30 + Invoice_Lines.length;
 
 let DeleteModal = ref(false)
 
@@ -68,25 +68,25 @@ let default_account=ref('')
 // create array from the lines of receipt (form)
 let lines=[]
 for (let index = 0; index < rows_count; index++) {
-  if (Etry_Lines[index]) {
+  if (Invoice_Lines[index]) {
 
       lines[index] = {
-      id: Etry_Lines[index].id,
-      debit_amount:Etry_Lines[index].debit_amount,
-      credit_amount:Etry_Lines[index].credit_amount,
-      account:Etry_Lines[index].account,
-      description:Etry_Lines[index].description,
-      currencey:currencies.filter((currencey)=> currencey.id ==Etry_Lines[index].currency_id) [0]  ,
+      id: Invoice_Lines[index].id,
+      quantity:Invoice_Lines[index].debit_amount,
+      price:Invoice_Lines[index].credit_amount,
+      product:Invoice_Lines[index].account,
+      description:Invoice_Lines[index].description,
+      currencey:currencies.filter((currencey)=> currencey.id ==Invoice_Lines[index].currency_id) [0]  ,
       currency_rate:1,
-      cost_center:Etry_Lines[index].cost_center,
-      customfields: (Etry_Lines[index].customfields)? JSON.parse(Etry_Lines[index].customfields ): get_standard_object(),
+      cost_center:Invoice_Lines[index].cost_center,
+      customfields: (Invoice_Lines[index].customfields)? JSON.parse(Invoice_Lines[index].customfields ): get_standard_object(),
       } 
   } else {
 
     lines[index] = {
-    debit_amount:null,
-    credit_amount:null,
-    account:null,
+    quantity:null,
+    price:null,
+    product:null,
     description:null,
     currencey:null,
     currency_rate:1,
@@ -100,44 +100,11 @@ for (let index = 0; index < rows_count; index++) {
 }
 let form = ref(lines)
 
-function set_currencey_rate_line(rate,index ){
-  console.log(rate)
-  form.value[index].currency_rate = rate
-}
-
-
-// watch( [document_number,document_date,form], () => {
- // form_have_been_adjusted.value=true
- // console.log('form updated')
-//},  { deep: true },{ immediate: true })
-
-//watch(form.value, () => {
- // form_have_been_adjusted.value=true
-//console.log('form updated')
-//}  ,{ deep: true },{ immediate: true })
-
-const Entry_Totals =computed(()=>{
-  let total_of_credit=0
-  let total_of_debit=0
-  form.value.forEach(line => {
-    total_of_debit = !isNaN(Number(line.debit_amount)) && line.debit_amount !=null ? Number(line.debit_amount) + total_of_debit : total_of_debit
-    total_of_credit = !isNaN(Number(line.credit_amount)) && line.credit_amount !=null  ? Number(line.credit_amount) + total_of_credit  : total_of_credit
-  });
-  return { debit_side:total_of_debit , credit_side: total_of_credit  }
-});
-
-
 const rows = ref([])
 const scrollable_table = ref()
 
 let column_index=0
 
-
-function   get_columen_index(){
-    console.log("dd")
-    column_index ++
-    return column_index
-}
 
 const tableHeader=ref()
 
@@ -161,30 +128,12 @@ function Force_Object_VALUE(array_objects,object_key ,index){
   }
 }
 
-//clear credit_amount input value if valide debit_amount input is inserted in the same line of form
-function remove_credit_amount(index) {
- // form_have_been_adjusted.value=true
-  Force_Number_VALUE(form.value,'debit_amount',index)
-  if (form.value[index].debit_amount  ) {
-    form.value[index].credit_amount = null 
-  }
- 
-}
-
-// clear debit_amount input value if valide credit_amount input is inserted in the same line of form
-function remove_debit_amount(index) {
-  //form_have_been_adjusted.value=true
-  Force_Number_VALUE  (form.value,'credit_amount',index)
-  if (form.value[index].credit_amount) {
-    form.value[index].debit_amount =null
-  }
-}
 function clear_form(){
   rows_count = 30 
   lines=[]
   for(let index = 0; index < rows_count; index++) {
     lines[index] ={
-      debit_amount:null,credit_amount:null,account:null,description:null,currencey:null,
+      quantity:null,price:null,product:null,description:null,currencey:null,
       currency_rate:1,cost_center:null ,customfields: get_standard_object(),
     }
   }
@@ -361,9 +310,9 @@ function create_document(){
                             <thead ref="tableHeader" class="sticky top-0   z-[20] dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
                                 <tr >
                                 <th scope="col" class=" py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
-                                <th scope="col" class="py-4"> Debite</th>
-                                <th scope="col" class=" ">Credite</th>
-                                <th scope="col" class=" py-4">Account</th>
+                                <th scope="col" class="py-4"> Quantity</th>
+                                <th scope="col" class=" ">Price</th>
+                                <th scope="col" class=" py-4">Product</th>
                                 <th scope="col" class=" block overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
                                 <th scope="col" class=" py-4">Currencey</th>
                                 <th scope="col" class=" py-4">rate</th>
@@ -379,17 +328,17 @@ function create_document(){
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc  v-model="form[index].debit_amount"   @change="remove_credit_amount(index)"  
+                                    <ccc  v-model="form[index].quantity" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=1  Format="number" />
                                   </td>
 
                                   <td class="whitespace-nowrap  border border-gray-400 ">
-                                    <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)" 
+                                    <ccc  v-model="form[index].price" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
                                   </td>
                                   
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
-                                    <ccc v-model="form[index].account"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
+                                    <ccc v-model="form[index].product"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value" >  
                                       <template #emptySuggestions>
                                         <div class=""> account <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
@@ -448,8 +397,8 @@ function create_document(){
                 <div class=" w-60 inline-flex justify-around bg-sky-200  ">
                   <div class="">Total</div>
 
-                    <div class="">{{ Entry_Totals.debit_side }}</div>
-                    <div class="" >{{ Entry_Totals.credit_side }}</div>
+                    <div class=""></div>
+                    <div class="" ></div>
                 </div>
               <!-- buttons --> 
               <div  class="flex justify-end w-9/12  my-0.5 float-right  mr-9">

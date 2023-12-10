@@ -8,6 +8,8 @@ use App\Models\Document_catagory;
 use App\Models\Document;
 use App\Models\Currency;
 use App\Actions\AccountingEnrty;
+use App\Actions\Invoice;
+
 use Illuminate\Support\Facades\Cache;
 
 use App\Models\Account_entry ;
@@ -48,8 +50,8 @@ class PurchaseController extends Controller
         {
            // dd($document_catagory->name);
             $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
-            dd($last_document_number);
-            return Inertia::render('Entry', [
+           // dd($last_document_number);
+            return Inertia::render('Invoice', [
                 'document_catagory'=> $document_catagory ,
                 'new_document_number' =>$last_document_number + 1,
                 'operation'=>'create',

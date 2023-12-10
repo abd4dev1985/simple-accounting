@@ -90,10 +90,14 @@ router.reload({
 }
 
 let searchStore ={
+
     available_accounts,
     search__account,
     search_account,
     create_new_account_link,
+
+    
+
     reset_search,
 
     available_currencies,
