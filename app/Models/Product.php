@@ -21,15 +21,26 @@ class Product extends Model
     //protected $connection = 'current_connection';
 
     //set current connection (Database)
-    public function __construct(  array $attributes = array())
-    {
-        parent::__construct($attributes);
 
-        $request =app(Request::class);
-        $currentDatabase= app(DatabaseManager::class)->currentDatabase($request);
-        $this->setConnection($currentDatabase);
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = ['name','catagory_id','count','serial',];
+
+
+
+
+   // public function __construct(  array $attributes = array())
+    //{
+        // parent::__construct($attributes);
+
+        // $request =app(Request::class);
+        // $currentDatabase= app(DatabaseManager::class)->currentDatabase($request);
+       // $this->setConnection($currentDatabase);
     
-    }
+    //}
     /**
      * Get sales of product.
      */

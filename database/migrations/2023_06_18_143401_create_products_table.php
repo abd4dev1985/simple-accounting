@@ -35,6 +35,9 @@ return new class extends Migration
         Schema ::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->integer('catagory_id')->nullable();
+            $table->integer('count')->nullable();
+            $table->string('serial')->unique();
             $table->timestamps();
         });
     }

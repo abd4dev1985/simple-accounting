@@ -30,7 +30,7 @@ class DatabaseManager
     public function currentDatabase(Request $request )
     {
       $db_name= $request->user()->currentTeam->name ;
-      $db_name = Str::slug($db_name,'_');
+      $db_name = Str::slug($db_name,'-');
       $user_name = "user-".$db_name;
       $password=null ;
       config([
