@@ -56,6 +56,12 @@ class PurchaseController extends Controller
                 'new_document_number' =>$last_document_number + 1,
                 'operation'=>'create',
                 'columns_count'=>8,
+                'store_url'=>route('purchase.store',[
+                    'document_catagory'=> $document_catagory->id,
+                ]),
+
+
+                
                 'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
                 'default_account'=>[],
                 'pervious_document_url' => !($last_document_number) ? null: route('purchase.show',[
@@ -71,7 +77,7 @@ class PurchaseController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request )
     {
-        //return $request;
+        return $request;
         $AccountingEnrty= app(AccountingEnrty::class);
         $validated_data =  $AccountingEnrty->validate($request->all());
        // dd( $validated_data );

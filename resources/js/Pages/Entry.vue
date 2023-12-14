@@ -286,34 +286,44 @@ function create_document(){
 <template>
     <AppLayout title="Dashboard">
         <div class=" dark:bg-gray-800   shadow-xl sm:rounded-lg">
-          <div class="grid grid-cols-5 dark:text-gray-200  tab:grid-cols-4 justify-items-start mt-0.5 mb-3 ">
-           
-            <h1  class="text-xl text-gray-700 w-56 text-left px-4 ">
-                <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
-            </h1>
-
-            <!-- INPUT DOCUMENT NUMBER -->
-            <div class="col-start-1 row-start-2  flex justify-center items-end my-5  mx-4  text-sky-600 w-max">
+          
+          <h1  class="flex  justify-start text-xl w-full bg-sky-700 text-white  px-4  py-2">
+            <div class="flex-shrink font-semibold">
+              <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
+            </div> 
+            <div class="flex-shrink  flex justify-end items-center  mx-4  text-sky-600 ">
               <Link v-if="pervious_document_url"  :href="pervious_document_url">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
-              <div class="text-center relative">
-                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no">Entry #</label>
-                <input v-model="document_number" id="document_no" form="myform" class="block text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
-                <!-- 
-                <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
-                -->
+              <div class=" text-center relative">                
+                <input v-model="document_number" id="document_no" form="myform" class=" text-center  rounded-md w-12 h-6 text-gray-700 " >
               </div>
+              
               <Link v-if="next_document_url" :href="next_document_url"  >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
 
             </div>
+
+          </h1>
+          <div class="flex flex-col  tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
+           
+            <!-- INPUT DOCUMENT NUMBER -->
+            <div class="flex-initial  w-max">
+              <div class="text-center relative">
+                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no">Entry #</label>
+                <input v-model="document_number" id="document_no" form="myform" class="block border text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
+                <!-- 
+                <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
+                -->
+              </div>
+
+            </div>
             
             <!-- Default Account Input   -->
-            <div class="row-start-2 col-start-2 my-5">
+            <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for="">Default Account</label>
               <AutoComplete v-model="default_account" :suggestions="searchStore.available_accounts.value"
                 @complete="searchStore.search_account" optionLabel="name" forceSelection 
@@ -333,7 +343,7 @@ function create_document(){
             </div>
             
             <!-- DATE INPUT   -->
-            <div class="row-start-2  col-start-3 my-5">
+            <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for="">Date </label>
               <Calendar v-model="document_date" showIcon  dateFormat="dd/mm/yy"
                 :pt="{
@@ -350,45 +360,47 @@ function create_document(){
             </div>
 
           </div>
-            
+              
            
             
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
                <!-- entry table   -->
-               <div ref="scrollable_table"  class=" lg:h-[410px] md: mx-auto relative  overflow-auto scrollbar max-w-3xl    " >
-                    <table class=" dark:text-gray-200   text-center border-collapse text-sm font-light">
+               <div ref="scrollable_table"  class=" lg:h-[410px] mx-6 relative  overflow-auto scrollbar larg:max-w-[73vw] " >
+                    <table class=" dark:text-gray-200   text-center border-separate   text-sm font-light">
                         
-                            <thead ref="tableHeader" class="sticky top-0   z-[20] dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
-                                <tr >
-                                <th scope="col" class=" py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
-                                <th scope="col" class="py-4"> Debite</th>
-                                <th scope="col" class=" ">Credite</th>
-                                <th scope="col" class=" py-4">Account</th>
-                                <th scope="col" class=" block overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
-                                <th scope="col" class=" py-4">Currencey</th>
-                                <th scope="col" class=" py-4">rate</th>
-                                <th scope="col" class=" py-4">cost center</th>
-                                <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4">{{ field }}  </th>
+                            <thead ref="tableHeader"  class="sticky top-0 z-[20] bg-white dark:bg-gray-700 bg-inherit  border-2 font-medium dark:border-neutral-400">
+                                <tr class="" >
+                                <th scope="col " class=" border-r b py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
+                                <th scope="col" class=" border-r border-b  py-4  "> Debite</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4  ">Credite</th>
+                                <th scope="col" class=" border-r border-b  dark:border-neutral-400  py-4">Account</th>
+                                <th scope="col" class=" block border-r border-b  overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Currencey</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">rate</th>
+                                <th scope="col" class=" border-r border-b  dark:border-neutral-400 py-4">cost center</th>
+                                <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4 border-2 dark:border-neutral-400">
+                                  {{ field }}  
+                                </th>
                                 </tr>
                             </thead>
                             
                             <tbody> 
                                 <tr v-for="(i,index) in rows_count " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700  ">
-                                  <td class="sticky left-0 bg-inherit z-10  text-center font-medium border  border-gray-400">
-                                      <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
+                                  <td class="sticky left-0 bg-inherit z-10  text-center font-medium border-r  border-gray-400">
+                                      <div class=" w-full py-3 px-1  border-gray-400 ">{{index+1}}</div>                    
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400 ">
+                                  <td class="whitespace-nowrap   border-gray-400 ">
                                     <ccc  v-model="form[index].debit_amount"   @change="remove_credit_amount(index)"  
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=1  Format="number" />
                                   </td>
 
-                                  <td class="whitespace-nowrap  border border-gray-400 ">
+                                  <td class="whitespace-nowrap   border-gray-400 ">
                                     <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
                                   </td>
                                   
-                                  <td class="whitespace-nowrap border border-gray-400   ">                         
+                                  <td class="whitespace-nowrap  border-gray-400   ">                         
                                     <ccc v-model="form[index].account"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value" >  
                                       <template #emptySuggestions>
@@ -398,12 +410,12 @@ function create_document(){
                                     </ccc>
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400 ">
+                                  <td class="whitespace-nowrap border-gray-400 ">
                                     <ccc  v-model="form[index].description"  @change="form_have_been_adjusted=true" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="text" />
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400 ">
+                                  <td class="whitespace-nowrap  border-gray-400 ">
                                     <ccc v-model="form[index].currencey" :TableObject="TableObject" :rows_index="index" :columns_index=5
                                     @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate"  :Default="currencies[0]"  
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
@@ -413,13 +425,13 @@ function create_document(){
                                     </ccc>
                                   </td>
 
-                                  <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap border border-gray-400 " >
+                                  <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap  border-gray-400 " >
                                     <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=6 
                                     :Default ="form[index].currencey?.default_rate"  Format="number" 
                                     />
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400">
+                                  <td class="whitespace-nowrap border-r border-gray-400">
                                     <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=7
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center"
                                     :Suggestions="searchStore.available_cost_centers.value" >
@@ -433,7 +445,7 @@ function create_document(){
                                   <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
                                     <ccc  v-model="form[index].customfields[field]" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=8  Format="text" />
-                                  </td>
+                                  </td>S
 
                                   <td class="whitespace-nowrap border border-gray-400">
 

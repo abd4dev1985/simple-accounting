@@ -36,5 +36,13 @@ class Document extends Model
         return $this->belongsTo(Entry::class);
     }
 
+/**
+ * Get the route key for the model.
+ */
+    public function getRouteKeyName(): string
+{
+    return 'number';
+}
+
    
 }

@@ -30,7 +30,7 @@ class JournalEntryController extends Controller
         $this->middleware('CurrentDatabase');
 
     }
-
+ 
 
 
     /**

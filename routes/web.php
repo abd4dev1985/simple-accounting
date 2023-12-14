@@ -60,6 +60,8 @@ Route::get('/invoice', function () {
 })->middleware('auth');
 
 Route::controller(JournalEntryController::class)->group(function () {
+    Route::get('/testentry/documents/{document:number}', 'testt')->name('entry.show');
+
     Route::get('/entry/{document_catagory:name}/documents/{document:number}', 'show')->name('entry.show');
     Route::put('/entry/{document_catagory:name}/documents/{document:number}', 'update')->name('entry.update');
     Route::delete('/entry/{document_catagory:name}/documents/{document:number}', 'destroy')->name('entry.delete');

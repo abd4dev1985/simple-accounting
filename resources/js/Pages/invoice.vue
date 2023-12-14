@@ -32,6 +32,7 @@ let props =defineProps({
     operation :{ type:String , default: 'update'  },
     delete_url:{},
     update_url:{},
+    store_url:{},
     pervious_document_url :{  },
     next_document_url :{  },
 })
@@ -72,9 +73,10 @@ for (let index = 0; index < rows_count; index++) {
 
       lines[index] = {
       id: Invoice_Lines[index].id,
-      quantity:Invoice_Lines[index].debit_amount,
-      price:Invoice_Lines[index].credit_amount,
-      product:Invoice_Lines[index].account,
+      product:Invoice_Lines[index].product,
+      quantity:Invoice_Lines[index].quantity,
+      price:Invoice_Lines[index].price,
+      ammount:Invoice_Lines[index].ammount,
       description:Invoice_Lines[index].description,
       currencey:currencies.filter((currencey)=> currencey.id ==Invoice_Lines[index].currency_id) [0]  ,
       currency_rate:1,
@@ -87,6 +89,7 @@ for (let index = 0; index < rows_count; index++) {
     quantity:null,
     price:null,
     product:null,
+    ammount:null,
     description:null,
     currencey:null,
     currency_rate:1,
@@ -105,8 +108,16 @@ const scrollable_table = ref()
 
 let column_index=0
 
-
 const tableHeader=ref()
+
+const Totals_Ammount =computed(()=>{
+  let total=0
+  form.value.forEach(line => {
+    //console.log('AMMOUNT')
+    total +=isNaN(line.ammount)?0:line.ammount
+  });
+  return total
+});
 
 
 let TableObject =computed(()=>{
@@ -116,16 +127,26 @@ let TableObject =computed(()=>{
 })
 
 //inforce value of an element inside array to be a number  
-function Force_Number_VALUE(array_objects,object_key ,index){
-  if (isNaN(Number(array_objects[index][object_key])) && Number (array_objects[index][object_key]) !=null ) {
-    array_objects[index][object_key] =null
+function format_number(value){
+let formatter =Intl.NumberFormat('en')
+if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
+    return formatter.format(value)
+  }else{  
+    return null 
   }
+
+
+
 }
 //inforce value of an element inside array to be a oject  
 function Force_Object_VALUE(array_objects,object_key ,index){
   if (isNaN(Number(array_objects[index][object_key])) && Number (array_objects[index][object_key]) !=null ) {
     array_objects[index][object_key] =null
   }
+}
+
+function get_ammount(index){
+  form.value[index].ammount=form.value[index].price*form.value[index].quantity
 }
 
 function clear_form(){
@@ -201,7 +222,7 @@ function update_document() {
 function create_document(){
   let document_catagory = page.props.document_catagory 
   
-  let URL= '/'+ document_catagory.type +'/document_catagories/'+document_catagory.id
+  let URL= '/'+ 'purchase' +'/document_catagories/'+document_catagory.id
 
   let data={
     document_number:document_number.value ,
@@ -209,7 +230,7 @@ function create_document(){
     lines:form.value ,
     date: convert_date_to_sting(document_date.value),
   }
-  router.post(URL, data,{
+  router.post(props.store_url, data,{
     onError:(errors)=>{
       //errorMassageModal.value=true
       for (const key in errors) {
@@ -235,34 +256,41 @@ function create_document(){
 <template>
     <AppLayout title="Dashboard">
         <div class=" dark:bg-gray-800   shadow-xl sm:rounded-lg">
-          <div class="grid grid-cols-5 dark:text-gray-200  tab:grid-cols-4 justify-items-start mt-0.5 mb-3 ">
-           
-            <h1  class="text-xl text-gray-700 w-56 text-left px-4 ">
-                <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
-            </h1>
-
-            <!-- INPUT DOCUMENT NUMBER -->
-            <div class="col-start-1 row-start-2  flex justify-center items-end my-5  mx-4  text-sky-600 w-max">
+          <h1  class="flex  justify-start text-xl w-full bg-sky-700 text-white  px-4  py-2">
+            <div class="flex-shrink font-semibold">
+              <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
+            </div> 
+            <div class="flex-shrink  flex justify-end items-center  mx-4  text-sky-600 ">
               <Link v-if="pervious_document_url"  :href="pervious_document_url">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
-              <div class="text-center relative">
-                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no">Entry #</label>
-                <input v-model="document_number" id="document_no" form="myform" class="block text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
-                <!-- 
-                <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
-                -->
+              <div class=" text-center relative">                
+                <input v-model="document_number" id="document_no" form="myform" class=" text-center  rounded-md w-12 h-6 text-gray-700 " >
               </div>
+              
               <Link v-if="next_document_url" :href="next_document_url"  >
                   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
+            </div>
+          </h1>
+
+          <div class="flex flex-col  tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
+            <!-- INPUT DOCUMENT NUMBER -->
+            <div class="flex-initial  w-max">
+              <div class="text-center relative">
+                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no">Entry #</label>
+                <input v-model="document_number" id="document_no" form="myform" class="block border text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
+                <!-- 
+                <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
+                -->
+              </div>
 
             </div>
             
             <!-- Default Account Input   -->
-            <div class="row-start-2 col-start-2 my-5">
+            <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for="">Default Account</label>
               <AutoComplete v-model="default_account" :suggestions="searchStore.available_accounts.value"
                 @complete="searchStore.search_account" optionLabel="name" forceSelection 
@@ -282,7 +310,7 @@ function create_document(){
             </div>
             
             <!-- DATE INPUT   -->
-            <div class="row-start-2  col-start-3 my-5">
+            <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for="">Date </label>
               <Calendar v-model="document_date" showIcon  dateFormat="dd/mm/yy"
                 :pt="{
@@ -298,9 +326,10 @@ function create_document(){
               />
             </div>
 
-          </div>
-            
-           
+         </div>
+
+
+          
             
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
                <!-- entry table   -->
@@ -310,9 +339,10 @@ function create_document(){
                             <thead ref="tableHeader" class="sticky top-0   z-[20] dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
                                 <tr >
                                 <th scope="col" class=" py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
+                                <th scope="col" class=" py-4">Product</th>
                                 <th scope="col" class="py-4"> Quantity</th>
                                 <th scope="col" class=" ">Price</th>
-                                <th scope="col" class=" py-4">Product</th>
+                                <th scope="col" class=" py-4">Ammount</th>
                                 <th scope="col" class=" block overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
                                 <th scope="col" class=" py-4">Currencey</th>
                                 <th scope="col" class=" py-4">rate</th>
@@ -327,24 +357,30 @@ function create_document(){
                                       <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc  v-model="form[index].quantity" 
-                                    :TableObject="TableObject"  :rows_index="index" :columns_index=1  Format="number" />
-                                  </td>
-
-                                  <td class="whitespace-nowrap  border border-gray-400 ">
-                                    <ccc  v-model="form[index].price" 
-                                    :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
-                                  </td>
-                                  
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
-                                    <ccc v-model="form[index].product"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
+                                    <ccc v-model="form[index].product"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value" >  
                                       <template #emptySuggestions>
-                                        <div class=""> account <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
+                                        <div class=""> product <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
                                         <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
                                       </template>
                                     </ccc>
+                                  </td>
+                                  
+
+                                  <td class="whitespace-nowrap border border-gray-400 ">
+                                    <ccc  v-model="form[index].quantity"  @change="get_ammount(index)"
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />
+                                  </td>
+
+                                  <td class="whitespace-nowrap  border border-gray-400 ">
+                                    <ccc  v-model="form[index].price" @change="get_ammount(index)"
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=3  Format="number" />                                 
+                                  </td>
+                                  
+                                  <td class="whitespace-nowrap border border-gray-400   ">                         
+                                    <ccc  v-model="form[index].ammount" :ReadOnly="true"
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="number" />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
@@ -395,10 +431,9 @@ function create_document(){
                 </div>
 
                 <div class=" w-60 inline-flex justify-around bg-sky-200  ">
-                  <div class="">Total</div>
+                  <div class="">Total ammount</div>
 
-                    <div class=""></div>
-                    <div class="" ></div>
+                    <div class="">{{ format_number(Totals_Ammount) }}</div>
                 </div>
               <!-- buttons --> 
               <div  class="flex justify-end w-9/12  my-0.5 float-right  mr-9">

@@ -375,9 +375,9 @@ const logout = () => {
                 </div>
             </nav>
 
-             <div class="flex relative " > 
+             <div class="flex justify-start relative w-full " > 
                 <!-- SIDE BAR-->
-                <div v-show="showSidebar"  class="larg:relative  flex-none fixed inset-y-0 left-0  w-56 bg-gray-800 min-h-screen z-30 text-gray-100 ">
+                <div v-show="showSidebar"  class="larg:relative  flex-none fixed inset-y-0 left-0  w-1/5  min-w-[13rem] bg-gray-800 min-h-screen z-30 text-gray-100 ">
                     <!-- Logo -->
                      <SideBar @OpenLedgerBook="OpenLedgerBook"   />
                 </div>
@@ -389,7 +389,7 @@ const logout = () => {
                     </header>
                 -->
                 <!-- Page Content -->
-                <main @click="closeSidebar" class=" flex-1 bg-gray-100 ">
+                <main @click="closeSidebar" class=" flex-shrink bg-gray-100 w-full ">
                     <slot />
                 </main>
                

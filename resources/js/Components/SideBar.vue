@@ -49,8 +49,8 @@ defineProps({
             </template> 
 
             <template  #menue_items >
-                <div class="py-2 text-left pl-3 "  >General Entry</div>
-                <div  class="py-2 text-left pl-3 " >Begin Entry </div>       
+                <div class="py-1 text-left pl-3 "  >General Entry</div>
+                <div  class="py-1 text-left pl-3 " >Begin Entry </div>       
             </template> 
         </SubMenue>
 
@@ -65,8 +65,8 @@ defineProps({
             </template> 
 
             <template  #menue_items >
-                <div  @click="$emit('OpenLedgerBook')" class="py-2 text-left pl-3 "  >Ledger Book</div>
-                <div  class="py-2 text-left pl-3 " >Begin Entry </div>       
+                <div  @click="$emit('OpenLedgerBook')" class="py-1 text-left pl-3 "  >Ledger Book</div>
+                <div  class="py-1 text-left pl-3 " >Begin Entry </div>       
             </template> 
         </SubMenue>
         <SubMenue   class="dark:text-rose-400 " >
@@ -80,7 +80,7 @@ defineProps({
             </template> 
 
             <template  #menue_items >            
-                <div  class="py-2 text-left pl-3 " >
+                <div  class="py-1 text-left pl-3 " >
                     <Link  href="/create_purchase/purchase_invoice/documents" >General Purchases</Link>
                 </div>       
             </template> 
