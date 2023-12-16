@@ -7,6 +7,7 @@ use App\Models\JournalEntry;
 use App\Models\Document_catagory;
 use App\Models\Document;
 use App\Models\Currency;
+
 use App\Actions\AccountingEnrty;
 use App\Actions\Invoice;
 
@@ -19,7 +20,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Fluent ;
-use App\Actions\DatabaseManager;
 use App\Models\Account;
 use App\Models\CustomField;
 
@@ -77,20 +77,20 @@ class PurchaseController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request )
     {
-        return $request;
-        $AccountingEnrty= app(AccountingEnrty::class);
-        $validated_data =  $AccountingEnrty->validate($request->all());
-       // dd( $validated_data );
-        if (  $AccountingEnrty->validation_is_failed) {  
-            return back()->withErrors($AccountingEnrty->validator)->withInput();
+        $invoice= app(Invoice::class);
+        $validated_data =  $invoice->validate($request->all());
+
+        if (  $invoice->validation_is_failed) {  
+            return back()->withErrors($invoice->validator)->withInput();
         }
-        //return $validated_data;
-        //dd($validated_data);
-        $entry = $AccountingEnrty->create($validated_data);
+       
+        $purchase = $invoice->create($validated_data);
+        dd($purchase);
+
         $document = Document::create([ 
             'number'=> $validated_data['document_number'] ,
             'document_catagory_id' => $document_catagory->id ,
-            'entry_id'=> $entry->id,
+            //'entry_id'=> $entry->id,
             'date'=>$validated_data['date'],
         ]);
 

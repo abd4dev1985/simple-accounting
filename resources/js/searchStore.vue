@@ -7,7 +7,7 @@ import axios from 'axios' ;
 const page = usePage();
 
 const available_accounts = ref([]);
-
+const available_products= ref([]);
 const available_cost_centers = ref([]);
 
 const available_currencies = ref([]);
@@ -17,6 +17,7 @@ const filterd_currencies = ref([]);
 let create_new_account_link=ref('');
 let create_new_currencey_link=ref('');
 let create_new_costcenter_link=ref('');
+let create_new_product_link = ref('');
 
 const search_account =(event)=>{
     axios.post('/search/account',{searchForAccount:event.query})
@@ -31,6 +32,22 @@ const search_account =(event)=>{
     });
 
 }
+const search_product =(event)=>{
+    axios.post('/search/product',{searchForProduct:event.query})
+    .then(function (response) {
+        available_products.value=response.data  
+        if (available_products.value.length==0) {
+            create_new_product_link.value = '/accounts/create?new_account_name='+event.query
+        }
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
+
+}
+
+
+
 const search_currencey =(event)=>{
     setTimeout(() => {
         if (!event.query.trim().length) {
@@ -95,6 +112,10 @@ let searchStore ={
     search__account,
     search_account,
     create_new_account_link,
+
+    available_products,
+    search_product,
+    create_new_product_link,
 
     
 

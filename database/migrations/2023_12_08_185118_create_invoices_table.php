@@ -13,9 +13,11 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
+            $table->integer('product_id')->nullable();
             $table->morphs('invoiceable');
             $table->decimal('quantity');
             $table->decimal('price');
+            $table->decimal('ammount');
             $table->text('description')->nullable();
             $table->integer('currency_id')->nullable();
             $table->decimal('currency_rate')->nullable();

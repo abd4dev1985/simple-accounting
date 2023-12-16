@@ -22,7 +22,7 @@ class Sale extends Model
      */
     public function products(): MorphToMany
     {
-        return $this->morphToMany(Product::class, 'invoiceable')
+        return $this->morphToMany(Product::class, 'invoiceable','invoices')
         ->withPivot('id','quantity','price','description',
         'currency_id','currency_rate','customfields','date'); 
     }

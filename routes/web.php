@@ -129,7 +129,7 @@ Route::get('/writeexcel', function () {
 
 Route::controller(SearchController::class)->group(function () {
     Route::post('/search/account', 'search_account');
-    Route::get('/search/product', 'search_product');
+    Route::post('/search/product', 'search_product');
     Route::post('/search/cost_center', 'search_cost_center');
 });
 

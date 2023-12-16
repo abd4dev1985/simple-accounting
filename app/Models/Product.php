@@ -46,7 +46,7 @@ class Product extends Model
      */
     public function sales(): MorphToMany
     {
-        return $this->morphedByMany(Sale::class, 'invoiceable')
+        return $this->morphedByMany(Sale::class, 'invoiceable','invoices')
         ->withPivot('id','quantity','price','description',
         'currency_id','currency_rate','customfields','date');
         
@@ -57,7 +57,7 @@ class Product extends Model
      */
     public function purchases(): MorphToMany
     {
-        return $this->morphedByMany(Purchase::class, 'invoiceable')
+        return $this->morphedByMany(Purchase::class, 'invoiceable','invoices')
         ->withPivot('id','quantity','price','description',
         'currency_id','currency_rate','customfields','date');
     }

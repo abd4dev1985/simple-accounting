@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use App\Models\Account;
+use App\Models\Product;
+
 use App\Models\CostCenter ;
 use Illuminate\Http\RedirectResponse;
 
@@ -39,6 +41,9 @@ class SearchController extends Controller
 
     public function search_product(Request $request)
     {
-        return "hgjhgjhg";
+        $qurey = $request->searchForProduct;
+        
+        $suggested_products = Product::where('name','like','%'.$qurey.'%')->get();
+        return $suggested_products ;
     }
 }

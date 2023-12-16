@@ -333,7 +333,7 @@ function create_document(){
             
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
                <!-- entry table   -->
-               <div ref="scrollable_table"  class=" lg:h-[410px] md: mx-auto relative  overflow-auto scrollbar max-w-3xl    " >
+               <div ref="scrollable_table"  class=" lg:h-[410px] mx-6 relative  overflow-auto scrollbar larg:max-w-[73vw]     " >
                     <table class=" dark:text-gray-200   text-center border-collapse text-sm font-light">
                         
                             <thead ref="tableHeader" class="sticky top-0   z-[20] dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
@@ -352,28 +352,28 @@ function create_document(){
                             </thead>
                             
                             <tbody> 
-                                <tr v-for="(i,index) in rows_count " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700  ">
+                                <tr v-for="(i,index) in rows_count " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700 text-base font-medium ">
                                   <td class="sticky left-0 bg-inherit z-10  text-center font-medium border  border-gray-400">
                                       <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
                                     <ccc v-model="form[index].product"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
-                                    Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value" >  
+                                    Format="aoutcomplete" :SearchFunction="searchStore.search_product" :Suggestions="searchStore.available_products.value" >  
                                       <template #emptySuggestions>
-                                        <div class=""> product <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
-                                        <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
+                                        <div class=""> product <span class="text-blue-600">{{form[index].product }}</span> dose not exist </div>
+                                        <Link :href="searchStore.create_new_product_link.value" class="text-blue-600"> create new one</Link>
                                       </template>
                                     </ccc>
                                   </td>
                                   
 
-                                  <td class="whitespace-nowrap border border-gray-400 ">
+                                  <td class="whitespace-nowrap border border-gray-400 text">
                                     <ccc  v-model="form[index].quantity"  @change="get_ammount(index)"
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />
                                   </td>
 
-                                  <td class="whitespace-nowrap  border border-gray-400 ">
+                                  <td class="whitespace-nowrap  border border-gray-400  ">
                                     <ccc  v-model="form[index].price" @change="get_ammount(index)"
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=3  Format="number" />                                 
                                   </td>
@@ -385,11 +385,11 @@ function create_document(){
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
                                     <ccc  v-model="form[index].description"  @change="form_have_been_adjusted=true" 
-                                    :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="text" />
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=5  Format="text" />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc v-model="form[index].currencey" :TableObject="TableObject" :rows_index="index" :columns_index=5
+                                    <ccc v-model="form[index].currencey" :TableObject="TableObject" :rows_index="index" :columns_index=6
                                     @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate"  :Default="currencies[0]"  
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
                                       <template #emptySuggestions>
@@ -399,13 +399,13 @@ function create_document(){
                                   </td>
 
                                   <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap border border-gray-400 " >
-                                    <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=6 
+                                    <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7 
                                     :Default ="form[index].currencey?.default_rate"  Format="number" 
                                     />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">
-                                    <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=7
+                                    <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=8
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center"
                                     :Suggestions="searchStore.available_cost_centers.value" >
                                       <template #emptySuggestions>
@@ -417,7 +417,7 @@ function create_document(){
 
                                   <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
                                     <ccc  v-model="form[index].customfields[field]" 
-                                    :TableObject="TableObject"  :rows_index="index" :columns_index=8  Format="text" />
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=9  Format="text" />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">
