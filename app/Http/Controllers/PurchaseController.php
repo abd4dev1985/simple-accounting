@@ -77,7 +77,7 @@ class PurchaseController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request )
     {
-        $invoice= app(Invoice::class);
+        $invoice= app(Invoice::class,['invoice_type' => 'purchse']);
         $validated_data =  $invoice->validate($request->all());
 
         if (  $invoice->validation_is_failed) {  

@@ -134,16 +134,8 @@ if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
   }else{  
     return null 
   }
-
-
-
 }
-//inforce value of an element inside array to be a oject  
-function Force_Object_VALUE(array_objects,object_key ,index){
-  if (isNaN(Number(array_objects[index][object_key])) && Number (array_objects[index][object_key]) !=null ) {
-    array_objects[index][object_key] =null
-  }
-}
+
 
 function get_ammount(index){
   form.value[index].ammount=form.value[index].price*form.value[index].quantity
@@ -168,8 +160,7 @@ function submit() {
     update_document()
   }else{
       create_document()
-  }
-  
+  } 
 }
 
 function delete_document(){
@@ -220,17 +211,14 @@ function update_document() {
 }
 
 function create_document(){
-  let document_catagory = page.props.document_catagory 
-  
-  let URL= '/'+ 'purchase' +'/document_catagories/'+document_catagory.id
 
-  let data={
+  router.post(props.store_url,{
     document_number:document_number.value ,
-    document_catagory_id:document_catagory.id ,
+    default_account:default_account.value,
+    document_catagory_id:page.props.document_catagory.id ,
     lines:form.value ,
-    date: convert_date_to_sting(document_date.value),
-  }
-  router.post(props.store_url, data,{
+    date:convert_date_to_sting(document_date.value),
+  },{
     onError:(errors)=>{
       //errorMassageModal.value=true
       for (const key in errors) {

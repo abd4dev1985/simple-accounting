@@ -17,8 +17,8 @@ return new class extends Migration
             $table->id();
             $table->integer('account_id');
             $table->integer('entry_id');
-            $table->decimal('debit_amount')->nullable();
-            $table->decimal('credit_amount')->nullable();
+            $table->decimal('debit_amount',65)->nullable();
+            $table->decimal('credit_amount',65)->nullable();
             $table->text('description')->nullable();
             $table->integer('currency_id')->nullable();
             $table->decimal('currency_rate')->nullable();

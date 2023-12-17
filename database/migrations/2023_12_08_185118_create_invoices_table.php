@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->integer('product_id')->nullable();
             $table->morphs('invoiceable');
-            $table->decimal('quantity');
-            $table->decimal('price');
-            $table->decimal('ammount');
+            $table->decimal('quantity',30);
+            $table->decimal('price',30);
+            $table->decimal('ammount',65);
             $table->text('description')->nullable();
             $table->integer('currency_id')->nullable();
             $table->decimal('currency_rate')->nullable();
