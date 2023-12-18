@@ -4,6 +4,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { reactive ,computed,watch,onUpdated,ref,  } from 'vue'
 import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import AutoComplete from 'primevue/autocomplete';
+import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
@@ -64,7 +65,9 @@ let rows_count = 30 + Invoice_Lines.length;
 let DeleteModal = ref(false)
 
 let default_account=ref('')
-
+let Client_Or_Vendor_Account= ref('') 
+let  PaymentMethod = ref({name:'cash'});
+let AvailablePaymentMethod=ref([{name:'cash'},{name:'credit'}])
 
 // create array from the lines of receipt (form)
 let lines=[]
@@ -244,6 +247,7 @@ function create_document(){
 <template>
     <AppLayout title="Dashboard">
         <div class=" dark:bg-gray-800   shadow-xl sm:rounded-lg">
+         
           <h1  class="flex  justify-start text-xl w-full bg-sky-700 text-white  px-4  py-2">
             <div class="flex-shrink font-semibold">
               <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
@@ -264,7 +268,7 @@ function create_document(){
             </div>
           </h1>
 
-          <div class="flex flex-col  tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
+          <div class="flex flex-wrap gap-y-5 gap-x-5 tab:gap-x-8     tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
             <!-- INPUT DOCUMENT NUMBER -->
             <div class="flex-initial  w-max">
               <div class="text-center relative">
@@ -276,7 +280,50 @@ function create_document(){
               </div>
 
             </div>
+
+             <!-- payment method Input   -->
+             <div class="flex-initial ">
+              <label class="block text-xs py-0.5 font-semibold text-left" for="">payment method</label>
+              <Dropdown v-model="PaymentMethod" :options="AvailablePaymentMethod"
+                 optionLabel="name"  
+                :pt="{
+                    root:{
+                      class:'h-8 dark:bg-gray-700 dark:text-gray-200  ',
+                    },
+                    input: {
+                      class: ' p-0 text-center w-14  dark:text-gray-200  ',
+                      form : 'myform' ,
+                    },
+                    trigger:{
+                      class:' dark:text-gray-200',
+                    },
+                  }">
+              </Dropdown>
+            </div>
             
+
+             <!-- client or vendor Account Input   -->
+             <div class="flex-initial ">
+              <label class="block text-sm font-semibold text-left" for="">
+                Vendor Account 
+              </label>
+              <AutoComplete v-model="Client_Or_Vendor_Account" :suggestions="searchStore.available_accounts.value"
+                @complete="searchStore.search_account" optionLabel="name" forceSelection :disabled="PaymentMethod.name=='cash'"
+                :pt="{
+                    input: {
+                      class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                      form : 'myform' ,
+                    },
+                  }">
+                  <template #empty>
+                      <div   class="font-semibold p-3 border-2 border-blue-500">
+                          <div class=""> account <span class="text-blue-600">{{default_account }}</span> dose not exist </div>
+                          <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
+                      </div>
+                  </template> 
+              </AutoComplete>
+            </div>
+
             <!-- Default Account Input   -->
             <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for="">Default Account</label>
@@ -296,7 +343,31 @@ function create_document(){
                   </template> 
               </AutoComplete>
             </div>
+
+           
             
+             <!-- client or vendor Account Input   -->
+             <div class="flex-initial ">
+              <label class="block text-sm font-semibold text-left" for="">
+                Vendor Account
+              </label>
+              <AutoComplete v-model="Client_Or_Vendor_Account" :suggestions="searchStore.available_accounts.value"
+                @complete="searchStore.search_account" optionLabel="name" forceSelection 
+                :pt="{
+                    input: {
+                      class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                      form : 'myform' ,
+                    },
+                  }">
+                  <template #empty>
+                      <div   class="font-semibold p-3 border-2 border-blue-500">
+                          <div class=""> account <span class="text-blue-600">{{default_account }}</span> dose not exist </div>
+                          <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
+                      </div>
+                  </template> 
+              </AutoComplete>
+            </div>
+
             <!-- DATE INPUT   -->
             <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for="">Date </label>
@@ -314,10 +385,9 @@ function create_document(){
               />
             </div>
 
-         </div>
+          </div>
 
 
-          
             
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
                <!-- entry table   -->
