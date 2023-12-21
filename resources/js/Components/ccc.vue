@@ -5,7 +5,7 @@ import searchStore from '../searchStore.vue';
 import { Link,  } from '@inertiajs/vue3';
 
 let props=  defineProps(['modelValue','TableObject','rows_index','columns_index',
-'Format','SearchFunction','Suggestions','Required','Default','ReadOnly', ]);
+'Format','SearchFunction','Suggestions','Required','Default','ReadOnly', 'Invalid' ]);
 
 const emit = defineEmits(['update:modelValue','change','UpdateCurrencyRate',])
 let Red_Alerte=ref(false)
@@ -122,7 +122,7 @@ function focusLeft(Rows,row_index,collumn_index){
 </script>
 <template>
     <div v-if="props.Format=='number'"  class="relative group">
-        <input v-model="value"   :class="{ 'border-red-600 border-2 focus:border-none': Red_Alerte}"
+        <input v-model="value"   :class="{ 'border-red-500 border-2 focus:border-none': Invalid}"
         @keydown.up.prevent="focusUp(TableObject.Rows,rows_index,columns_index)"
         @keydown.down.prevent="focusDown(TableObject.Rows,rows_index,columns_index)"
         @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"
@@ -140,11 +140,14 @@ function focusLeft(Rows,row_index,collumn_index){
     </div>
 
     <AutoComplete  v-if="Format=='aoutcomplete'" v-model="value" :suggestions="Suggestions"
-    @complete="SearchFunction" @change="$emit('change')"   optionLabel="name" forceSelection 
+    :class="{'p-invalid':Invalid}" optionLabel="name" forceSelection 
+    @complete="SearchFunction" @change="$emit('change')"   
     @show="keyboared_Navigation=false"   @hide="keyboared_Navigation=true"
     @keyup.up="focusUp(TableObject.Rows,rows_index,columns_index)"    @keyup.down="focusDown(TableObject.Rows,rows_index,columns_index)"
     @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"   @keyup.right="focusRight(TableObject.Rows,rows_index,columns_index)" 
     :pt="{
+      root:{class:Invalid? 'border-red-500 border-2 focus:border-none':null   ,   
+      },
       input: { class: 'bg-inherit py-2 h-full  dark:text-gray-200 text-gray-800  ring-offset-2  focus:ring-2 border-none ' },
     }">
       <template #empty>

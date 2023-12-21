@@ -48,7 +48,7 @@ function get_standard_object(){
 
 //define computed props
 const page = usePage()
-// const errors = computed(() => page.props.errors)
+ const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
 const Invoice_Lines = ( page.props.entry_lines)? page.props.entry_lines : [] ;
 
@@ -218,6 +218,8 @@ function create_document(){
   router.post(props.store_url,{
     document_number:document_number.value ,
     default_account:default_account.value,
+    PaymentMethod:PaymentMethod.value.name,
+    Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
     document_catagory_id:page.props.document_catagory.id ,
     lines:form.value ,
     date:convert_date_to_sting(document_date.value),
@@ -308,7 +310,8 @@ function create_document(){
                 Vendor Account 
               </label>
               <AutoComplete v-model="Client_Or_Vendor_Account" :suggestions="searchStore.available_accounts.value"
-                @complete="searchStore.search_account" optionLabel="name" forceSelection :disabled="PaymentMethod.name=='cash'"
+                :class="{'p-invalid':errors.Client_Or_Vendor_Account}" @complete="searchStore.search_account"
+                optionLabel="name" forceSelection :disabled="PaymentMethod.name=='cash'"
                 :pt="{
                     input: {
                       class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
@@ -348,14 +351,17 @@ function create_document(){
             
              <!-- client or vendor Account Input   -->
              <div class="flex-initial ">
-              <label class="block text-sm font-semibold text-left" for="">
+              <label class="block text-sm font-semibold text-left " for="">
                 Vendor Account
               </label>
               <AutoComplete v-model="Client_Or_Vendor_Account" :suggestions="searchStore.available_accounts.value"
-                @complete="searchStore.search_account" optionLabel="name" forceSelection 
+                @complete="searchStore.search_account" optionLabel="name" forceSelection :class="{'p-invalid':errors.Client_Or_Vendor_Account}"
                 :pt="{
+                  //  root:{
+                    //  class:(errors.Client_Or_Vendor_Account)?'border-2 border-red-400':null,
+                    //},
                     input: {
-                      class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                      class: 'bg-white h-8 w-44 py-2 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                       form : 'myform' ,
                     },
                   }">
@@ -416,8 +422,9 @@ function create_document(){
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
-                                    <ccc v-model="form[index].product"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
-                                    Format="aoutcomplete" :SearchFunction="searchStore.search_product" :Suggestions="searchStore.available_products.value" >  
+                                    <ccc v-model="form[index].product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']"
+                                    @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
+                                    :SearchFunction="searchStore.search_product" :Suggestions="searchStore.available_products.value" >  
                                       <template #emptySuggestions>
                                         <div class=""> product <span class="text-blue-600">{{form[index].product }}</span> dose not exist </div>
                                         <Link :href="searchStore.create_new_product_link.value" class="text-blue-600"> create new one</Link>
@@ -426,13 +433,14 @@ function create_document(){
                                   </td>
                                   
 
-                                  <td class="whitespace-nowrap border border-gray-400 text">
-                                    <ccc  v-model="form[index].quantity"  @change="get_ammount(index)"
+                                  <td class="whitespace-nowrap border border-gray-400 text "      >
+                                  
+                                    <ccc  v-model="form[index].quantity"  @change="get_ammount(index)" :Invalid="errors['lines.'+index+'.quantity']"
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />
                                   </td>
 
                                   <td class="whitespace-nowrap  border border-gray-400  ">
-                                    <ccc  v-model="form[index].price" @change="get_ammount(index)"
+                                    <ccc  v-model="form[index].price" @change="get_ammount(index)" :Invalid="errors['lines.'+index+'.price']"
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=3  Format="number" />                                 
                                   </td>
                                   

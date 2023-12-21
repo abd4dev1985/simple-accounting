@@ -129,6 +129,8 @@ class Invoice
         [
             'document_number' => ['bail','required', 'numeric','gt:0'],
             'default_account'=>'required',
+            'PaymentMethod'=>'required',
+            'Client_Or_Vendor_Account'=>'required_if:PaymentMethod,credit',
             'date' => ['required', 'date'],
             'document_catagory_id' => ['required', 'numeric'],
             'lines.*.product' => 'nullable|array|required_with:lines.*.price,lines.*.quantity' ,
