@@ -5,6 +5,7 @@ namespace App\Actions;
 use App\Models\Document;
 use App\Models\Entry;
 use App\Models\Purchase;
+
 use App\Models\Invoice as Invoice_line;
 use App\Models\Sale;
 use App\Models\EntrLines;
@@ -46,81 +47,34 @@ class Invoice
      *
      * @param  array  $input
      */
-    public function create(array $input )
+    public function create(Document $document   ,array $input )
     {
-        $entry = Entry::create([]);
-        $purchase=Purchase::create([ ]);
-      
-         $data1 =[];
-         $tota_ammount=0;
-         $data2=[];
-         $lines = $input['lines'];
-         //dd( $lines);
+        $purchase=Purchase::create(['document_id'=>$document->id]);
+         // dtata1 for inoice lines
+        $data =[];
+        $tota_ammount=0;
+
+        $lines = $input['lines'];
         foreach ($lines as $index=> $line) {
             $tota_ammount+=$line['ammount'];
-            $data1[$index] =[
+            $data[$index] =[
                 'invoiceable_id'=>$purchase->id,
-                'invoiceable_type' => 'App\Models\Purchase',
+                'invoiceable_type' => $this->invoice_type,
                 'product_id'=> $line['product']['id'],
                 'quantity'=>$line['quantity'],
                 'price'=>$line['price'],
                 'ammount'=>$line['ammount'],
                 'description'=> $line['description'],
-                'currencey_id'=>$line['currencey']['id']??null,
+                'currency_id'=>$line['currencey']['id']??null,
                 'currency_rate'=> $line['currency_rate'],
+                'date'=>$input['date'],
                 'cost_center_id'=> $line['cost_center']['id']?? null, 
                 'customfields' => json_encode($line['customfields']),
             ];
-            $data2[$index] =[
-                'account_id'=>$input['default_account']['id'],
-                'debit_amount'=>($this->invoice_type=='purchse')? $line['ammount']:null,
-                'credit_amount'=>($this->invoice_type=='sale')? $line['ammount']:null,
-                'quantity'=>$line['quantity'],
-                'description'=> $line['product']['name']. $line['description'],
-                'currencey_id'=>$line['currencey']['id']??null,
-                'currency_rate'=> $line['currency_rate'],
-                'cost_center_id'=> $line['cost_center']['id']?? null,  
-            ];
         }
-
-        $data2[count($lines)] =[
-            //cache
-            'account_id'=>$input['default_account']['id'],
-            'debit_amount'=>($this->invoice_type=='sale')? $tota_ammount:null,
-            'credit_amount'=>($this->invoice_type=='purchse')? $tota_ammount:null,
-            'description'=> $line['product']['name']. $line['description'],
-            'currencey_id'=>$line['currencey']['id']??null,
-            'currency_rate'=> $line['currency_rate'],
-            'cost_center_id'=> $line['cost_center']['id']?? null,
-        ];
-        dd($data2 );
-        dd( $data1 );
-
-
-         
-
-         $data= $data->map(function  (array $line ) use( $purchase,$input)  {
-            $line['invoiceable_id'] = $purchase->id;
-            $line['product_id'] = $line['product']['id'];
-            $line['cost_center_id'] =  $line['cost_center']['id']?? null;
-            $line['date'] = $input['date'];
-            $line['invoiceable_type'] = 'App\Models\Purchase';
-            $line['customfields'] =  json_encode($line['customfields']) ;
-            unset($line['product']);
-            //unset($line['currency_rate']);
-            unset($line['currencey']);
-            unset($line['cost_center']);
-            return $line;
-        });
-        
-        $data1 = $data->toArray();
-        Invoice_line::upsert($data1,['purchase_id']); 
-
-        $AccountingEnrty= app(AccountingEnrty::class);
-        //$accounting_entry_data=
-      
-       
-        return [$purchase,$purchase->products ];
+     
+        Invoice_line::upsert($data,['invoiceable_id']); 
+        return $purchase ;
     }
     
     public function validate(array $input)
@@ -152,7 +106,6 @@ class Invoice
              $this->validation_is_failed=true;
              $this->validator=$validator;
               return back()->withErrors($validator)->withInput();
-            // return $validator ;
          }
         
         $validated_data = $validator->validated();
@@ -166,29 +119,40 @@ class Invoice
      * @param  Entry  $entry
      *  @param  array  $entry
      */
-    public function UpdatLines(Entry $entry ,array $input )
+    public function UpdatLines(Document $document ,array $input )
     {
-         $data = collect($input['lines']);
-         $data= $data->map(function  (array $line ) use( $entry,$input )  {
-            $line['entry_id'] = $entry->id;
-            $line['account_id'] = $line['account']['id'];
-            $line['cost_center_id'] =  $line['cost_center']['id']?? null;
-            $line['date'] = $input['date'];
-            $line['customfields'] =  json_encode($line['customfields']) ;
-            unset($line['account'] );
-            unset($line['currency_rate'] );
-            unset($line['currencey']);
-            unset($line['cost_center']);
-            return $line;
-        });
-       
-        $data = $data->toArray();
-        EntrLines::upsert($data,['id'],
-        ['account_id','debit_amount','credit_amount','description','currency_id','currency_rate',
+        $invoice_type=$this->invoice_type ;
+        $invoice= $document->$invoice_type ;
+        dd( $invoice);
+         // dtata1 for inoice lines
+        $data =[];
+        $tota_ammount=0;
+
+        $lines = $input['lines'];
+        foreach ($lines as $index=> $line) {
+            $tota_ammount+=$line['ammount'];
+            $data[$index] =[
+                'invoiceable_id'=>$purchase->id,
+                'invoiceable_type' => $this->invoice_type,
+                'product_id'=> $line['product']['id'],
+                'quantity'=>$line['quantity'],
+                'price'=>$line['price'],
+                'ammount'=>$line['ammount'],
+                'description'=> $line['description'],
+                'currency_id'=>$line['currencey']['id']??null,
+                'currency_rate'=> $line['currency_rate'],
+                'date'=>$input['date'],
+                'cost_center_id'=> $line['cost_center']['id']?? null, 
+                'customfields' => json_encode($line['customfields']),
+            ];
+        }
+
+        Invoice_line::upsert($data,['id'],
+        ['product_id','quantity','price','ammount','description','currency_id','currency_rate',
         'cost_center_id','customfields','date']);
         //dd("whate");
-        $entry->refresh();
-        return $entry ;
+       // $entry->refresh();
+        //return $entry ;
     }
     
    

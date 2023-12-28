@@ -37,7 +37,7 @@ class AccountingEnrty
     {
         $entry = Entry::create([]);
 
-         $data = collect($input['lines']);
+         $data = collect($input['entry_lines']);
 
          $data= $data->map(function  (array $line ) use( $entry,$input)  {
             $line['entry_id'] = $entry->id;
@@ -77,17 +77,17 @@ class AccountingEnrty
             'document_number' => ['bail','required', 'numeric','gt:0'],
             'date' => ['required', 'date'],
             'document_catagory_id' => ['required', 'numeric'],
-            'lines.*.account' => 'nullable|array' ,
-            'lines.*.cost_center' => 'nullable|array' ,
-            'lines.*.currency_rate' => 'required' ,
-            'lines.*' => Rule::forEach(function ( $line, string $attribute) {
+            'entry_lines.*.account' => 'nullable|array' ,
+            'entry_lines.*.cost_center' => 'nullable|array' ,
+            'entry_lines.*.currency_rate' => 'required' ,
+            'entry_lines.*' => Rule::forEach(function ( $line, string $attribute) {
                 return [
                     Rule::excludeIf($line['account'] ==null && ( $line['debit_amount']==null && $line['credit_amount']==null))
                 ];
             }),
-            'lines.*.debit_amount' => 'nullable|numeric|prohibits:lines.*.credit_amount|gt:0',
-            'lines.*.credit_amount' => 'nullable|numeric|prohibits:lines.*.debit_amount|gt:0',
-            'lines.*.account.id' => 'nullable|required_with:lines.*.credit_amount,lines.*.debit_amount',
+            'entry_lines.*.debit_amount' => 'nullable|numeric|prohibits:entry_lines.*.credit_amount|gt:0',
+            'entry_lines.*.credit_amount' => 'nullable|numeric|prohibits:entry_lines.*.debit_amount|gt:0',
+            'entry_lines.*.account.id' => 'nullable|required_with:entry_lines.*.credit_amount,entry_lines.*.debit_amount',
         ],$masge=[
 
         ],
@@ -96,7 +96,7 @@ class AccountingEnrty
         //(check the balance of entry)
         // get total debit amount and total credit amount and check they are equal
         $validator->after(function ($validator) use($input)  {
-            $lines = $input['lines'] ;
+            $lines = $input['entry_lines'] ;
             $total_debit_amount =0 ;
             $total_credit_amount =0 ;
 
@@ -106,7 +106,7 @@ class AccountingEnrty
                 // check every line dose not have present account without amount against it (debit or credit)
                 if ($line['account'] !=null && ($line['debit_amount']==null && $line['credit_amount']==null) ) {
                     $validator->errors()->add(
-                        'lines.'.$key.'.account.id', 'there is no debit or crdit amount against account in line '.$key+1
+                        'entry_lines.'.$key.'.account.id', 'there is no debit or crdit amount against account in line '.$key+1
                     );
                 }  
             }
@@ -138,7 +138,7 @@ class AccountingEnrty
      */
     public function UpdatLines(Entry $entry ,array $input )
     {
-         $data = collect($input['lines']);
+         $data = collect($input['entry_lines']);
          $data= $data->map(function  (array $line ) use( $entry,$input )  {
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];

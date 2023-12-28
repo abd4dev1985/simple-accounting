@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Document extends Model
 {
@@ -35,6 +35,36 @@ class Document extends Model
     {
         return $this->belongsTo(Entry::class);
     }
+
+    /**
+     * Get the Purchase associated with the DOCUMENT.
+     */
+    public function purchase(): HasOne 
+    {
+        return $this->hasOne(Purchase::class);
+    }
+
+    /**
+     * Get the Purchase associated with the DOCUMENT.
+     */
+    public function has_purchase()
+    {
+        return  $this->purchase->count()>0  ;   
+    }
+
+    
+    /**
+     * Get the SALE associated with the DOCUMENT.
+     */
+    public function sale(): HasOne
+    {
+        return $this->hasOne(Sale::class);
+    }
+
+
+
+
+
 
 /**
  * Get the route key for the model.

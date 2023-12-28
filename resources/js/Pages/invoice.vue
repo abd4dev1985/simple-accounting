@@ -27,6 +27,11 @@ let props =defineProps({
     accounts:{},
     document : {        },
     new_document_number:{     },
+    invoice_lines:{type:Array,default:[]},
+    invoice_type:{},
+    entry_lines:{type:Array,default:[]},
+    cash_account:{},
+    default_account:{},
     columns_count:{},
     customfields:{type:Array },
     currencies : { type: Array , default:[]   },
@@ -50,60 +55,61 @@ function get_standard_object(){
 const page = usePage()
  const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
-const Invoice_Lines = ( page.props.entry_lines)? page.props.entry_lines : [] ;
 
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
-
 let document_date = ref( (props.document)? props.document.date : new Date()  )
 
 searchStore.available_currencies.value = currencies
 
 let form_have_been_adjusted = ref(false);
 
-let rows_count = 30 + Invoice_Lines.length;
+
 
 let DeleteModal = ref(false)
 
-let default_account=ref('')
+let default_account=ref(props.default_account)
 let Client_Or_Vendor_Account= ref('') 
 let  PaymentMethod = ref({name:'cash'});
 let AvailablePaymentMethod=ref([{name:'cash'},{name:'credit'}])
 
+let Invoice_Lines = ref ( ( props.invoice_lines)? props.invoice_lines :[] )  ;
+let Etry_Lines=ref( (props.entry_lines)? props.entry_lines :[] )
+let rows_count = 30 + Invoice_Lines.value.length;
+
 // create array from the lines of receipt (form)
 let lines=[]
+if ( !Etry_Lines.value[0]) {
+  Etry_Lines.value[0]={
+    debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
+    currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+  }
+}
 for (let index = 0; index < rows_count; index++) {
-  if (Invoice_Lines[index]) {
-
-      lines[index] = {
-      id: Invoice_Lines[index].id,
-      product:Invoice_Lines[index].product,
-      quantity:Invoice_Lines[index].quantity,
-      price:Invoice_Lines[index].price,
-      ammount:Invoice_Lines[index].ammount,
-      description:Invoice_Lines[index].description,
-      currencey:currencies.filter((currencey)=> currencey.id ==Invoice_Lines[index].currency_id) [0]  ,
-      currency_rate:1,
-      cost_center:Invoice_Lines[index].cost_center,
-      customfields: (Invoice_Lines[index].customfields)? JSON.parse(Invoice_Lines[index].customfields ): get_standard_object(),
-      } 
-  } else {
-
-    lines[index] = {
-    quantity:null,
-    price:null,
-    product:null,
-    ammount:null,
-    description:null,
-    currencey:null,
-    currency_rate:1,
-    cost_center:null ,
-    customfields: get_standard_object(),
-
+  if ( !Invoice_Lines.value[index]) {
+    Invoice_Lines.value[index]={
+      quantity:null,price:null,product:null,ammount:null,description:null,currencey:null,
+      currency_rate:1, cost_center:null , customfields: get_standard_object(),
     }
-    
   }
 
+  if (!Etry_Lines.value[index] && index !=0 ) {
+    Etry_Lines.value[index]={
+      debit_amount:null,credit_amount:null,account:null,description:null,
+      currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+    }  
+  }
 }
+
+console.log([Etry_Lines.value,Invoice_Lines.value])
+watch([PaymentMethod,Client_Or_Vendor_Account],([NewPaymentMethod,New_Client_Or_Vendor_Account])=>{
+  if (NewPaymentMethod.name=='cash') {
+    Client_Or_Vendor_Account.value=null
+    Etry_Lines.value[0].account = props.cash_account
+  }else{
+    Etry_Lines.value[0].account = New_Client_Or_Vendor_Account
+  }
+})
+
 let form = ref(lines)
 
 const rows = ref([])
@@ -115,10 +121,16 @@ const tableHeader=ref()
 
 const Totals_Ammount =computed(()=>{
   let total=0
-  form.value.forEach(line => {
-    //console.log('AMMOUNT')
+  Invoice_Lines.value.forEach(line => {
     total +=isNaN(line.ammount)?0:line.ammount
   });
+  if (props.invoice_type=='purchase') {
+    Etry_Lines.value[0].credit_amount=total
+  }
+  if (props.invoice_type=='sale') {
+    Etry_Lines.value[0].debit_amount=total
+  }
+  
   return total
 });
 
@@ -139,21 +151,38 @@ if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
   }
 }
 
-
 function get_ammount(index){
-  form.value[index].ammount=form.value[index].price*form.value[index].quantity
+  Invoice_Lines.value[index].ammount=Invoice_Lines.value[index].price*Invoice_Lines.value[index].quantity
+  if (props.invoice_type=='purchase' && !isNaN(Invoice_Lines.value[index].ammount)  ) {
+    Etry_Lines.value[index+1].debit_amount=Invoice_Lines.value[index].ammount 
+    Etry_Lines.value[index+1].account=default_account.value
+
+  }
+  if (props.invoice_type=='sale' && !isNaN(Invoice_Lines.value[index].ammount)) {
+    Etry_Lines.value[index+1].credit_amount=Invoice_Lines.value[index].ammount 
+    Etry_Lines.value[index+1].account=default_account.value
+  }
+
 }
 
 function clear_form(){
-  rows_count = 30 
-  lines=[]
-  for(let index = 0; index < rows_count; index++) {
-    lines[index] ={
-      quantity:null,price:null,product:null,description:null,currencey:null,
-      currency_rate:1,cost_center:null ,customfields: get_standard_object(),
-    }
+  PaymentMethod.value={name:'cash'}
+  Etry_Lines.value[0]={
+    debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
+    currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
   }
-  form.value= lines
+  rows_count = 30 
+  for(let index = 0; index < rows_count; index++) {
+    Invoice_Lines.value[index]={
+      quantity:null,price:null,product:null,ammount:null,description:null,currencey:null,
+      currency_rate:1, cost_center:null , customfields: get_standard_object(),
+    }
+    Etry_Lines.value[index]={
+      debit_amount:null,credit_amount:null,account:null,description:null,
+      currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+    }  
+  }
+
   document_number.value=(props.document)? props.document.number: props.new_document_number
 
 }
@@ -187,14 +216,28 @@ function  convert_date_to_sting(date){
 
 function update_document() {
   let data={
+   
     document_number:document_number.value ,
-    document_catagory_id:page.props.document_catagory.id  ,
-    lines:form.value ,
-    date: convert_date_to_sting(document_date.value) ,
+    default_account:default_account.value,
+    PaymentMethod:PaymentMethod.value.name,
+    Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
+    entry_lines:Etry_Lines.value,
+    document_catagory_id:page.props.document_catagory.id ,
+    lines:Invoice_Lines.value ,
+    date:convert_date_to_sting(document_date.value),
   }
 
-  router.put(props.update_url, data,{
-    onError:(errors)=>{
+  router.put(props.update_url, {
+    document_number:document_number.value ,
+    default_account:default_account.value,
+    PaymentMethod:PaymentMethod.value.name,
+    Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
+    entry_lines:Etry_Lines.value,
+    document_catagory_id:page.props.document_catagory.id ,
+    lines:Invoice_Lines.value ,
+    date:convert_date_to_sting(document_date.value),
+    }
+    ,{onError:(errors)=>{
       //errorMassageModal.value=true
       for (const key in errors) {
         if (Object.hasOwnProperty.call(errors, key)) {
@@ -214,14 +257,14 @@ function update_document() {
 }
 
 function create_document(){
-
   router.post(props.store_url,{
     document_number:document_number.value ,
     default_account:default_account.value,
     PaymentMethod:PaymentMethod.value.name,
     Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
+    entry_lines:Etry_Lines.value,
     document_catagory_id:page.props.document_catagory.id ,
-    lines:form.value ,
+    lines:Invoice_Lines.value ,
     date:convert_date_to_sting(document_date.value),
   },{
     onError:(errors)=>{
@@ -326,7 +369,6 @@ function create_document(){
                   </template> 
               </AutoComplete>
             </div>
-
             <!-- Default Account Input   -->
             <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for="">Default Account</label>
@@ -416,17 +458,17 @@ function create_document(){
                             </thead>
                             
                             <tbody> 
-                                <tr v-for="(i,index) in rows_count " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700 text-base font-medium ">
+                                <tr v-for="(line,index) in Invoice_Lines " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700 text-base font-medium ">
                                   <td class="sticky left-0 bg-inherit z-10  text-center font-medium border  border-gray-400">
                                       <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
-                                    <ccc v-model="form[index].product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']"
+                                    <ccc v-model="line.product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']"
                                     @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
                                     :SearchFunction="searchStore.search_product" :Suggestions="searchStore.available_products.value" >  
                                       <template #emptySuggestions>
-                                        <div class=""> product <span class="text-blue-600">{{form[index].product }}</span> dose not exist </div>
+                                        <div class=""> product <span class="text-blue-600">{{line.product }}</span> dose not exist </div>
                                         <Link :href="searchStore.create_new_product_link.value" class="text-blue-600"> create new one</Link>
                                       </template>
                                     </ccc>
@@ -434,29 +476,28 @@ function create_document(){
                                   
 
                                   <td class="whitespace-nowrap border border-gray-400 text "      >
-                                  
-                                    <ccc  v-model="form[index].quantity"  @change="get_ammount(index)" :Invalid="errors['lines.'+index+'.quantity']"
+                                    <ccc  v-model="line.quantity"  @change="get_ammount(index)" :Invalid="errors['lines.'+index+'.quantity']"
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />
                                   </td>
 
                                   <td class="whitespace-nowrap  border border-gray-400  ">
-                                    <ccc  v-model="form[index].price" @change="get_ammount(index)" :Invalid="errors['lines.'+index+'.price']"
+                                    <ccc  v-model="line.price" @change="get_ammount(index)" :Invalid="errors['lines.'+index+'.price']"
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=3  Format="number" />                                 
                                   </td>
                                   
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
-                                    <ccc  v-model="form[index].ammount" :ReadOnly="true"
+                                    <ccc  v-model="line.ammount" :ReadOnly="true" @change="console.log('ammount changed')"
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="number" />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc  v-model="form[index].description"  @change="form_have_been_adjusted=true" 
+                                    <ccc  v-model="lines.description"  @change="form_have_been_adjusted=true" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=5  Format="text" />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc v-model="form[index].currencey" :TableObject="TableObject" :rows_index="index" :columns_index=6
-                                    @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate"  :Default="currencies[0]"  
+                                    <ccc v-model="line.currencey" :TableObject="TableObject" :rows_index="index" :columns_index=6
+                                    @UpdateCurrencyRate="(rate)=>line.currency_rate=rate"  :Default="currencies[0]"  
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
                                       <template #emptySuggestions>
                                         <div class=""> currencey <span class="text-blue-600">{{form[index].currencey }}</span> dose not exist </div>
@@ -464,25 +505,25 @@ function create_document(){
                                     </ccc>
                                   </td>
 
-                                  <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap border border-gray-400 " >
-                                    <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7 
-                                    :Default ="form[index].currencey?.default_rate"  Format="number" 
+                                  <td :class="{'text-transparent': line.currency_rate==1}" class="whitespace-nowrap border border-gray-400 " >
+                                    <ccc v-model="line.currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7 
+                                    :Default ="line.currencey?.default_rate"  Format="number" 
                                     />
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">
-                                    <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=8
+                                    <ccc v-model="line.cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=8
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center"
                                     :Suggestions="searchStore.available_cost_centers.value" >
                                       <template #emptySuggestions>
-                                        <div class=""> cost center <span class="text-blue-600">{{form[index].cost_center }}</span> dose not exist </div>
+                                        <div class=""> cost center <span class="text-blue-600">{{line.cost_center }}</span> dose not exist </div>
                                         <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
                                       </template>
                                     </ccc>
                                   </td>
 
                                   <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc  v-model="form[index].customfields[field]" 
+                                    <ccc  v-model="line.customfields[field]" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=9  Format="text" />
                                   </td>
 

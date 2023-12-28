@@ -8,16 +8,9 @@ use App\Models\Document;
 use App\Models\Currency;
 use App\Actions\AccountingEnrty;
 use Illuminate\Support\Facades\Cache;
-
-use App\Models\Account_entry ;
 use App\Models\Entry;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Fluent ;
-use App\Actions\DatabaseManager;
-use App\Models\Account;
 use App\Models\CustomField;
 
 
@@ -72,15 +65,11 @@ class JournalEntryController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request)
     {
-        //return $request;
         $AccountingEnrty= app(AccountingEnrty::class);
         $validated_data =  $AccountingEnrty->validate($request->all());
-       // dd( $validated_data );
         if (  $AccountingEnrty->validation_is_failed) {  
             return back()->withErrors($AccountingEnrty->validator)->withInput();
         }
-        //return $validated_data;
-        //dd($validated_data);
         $entry = $AccountingEnrty->create($validated_data);
         $document = Document::create([ 
             'number'=> $validated_data['document_number'] ,

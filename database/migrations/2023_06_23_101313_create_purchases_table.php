@@ -25,7 +25,8 @@ return new class extends Migration
        
         Schema::create('purchases', function (Blueprint $table) {
             $table->id();
-            $table->foreign('document_id');
+            $table->integer('document_id');
+            $table->date('date');
             $table->timestamps();
         });
     }

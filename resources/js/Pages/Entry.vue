@@ -225,7 +225,7 @@ function update_document() {
   let data={
     document_number:document_number.value ,
     document_catagory_id:page.props.document_catagory.id  ,
-    lines:form.value ,
+    entry_lines:form.value ,
     date: convert_date_to_sting(document_date.value) ,
   }
 
@@ -257,7 +257,7 @@ function create_document(){
   let data={
     document_number:document_number.value ,
     document_catagory_id:document_catagory.id ,
-    lines:form.value ,
+    entry_lines:form.value ,
     date: convert_date_to_sting(document_date.value),
   }
   router.post(URL, data,{

@@ -15,5 +15,14 @@ class Invoice extends Model
      */
     protected $connection = 'tentant';
 
-    
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'product_id','invoiceable_id','invoiceable_type','quantity',
+        'price','description','currency_id',
+        'currency_rate','cost_center_id','customfields','date',
+    ];
 }
