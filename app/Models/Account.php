@@ -30,7 +30,7 @@ class Account extends Model
      */
     public function entries(): BelongsToMany
     {
-        return $this->belongsToMany(Account::class)
+        return $this->belongsToMany(Entry::class)
         ->withPivot('debit_amount', 'credit_amount','description','currency_id','currency_rate','customfields','date',);
     }
 

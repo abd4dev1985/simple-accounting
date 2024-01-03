@@ -48,7 +48,7 @@ class AccountingEnrty
             //$line['equivalent_credit_amount'] = ($line['credit_amount'])? $line['credit_amount*'] * $line['currency_rate']: null;
             unset($line['account']);
             //unset($line['currency_rate']);
-            unset($line['currencey']);
+            unset($line['currency']);
             unset($line['cost_center']);
             return $line;
         });
@@ -139,24 +139,29 @@ class AccountingEnrty
     public function UpdatLines(Entry $entry ,array $input )
     {
          $data = collect($input['entry_lines']);
+         //dd($input['entry_lines']);
          $data= $data->map(function  (array $line ) use( $entry,$input )  {
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
+            $line['currency_id'] = $line['currency']['id']?? null;
             $line['date'] = $input['date'];
             $line['customfields'] =  json_encode($line['customfields']) ;
             unset($line['account'] );
-            unset($line['currency_rate'] );
-            unset($line['currencey']);
+            unset($line['currency']);
             unset($line['cost_center']);
+            unset($line['id']);
             return $line;
         });
        
         $data = $data->toArray();
-        EntrLines::upsert($data,['id'],
-        ['account_id','debit_amount','credit_amount','description','currency_id','currency_rate',
-        'cost_center_id','customfields','date']);
-        //dd("whate");
+        //dd($data);
+        $entry->accounts()->detach();
+        DB::table('account_entry')->insert($data);
+
+       // EntrLines::upsert($data,['id'],
+        //['account_id','debit_amount','credit_amount','description','currency_id','currency_rate',
+        //'cost_center_id','customfields','date']);
         $entry->refresh();
         return $entry ;
     }

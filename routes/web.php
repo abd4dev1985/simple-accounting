@@ -72,6 +72,8 @@ Route::controller(JournalEntryController::class)->group(function () {
 
 Route::controller(PurchaseController::class)->group(function () {
     Route::get('/purchase/{document_catagory:name}/documents/{document:number}', 'show')->name('purchase.show');
+    Route::get('/next_purchase/{document_catagory:name}/documents/{document:number}', 'next')->name('purchase.next');
+    Route::get('/pervious_purchase/{document_catagory:name}/documents/{document:number}', 'pervious')->name('purchase.pervious');
     Route::put('/purchase/{document_catagory:name}/documents/{document:number}', 'update')->name('purchase.update');
     Route::delete('/purchase/{document_catagory:name}/documents/{document:number}', 'destroy')->name('purchase.delete');
     Route::get('/purchase/document_catagories/{document_catagory:name}/documents', 'index')->name('purchase.index');
@@ -88,6 +90,10 @@ Route::controller(AccountsController::class)->group(function () {
 Route::get('/testcache', function () {
     Cache::store('tentant')->put('last general_entry', 45);
    return Cache::store('tentant')->get('last general_entry');
+})->middleware('CurrentDatabase');
+
+Route::get('/testspeed', function () {
+   return Document::where('number',6)->get();
 })->middleware('CurrentDatabase');
 
 

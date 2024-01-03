@@ -43,10 +43,10 @@ class PurchaseController extends Controller
     public function create(Document_catagory $document_catagory)
     {
         {
-            $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
+            $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
             return Inertia::render('Invoice', [
                 'document_catagory'=> $document_catagory ,
-                'new_document_number' =>$last_document_number + 1,
+                'new_document_number' =>$last_document ?->number + 1,
                 'invoice_type'=>'purchase',
                 'operation'=>'create',
                 'columns_count'=>8,
@@ -56,9 +56,9 @@ class PurchaseController extends Controller
                 'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
                 'cash_account'=>Account::find(101),
                 'default_account'=>Account::find(100),
-                'pervious_document_url' => !($last_document_number) ? null: route('purchase.show',[
+                'pervious_document_url' => !($last_document) ? null: route('purchase.show',[
                     'document_catagory'=>$document_catagory->name,
-                    'document'=>$last_document_number,
+                    'document'=>$last_document->number,
                 ]),
             ]);
         }
@@ -69,6 +69,8 @@ class PurchaseController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request )
     {
+        $request['operation']='create';
+        //return $request['entry_lines'];
         $Invoice_Action= app(Invoice::class,['invoice_type' => 'purchase']);
         $invoice_data =  $Invoice_Action->validate($request->all());
         if (  $Invoice_Action->validation_is_failed) {  
@@ -91,11 +93,31 @@ class PurchaseController extends Controller
         
         $purchase = $Invoice_Action->create( $document,$invoice_data);
 
-        $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
-        if ( $document->number > $last_document_number) { 
-            Cache::store('tentant')->put('last '.$document_catagory->name,  $document->number);  
+        $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
+        if ( $document->number > $last_document?->number) { 
+            Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
         }
         return back()->with('success','ok');
+    }
+
+    public function next(Document_catagory $document_catagory, Document $document)
+    {
+        $next_document = Document::where('number','>',$document->number)
+        ->where('document_catagory_id',$document_catagory->id)->orderBy('number','asc')->first();
+        return  redirect()->route('purchase.show',[
+            'document_catagory'=>$document_catagory->name,'document'=>$next_document->number
+        ]) ;
+      
+    }
+    public function pervious(Document_catagory $document_catagory, Document $document)
+    {
+        $pervious_document=Document::where('number','<',$document->number)
+        ->where('document_catagory_id',$document_catagory->id)->orderBy('number','desc')->first();
+        return  redirect()->route('purchase.show',[
+            'document_catagory'=>$document_catagory->name,'document'=>$pervious_document->number
+        ]) ;
+      
+
     }
 
     /**
@@ -108,7 +130,13 @@ class PurchaseController extends Controller
             $item['pivot']['product'] =  ['id'=>$item['id']  ,'name'=>$item['name'] ];
             return $item['pivot'];
         }) ;
-        $entry_lines=EntrLines::where('entry_id', $document->entry_id)->get();
+        $entry = $document->entry ;
+        $entry_lines = $entry->accounts->map(function($item){
+            $item['pivot']['account'] =  ['id'=>$item['id']  ,'name'=>$item['name'] ];
+            return $item['pivot'];
+        }) ;
+
+        //$entry_lines=EntrLines::where('entry_id', $document->entry_id)->get();
 
         $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
 
@@ -122,9 +150,13 @@ class PurchaseController extends Controller
             'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
             'cash_account'=>Account::find(101),
             'default_account'=>Account::find(100),
-            'pervious_document_url' => !($last_document_number) ? null: route('purchase.show',[
+            'pervious_document_url' => !($last_document_number) ? null: route('purchase.pervious',[
                 'document_catagory'=>$document_catagory->name,
-                'document'=>$last_document_number,
+                'document'=>$document->number,
+            ]),
+            'next_document_url' =>  route('purchase.next',[
+                'document_catagory'=>$document_catagory->name,
+                'document'=>$document->number,
             ]),
         ]);
     }
@@ -142,20 +174,19 @@ class PurchaseController extends Controller
      */
     public function update( Document_catagory $document_catagory, Document $document,Request $request )
     {
-        
+        $request['operation']='update';
         $Invoice_Action= app(Invoice::class,['invoice_type' => 'purchase']);
         $invoice_data =  $Invoice_Action->validate($request->all());
         if (  $Invoice_Action->validation_is_failed) {  
             return back()->withErrors($Invoice_Action->validator)->withInput();
         }
         $Invoice_Action->UpdatLines($document, $invoice_data);
-
         $Accounting_Enrty_Action = app(AccountingEnrty::class);
         $entry_data =  $Accounting_Enrty_Action->validate($request->all());
         if (  $Accounting_Enrty_Action->validation_is_failed) {  
             return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
         }
-        $Invoice_Action->UpdatLines($document, $invoice_data);
+        $Accounting_Enrty_Action->UpdatLines($document->entry, $entry_data);
         
     }
 
@@ -166,10 +197,10 @@ class PurchaseController extends Controller
     {
         $entry=Entry::find($document->entry_id);
         $purchase=Purchase::where('document_id',$document->id)->first();
-        $last_document_number = Cache::store('tentant')->get('last '.$document_catagory->name);
-        if ( $last_document_number ==$document->number) {
-            $last_document_number=Document::where('number','<',$document->number)->orderBy('number','desc')->first();
-            Cache::store('tentant')->put('last '.$$document_catagory->name, $last_document_number);
+        $last_document = Cache::store('tentant')->get('last '.$document_catagory->name);
+        if ( $last_document->number ==$document->number) {
+            $last_document=Document::where('number','<',$document->number)->orderBy('number','desc')->first();
+            Cache::store('tentant')->put('last '.$document_catagory->name, $last_document);
         }
         $entry->accounts()->detach(); 
         $entry->delete();

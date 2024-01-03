@@ -55,6 +55,7 @@ function get_standard_object(){
 const page = usePage()
  const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
+//console.log(currencies.filter( (currency)=>{return currency.id==1 }     ) )
 
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
 let document_date = ref( (props.document)? props.document.date : new Date()  )
@@ -70,7 +71,14 @@ let DeleteModal = ref(false)
 let default_account=ref(props.default_account)
 let Client_Or_Vendor_Account= ref('') 
 let  PaymentMethod = ref({name:'cash'});
+
 let AvailablePaymentMethod=ref([{name:'cash'},{name:'credit'}])
+let Invoice_Currency =ref(currencies[0] )
+let Invoice_Currency_Rate =ref(1)
+if (props.document) {
+  Invoice_Currency.value =  currencies.filter((currency)=> currency.id==props.document.currency_id )[0]
+  Invoice_Currency_Rate.value = props.document.currency_rate
+}
 
 let Invoice_Lines = ref ( ( props.invoice_lines)? props.invoice_lines :[] )  ;
 let Etry_Lines=ref( (props.entry_lines)? props.entry_lines :[] )
@@ -81,13 +89,13 @@ let lines=[]
 if ( !Etry_Lines.value[0]) {
   Etry_Lines.value[0]={
     debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
-    currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+    currency:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
   }
 }
 for (let index = 0; index < rows_count; index++) {
   if ( !Invoice_Lines.value[index]) {
     Invoice_Lines.value[index]={
-      quantity:null,price:null,product:null,ammount:null,description:null,currencey:null,
+      quantity:null,price:null,product:null,ammount:null,description:null,currency:null,
       currency_rate:1, cost_center:null , customfields: get_standard_object(),
     }
   }
@@ -95,12 +103,12 @@ for (let index = 0; index < rows_count; index++) {
   if (!Etry_Lines.value[index] && index !=0 ) {
     Etry_Lines.value[index]={
       debit_amount:null,credit_amount:null,account:null,description:null,
-      currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+      currency:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
     }  
   }
 }
+console.log(Etry_Lines.value)
 
-console.log([Etry_Lines.value,Invoice_Lines.value])
 watch([PaymentMethod,Client_Or_Vendor_Account],([NewPaymentMethod,New_Client_Or_Vendor_Account])=>{
   if (NewPaymentMethod.name=='cash') {
     Client_Or_Vendor_Account.value=null
@@ -120,17 +128,20 @@ let column_index=0
 const tableHeader=ref()
 
 const Totals_Ammount =computed(()=>{
-  let total=0
+  let total = 0
   Invoice_Lines.value.forEach(line => {
-    total +=isNaN(line.ammount)?0:line.ammount
+    if ( !isNaN( line.ammount )) {
+      total = total + Number(line.ammount)
+    }
   });
+
   if (props.invoice_type=='purchase') {
     Etry_Lines.value[0].credit_amount=total
   }
   if (props.invoice_type=='sale') {
     Etry_Lines.value[0].debit_amount=total
   }
-  
+
   return total
 });
 
@@ -174,12 +185,12 @@ function clear_form(){
   rows_count = 30 
   for(let index = 0; index < rows_count; index++) {
     Invoice_Lines.value[index]={
-      quantity:null,price:null,product:null,ammount:null,description:null,currencey:null,
+      quantity:null,price:null,product:null,ammount:null,description:null,currency:null,
       currency_rate:1, cost_center:null , customfields: get_standard_object(),
     }
     Etry_Lines.value[index]={
       debit_amount:null,credit_amount:null,account:null,description:null,
-      currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+      currency:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
     }  
   }
 
@@ -257,6 +268,9 @@ function update_document() {
 }
 
 function create_document(){
+ let x = Invoice_Lines.value.filter( (line)=>{
+    return !(line.prouct==null && line.price==null && line.quantity ==null)
+  } )
   router.post(props.store_url,{
     document_number:document_number.value ,
     default_account:default_account.value,
@@ -264,7 +278,7 @@ function create_document(){
     Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
     entry_lines:Etry_Lines.value,
     document_catagory_id:page.props.document_catagory.id ,
-    lines:Invoice_Lines.value ,
+    lines:x ,
     date:convert_date_to_sting(document_date.value),
   },{
     onError:(errors)=>{
@@ -285,7 +299,7 @@ function create_document(){
     },
   })
 }
-
+console.log(Etry_Lines.value)
 
 </script>
 
@@ -323,7 +337,6 @@ function create_document(){
                 <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
                 -->
               </div>
-
             </div>
 
              <!-- payment method Input   -->
@@ -391,30 +404,39 @@ function create_document(){
 
            
             
-             <!-- client or vendor Account Input   -->
-             <div class="flex-initial ">
+             <!-- INVOICE CURRENCY INPUT  -->
+             <div class="flex-initial W- ">
               <label class="block text-sm font-semibold text-left " for="">
-                Vendor Account
+                 Currency
               </label>
-              <AutoComplete v-model="Client_Or_Vendor_Account" :suggestions="searchStore.available_accounts.value"
-                @complete="searchStore.search_account" optionLabel="name" forceSelection :class="{'p-invalid':errors.Client_Or_Vendor_Account}"
+              <AutoComplete v-model="Invoice_Currency" :suggestions="searchStore.filterd_currencies.value"  
+                @complete="searchStore.search_currencey" optionLabel="name" forceSelection
+                @item-select="Invoice_Currency_Rate  =Invoice_Currency.default_rate"
                 :pt="{
                   //  root:{
                     //  class:(errors.Client_Or_Vendor_Account)?'border-2 border-red-400':null,
                     //},
                     input: {
-                      class: 'bg-white h-8 w-44 py-2 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                      class: 'bg-white h-8 w-24 py-2 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                       form : 'myform' ,
                     },
                   }">
                   <template #empty>
                       <div   class="font-semibold p-3 border-2 border-blue-500">
-                          <div class=""> account <span class="text-blue-600">{{default_account }}</span> dose not exist </div>
+                          <div class=""> currency <span class="text-blue-600">{{Invoice_Currency }}</span> dose not exist </div>
                           <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
                       </div>
                   </template> 
               </AutoComplete>
             </div>
+            <!-- INVOICE CURRENCY RATE INPUT   -->
+            <div class="flex-initial  w-max">
+              <div class="text-center relative">
+                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no"> Currency Rate </label>
+                <input v-model="Invoice_Currency_Rate" id="document_no" form="myform" class="block border text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
+              </div>
+            </div>
+
 
             <!-- DATE INPUT   -->
             <div class="flex-initial ">
@@ -450,7 +472,7 @@ function create_document(){
                                 <th scope="col" class=" ">Price</th>
                                 <th scope="col" class=" py-4">Ammount</th>
                                 <th scope="col" class=" block overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
-                                <th scope="col" class=" py-4">Currencey</th>
+                                <th scope="col" class=" py-4">Currency</th>
                                 <th scope="col" class=" py-4">rate</th>
                                 <th scope="col" class=" py-4">cost center</th>
                                 <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4">{{ field }}  </th>
@@ -496,18 +518,18 @@ function create_document(){
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc v-model="line.currencey" :TableObject="TableObject" :rows_index="index" :columns_index=6
+                                    <ccc v-model="line.currency" :TableObject="TableObject" :rows_index="index" :columns_index=6
                                     @UpdateCurrencyRate="(rate)=>line.currency_rate=rate"  :Default="currencies[0]"  
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
                                       <template #emptySuggestions>
-                                        <div class=""> currencey <span class="text-blue-600">{{form[index].currencey }}</span> dose not exist </div>
+                                        <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>
                                       </template>
                                     </ccc>
                                   </td>
 
                                   <td :class="{'text-transparent': line.currency_rate==1}" class="whitespace-nowrap border border-gray-400 " >
                                     <ccc v-model="line.currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7 
-                                    :Default ="line.currencey?.default_rate"  Format="number" 
+                                    :Default ="line.currency?.default_rate"  Format="number" 
                                     />
                                   </td>
 

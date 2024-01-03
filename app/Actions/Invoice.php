@@ -13,14 +13,14 @@ use App\Models\EntrLines;
 use App\Actions\AccountingEnrty;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
-
-
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
+use App\Rules\CompositeUnique;
 
 class Invoice 
 {
@@ -81,12 +81,14 @@ class Invoice
     {
         $validator = Validator::make($input ,
         [
-            'document_number' => ['bail','required', 'numeric','gt:0'],
+            'document_number' => ['bail','required', 'numeric','gt:0',
+                new CompositeUnique,
+            ],
             'default_account'=>'required',
             'PaymentMethod'=>'required',
             'Client_Or_Vendor_Account'=>'required_if:PaymentMethod,credit',
             'date' => ['required', 'date'],
-            'document_catagory_id' => ['required', 'numeric'],
+            'document_catagory_id' => ['required', 'numeric','exists:document_catagories,id'],
             'lines.*.product' => 'nullable|array|required_with:lines.*.price,lines.*.quantity' ,
             'lines.*.quantity' => 'nullable|numeric|required_with:lines.*.price,lines.*.product|gt:0',
             'lines.*.price' => 'nullable|numeric|required_with:lines.*.quantity,lines.*.product|gt:0',
@@ -123,8 +125,6 @@ class Invoice
     {
         $invoice_type=$this->invoice_type ;
         $invoice= $document->$invoice_type ;
-        dd( $invoice);
-         // dtata1 for inoice lines
         $data =[];
         $tota_ammount=0;
 
@@ -132,7 +132,7 @@ class Invoice
         foreach ($lines as $index=> $line) {
             $tota_ammount+=$line['ammount'];
             $data[$index] =[
-                'invoiceable_id'=>$purchase->id,
+                'invoiceable_id'=>$invoice->id,
                 'invoiceable_type' => $this->invoice_type,
                 'product_id'=> $line['product']['id'],
                 'quantity'=>$line['quantity'],
@@ -146,13 +146,13 @@ class Invoice
                 'customfields' => json_encode($line['customfields']),
             ];
         }
-
-        Invoice_line::upsert($data,['id'],
-        ['product_id','quantity','price','ammount','description','currency_id','currency_rate',
-        'cost_center_id','customfields','date']);
-        //dd("whate");
-       // $entry->refresh();
-        //return $entry ;
+       //dd($data);
+        $invoice->products()->detach();
+        DB::table('invoices')->insert($data);
+       // Invoice_line::upsert($data,['invoiceable_id',],
+        //['product_id','quantity','price','ammount','description','currency_id','currency_rate',
+        //'cost_center_id','customfields','date']);
+      
     }
     
    

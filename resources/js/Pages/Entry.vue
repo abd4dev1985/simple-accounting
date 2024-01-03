@@ -76,7 +76,7 @@ for (let index = 0; index < rows_count; index++) {
       credit_amount:Etry_Lines[index].credit_amount,
       account:Etry_Lines[index].account,
       description:Etry_Lines[index].description,
-      currencey:currencies.filter((currencey)=> currencey.id ==Etry_Lines[index].currency_id) [0]  ,
+      currency:currencies.filter((currency)=> currency.id ==Etry_Lines[index].currency_id) [0]  ,
       currency_rate:1,
       cost_center:Etry_Lines[index].cost_center,
       customfields: (Etry_Lines[index].customfields)? JSON.parse(Etry_Lines[index].customfields ): get_standard_object(),
@@ -88,7 +88,7 @@ for (let index = 0; index < rows_count; index++) {
     credit_amount:null,
     account:null,
     description:null,
-    currencey:null,
+    currency:null,
     currency_rate:1,
     cost_center:null ,
     customfields: get_standard_object(),
@@ -184,7 +184,7 @@ function clear_form(){
   lines=[]
   for(let index = 0; index < rows_count; index++) {
     lines[index] ={
-      debit_amount:null,credit_amount:null,account:null,description:null,currencey:null,
+      debit_amount:null,credit_amount:null,account:null,description:null,currency:null,
       currency_rate:1,cost_center:null ,customfields: get_standard_object(),
     }
   }
@@ -375,7 +375,7 @@ function create_document(){
                                 <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4  ">Credite</th>
                                 <th scope="col" class=" border-r border-b  dark:border-neutral-400  py-4">Account</th>
                                 <th scope="col" class=" block border-r border-b  overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
-                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Currencey</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Currency</th>
                                 <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">rate</th>
                                 <th scope="col" class=" border-r border-b  dark:border-neutral-400 py-4">cost center</th>
                                 <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4 border-2 dark:border-neutral-400">
@@ -416,18 +416,18 @@ function create_document(){
                                   </td>
 
                                   <td class="whitespace-nowrap  border-gray-400 ">
-                                    <ccc v-model="form[index].currencey" :TableObject="TableObject" :rows_index="index" :columns_index=5
+                                    <ccc v-model="form[index].currency" :TableObject="TableObject" :rows_index="index" :columns_index=5
                                     @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate"  :Default="currencies[0]"  
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
                                       <template #emptySuggestions>
-                                        <div class=""> currencey <span class="text-blue-600">{{form[index].currencey }}</span> dose not exist </div>
+                                        <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>
                                       </template>
                                     </ccc>
                                   </td>
 
                                   <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap  border-gray-400 " >
                                     <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=6 
-                                    :Default ="form[index].currencey?.default_rate"  Format="number" 
+                                    :Default ="form[index].currency?.default_rate"  Format="number" 
                                     />
                                   </td>
 

@@ -39,7 +39,7 @@ class JournalEntryController extends Controller
      */
     public function create( Document_catagory $document_catagory )
     {
-        $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
+        $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
         $columns=[
             'debit_amount'=>[1,'number','Debite'] ,
             'credit_amount'=>[2,'number','Credite'] ,
@@ -47,15 +47,15 @@ class JournalEntryController extends Controller
 
         return Inertia::render('Entry', [
             'document_catagory'=> $document_catagory ,
-            'new_document_number' =>$last_document_number + 1,
+            'new_document_number' =>$last_document?->number + 1,
             'operation'=>'create',
             'columns'=> $columns ,
             'columns_count'=>8,
             'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
             'default_account'=>[],
-            'pervious_document_url' => !($last_document_number)? null:route('entry.show',[
+            'pervious_document_url' => !($last_document)? null:route('entry.show',[
                 'document_catagory'=>$document_catagory->name,
-                'document'=>$last_document_number ,
+                'document'=>$last_document->number ,
             ]),
         ]);
     }
@@ -78,9 +78,9 @@ class JournalEntryController extends Controller
             'date'=>$validated_data['date'],
         ]);
 
-        $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
-        if ( $document->number > $last_document_number) { 
-            Cache::store('tentant')->put('last '.$document_catagory->name,  $document->number);  
+        $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
+        if ( $document->number > $last_document?->number) { 
+            Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
         }
         return back()->with('success','ok');
        // return  redirect()->route('entry.create',['document_catagory'=>$document_catagory->name ])  ;
