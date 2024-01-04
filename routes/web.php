@@ -88,8 +88,9 @@ Route::controller(AccountsController::class)->group(function () {
 });
 
 Route::get('/testcache', function () {
-    Cache::store('tentant')->put('last general_entry', 45);
-   return Cache::store('tentant')->get('last general_entry');
+    Cache::store('tentant')->put('last general_entry', Document::find(40));
+   return Cache::store('tentant')->get('last general entry')  ;
+  
 })->middleware('CurrentDatabase');
 
 Route::get('/testspeed', function () {

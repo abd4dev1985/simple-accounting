@@ -44,6 +44,7 @@ class PurchaseController extends Controller
     {
         {
             $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
+            
             return Inertia::render('Invoice', [
                 'document_catagory'=> $document_catagory ,
                 'new_document_number' =>$last_document ?->number + 1,
@@ -70,13 +71,11 @@ class PurchaseController extends Controller
     public function store(Document_catagory $document_catagory, Request $request )
     {
         $request['operation']='create';
-        //return $request['entry_lines'];
         $Invoice_Action= app(Invoice::class,['invoice_type' => 'purchase']);
         $invoice_data =  $Invoice_Action->validate($request->all());
         if (  $Invoice_Action->validation_is_failed) {  
             return back()->withErrors($Invoice_Action->validator)->withInput();
         }
-
         $Accounting_Enrty_Action = app(AccountingEnrty::class);
         $entry_data =  $Accounting_Enrty_Action->validate($request->all());
         if (  $Accounting_Enrty_Action->validation_is_failed) {  
@@ -104,19 +103,26 @@ class PurchaseController extends Controller
     {
         $next_document = Document::where('number','>',$document->number)
         ->where('document_catagory_id',$document_catagory->id)->orderBy('number','asc')->first();
-        return  redirect()->route('purchase.show',[
-            'document_catagory'=>$document_catagory->name,'document'=>$next_document->number
-        ]) ;
+        if ($next_document) {
+            return  redirect()->route('purchase.show',[
+                'document_catagory'=>$document_catagory->name,'document'=>$next_document?->number
+            ]) ;
+        }else{
+            return back();
+        }
       
     }
     public function pervious(Document_catagory $document_catagory, Document $document)
     {
         $pervious_document=Document::where('number','<',$document->number)
         ->where('document_catagory_id',$document_catagory->id)->orderBy('number','desc')->first();
-        return  redirect()->route('purchase.show',[
-            'document_catagory'=>$document_catagory->name,'document'=>$pervious_document->number
-        ]) ;
-      
+        if ($pervious_document) {
+            return  redirect()->route('purchase.show',[
+                'document_catagory'=>$document_catagory->name,'document'=>$pervious_document?->number
+            ]) ;
+        } else {
+            return back();
+        }   
 
     }
 
@@ -135,9 +141,6 @@ class PurchaseController extends Controller
             $item['pivot']['account'] =  ['id'=>$item['id']  ,'name'=>$item['name'] ];
             return $item['pivot'];
         }) ;
-
-        //$entry_lines=EntrLines::where('entry_id', $document->entry_id)->get();
-
         $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
 
         return Inertia::render('Invoice', [
