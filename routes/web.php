@@ -10,7 +10,8 @@ use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
 
-use App\Models\Account;
+use App\Models\Invoice;
+use App\Models\EntryLines;
 
 use App\Actions\ImportExcelFile;
 
@@ -29,7 +30,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SearchController;
-use App\Models\EntrLines;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,6 +50,10 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
+
+
+
+
 
 
 
@@ -82,8 +86,8 @@ Route::controller(PurchaseController::class)->group(function () {
 });
 
 Route::controller(AccountsController::class)->group(function () {
-    Route::get('/account/ledgerBookForm/{account?}','ledgerBook_form')->name('accounts.ledgerBookForm');
-    Route::post('/account/ledgerBook/{account}','ledgerBook')->name('accounts.ledgerBook.result');
+    //Route::get('/account/ledgerBookForm/{account?}','ledgerBook_form')->name('accounts.ledgerBookForm');
+    Route::post('/account/ledgerBook','ledgerBook')->name('accounts.ledgerBook');
     Route::delete('/account/{account}/', 'destroy')->name('account.delete');
 });
 
@@ -92,6 +96,17 @@ Route::get('/testcache', function () {
    return Cache::store('tentant')->get('last general entry')  ;
   
 })->middleware('CurrentDatabase');
+
+
+Route::get('/cleanjson', function () {
+
+    Invoice::where('id','>',0)->update(['customfields'=>'{}']);
+    EntryLines::where('id','>',0)->update(['customfields'=>'{}']);
+
+   return "ok" ;
+  
+})->middleware('CurrentDatabase');
+
 
 Route::get('/testspeed', function () {
    return Document::where('number',6)->get();

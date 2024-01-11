@@ -70,17 +70,20 @@ class PurchaseController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request )
     {
+
         $request['operation']='create';
         $Invoice_Action= app(Invoice::class,['invoice_type' => 'purchase']);
         $invoice_data =  $Invoice_Action->validate($request->all());
         if (  $Invoice_Action->validation_is_failed) {  
             return back()->withErrors($Invoice_Action->validator)->withInput();
         }
+
         $Accounting_Enrty_Action = app(AccountingEnrty::class);
         $entry_data =  $Accounting_Enrty_Action->validate($request->all());
         if (  $Accounting_Enrty_Action->validation_is_failed) {  
             return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
         }
+        //dd($invoice_data);
         $entry =  $Accounting_Enrty_Action->create( $entry_data);
 
         $document = Document::create([ 
@@ -142,10 +145,13 @@ class PurchaseController extends Controller
             return $item['pivot'];
         }) ;
         $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
-
+        $invoice = $purchase ->products->first(); 
+        //dd( $invoice->pivot);
         return Inertia::render('Invoice', [
             'document_catagory'=> $document_catagory ,'document' => $document ,
             'invoice_type'=>'purchase','operation'=>'update','columns_count'=>8,
+            'currency_id'=> $invoice->pivot->currency_id , 
+            'Invoice_Currency_Rate'=>$invoice->pivot->currency_rate  ,
             'invoice_lines'=>$invoice_line,'entry_lines'=>$entry_lines,
             'store_url'=>route('purchase.store',[ 'document_catagory'=> $document_catagory->id,]),
             'delete_url'=>route('purchase.delete',['document_catagory'=>$document_catagory->name,'document'=>$document->number,]),
@@ -177,6 +183,7 @@ class PurchaseController extends Controller
      */
     public function update( Document_catagory $document_catagory, Document $document,Request $request )
     {
+        //dd([$request->entry_lines,$request ->lines]);
         $request['operation']='update';
         $Invoice_Action= app(Invoice::class,['invoice_type' => 'purchase']);
         $invoice_data =  $Invoice_Action->validate($request->all());
@@ -189,7 +196,9 @@ class PurchaseController extends Controller
         if (  $Accounting_Enrty_Action->validation_is_failed) {  
             return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
         }
+        $entry_data =  $Accounting_Enrty_Action->validate($request->all());
         $Accounting_Enrty_Action->UpdatLines($document->entry, $entry_data);
+        
         
     }
 

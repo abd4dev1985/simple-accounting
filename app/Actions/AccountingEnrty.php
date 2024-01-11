@@ -4,7 +4,7 @@ namespace App\Actions;
 
 use App\Models\Document;
 use App\Models\Entry;
-use App\Models\EntrLines;
+use App\Models\EntryLines;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -48,13 +48,14 @@ class AccountingEnrty
             //$line['equivalent_credit_amount'] = ($line['credit_amount'])? $line['credit_amount*'] * $line['currency_rate']: null;
             unset($line['account']);
             //unset($line['currency_rate']);
+            $line['currency_id'] = $line['currency']['id'];
             unset($line['currency']);
             unset($line['cost_center']);
             return $line;
         });
         
         $data = $data->toArray();
-        EntrLines::upsert($data,['entry_id']);
+        EntryLines::upsert($data,['entry_id']);
         /*
          $data=$data->mapWithKeys(function(array $line,int  $key){
            return [ $line['account']['id']=>[

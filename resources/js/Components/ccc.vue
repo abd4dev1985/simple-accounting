@@ -106,9 +106,10 @@ function focusUp(Rows,row_index,collumn_index){
 }
 
 function focusRight(Rows,row_index,collumn_index){
-  let collumns_count=  mytable.value.CollumnsCount
-  if (keyboared_Navigation.value && collumn_index<collumns_count) {
-        Rows[row_index].children[collumn_index+1].children[0].children[0].focus()
+  let Cell =Rows[row_index]?.children[collumn_index+1]?.children[0]
+  if (keyboared_Navigation.value && Cell ) {
+    //console.log(Cell.children[0])
+    Cell.children[0].focus()
   }
 }  
 
@@ -133,7 +134,7 @@ function focusLeft(Rows,row_index,collumn_index){
          text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 text-base text-red-600 ">
              Required
         </div> 
-        <div v-else  @click="focus_input"  class="block absolute group-focus-within:hidden   h-1/3 mobile:text-sm text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 ">
+        <div v-else  @click="focus_input"  class="block absolute  group-focus-within:hidden   h-1/3 mobile:text-sm text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 ">
             {{ format_number(value) }}
         </div>  
 
@@ -148,7 +149,7 @@ function focusLeft(Rows,row_index,collumn_index){
     :pt="{
       root:{class:Invalid? 'border-red-500 border-2 focus:border-none':null   ,   
       },
-      input: { class: 'bg-inherit py-2 h-full  dark:text-gray-200 text-gray-800  ring-offset-2  focus:ring-2 border-none ' },
+      input: { class: 'bg-inherit py-2 h-full  dark:text-gray-200 text-inherit  ring-offset-2  focus:ring-2 border-none ' },
     }">
       <template #empty>
         <div   class="font-semibold p-3 border-2 border-blue-500">

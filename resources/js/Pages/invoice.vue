@@ -8,6 +8,8 @@ import Dropdown from 'primevue/dropdown';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
+import DateObject from '../DateObject.vue';
+
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import DangerButton from '@/Components/DangerButton.vue';    
@@ -27,6 +29,8 @@ let props =defineProps({
     accounts:{},
     document : {        },
     new_document_number:{     },
+    currency_id:{},
+    Invoice_Currency_Rate:{},
     invoice_lines:{type:Array,default:[]},
     invoice_type:{},
     entry_lines:{type:Array,default:[]},
@@ -55,10 +59,10 @@ function get_standard_object(){
 const page = usePage()
  const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
-//console.log(currencies.filter( (currency)=>{return currency.id==1 }     ) )
 
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
-let document_date = ref( (props.document)? props.document.date : new Date()  )
+let document_date = ref( (props.document)? props.document.date : new Date() )
+
 
 searchStore.available_currencies.value = currencies
 
@@ -73,12 +77,21 @@ let Client_Or_Vendor_Account= ref('')
 let  PaymentMethod = ref({name:'cash'});
 
 let AvailablePaymentMethod=ref([{name:'cash'},{name:'credit'}])
-let Invoice_Currency =ref(currencies[0] )
-let Invoice_Currency_Rate =ref(1)
-if (props.document) {
-  Invoice_Currency.value =  currencies.filter((currency)=> currency.id==props.document.currency_id )[0]
-  Invoice_Currency_Rate.value = props.document.currency_rate
+
+function select_currency(){
+  for (let index = 0; index < currencies.length; index++) {
+    if (currencies[index].id==props.currency_id) {
+        return { id:currencies[index].id , name:currencies[index].name }
+    }  
+  }
+  return { id:currencies[0].id , name:currencies[0].name }
 }
+
+
+let Invoice_Currency =ref( select_currency() )
+let Invoice_Currency_Rate =ref((props.document)?  props.Invoice_Currency_Rate  :1  )
+
+
 
 let Invoice_Lines = ref ( ( props.invoice_lines)? props.invoice_lines :[] )  ;
 let Etry_Lines=ref( (props.entry_lines)? props.entry_lines :[] )
@@ -89,13 +102,13 @@ let lines=[]
 if ( !Etry_Lines.value[0]) {
   Etry_Lines.value[0]={
     debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
-    currency:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+    currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
   }
 }
 for (let index = 0; index < rows_count; index++) {
   if ( !Invoice_Lines.value[index]) {
     Invoice_Lines.value[index]={
-      quantity:null,price:null,product:null,ammount:null,description:null,currency:null,
+      quantity:null,price:null,product:null,ammount:null,description:null,currency:Invoice_Currency.value,
       currency_rate:1, cost_center:null , customfields: get_standard_object(),
     }
   }
@@ -103,11 +116,10 @@ for (let index = 0; index < rows_count; index++) {
   if (!Etry_Lines.value[index] && index !=0 ) {
     Etry_Lines.value[index]={
       debit_amount:null,credit_amount:null,account:null,description:null,
-      currency:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+      currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
     }  
   }
 }
-console.log(Etry_Lines.value)
 
 watch([PaymentMethod,Client_Or_Vendor_Account],([NewPaymentMethod,New_Client_Or_Vendor_Account])=>{
   if (NewPaymentMethod.name=='cash') {
@@ -117,6 +129,21 @@ watch([PaymentMethod,Client_Or_Vendor_Account],([NewPaymentMethod,New_Client_Or_
     Etry_Lines.value[0].account = New_Client_Or_Vendor_Account
   }
 })
+
+
+watch([Invoice_Currency,Invoice_Currency_Rate],([New_Invoice_Currency,New_Invoice_Currency_Rate])=>{
+  for (let index = 0; index < Invoice_Lines.value.length; index++) {
+    Etry_Lines.value[index].currency=New_Invoice_Currency
+    Etry_Lines.value[index].currency_rate=New_Invoice_Currency_Rate
+
+    Invoice_Lines.value[index].currency=New_Invoice_Currency
+    Invoice_Lines.value[index].currency_rate=New_Invoice_Currency_Rate
+  }
+
+})
+console.log(Invoice_Currency.value)
+//Invoice_Currency.value=select_currency()
+
 
 let form = ref(lines)
 
@@ -219,25 +246,10 @@ function delete_document(){
   )
 }
 
-function  convert_date_to_sting(date){
-  if ( typeof date == 'string') {
-    return date
-  }else{ return date.toJSON().slice(0,10)                  }
-}
+
+
 
 function update_document() {
-  let data={
-   
-    document_number:document_number.value ,
-    default_account:default_account.value,
-    PaymentMethod:PaymentMethod.value.name,
-    Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
-    entry_lines:Etry_Lines.value,
-    document_catagory_id:page.props.document_catagory.id ,
-    lines:Invoice_Lines.value ,
-    date:convert_date_to_sting(document_date.value),
-  }
-
   router.put(props.update_url, {
     document_number:document_number.value ,
     default_account:default_account.value,
@@ -246,7 +258,7 @@ function update_document() {
     entry_lines:Etry_Lines.value,
     document_catagory_id:page.props.document_catagory.id ,
     lines:Invoice_Lines.value ,
-    date:convert_date_to_sting(document_date.value),
+    date:DateObject.ToString(document_date.value) ,
     }
     ,{onError:(errors)=>{
       //errorMassageModal.value=true
@@ -268,35 +280,36 @@ function update_document() {
 }
 
 function create_document(){
- let x = Invoice_Lines.value.filter( (line)=>{
+  let x = Invoice_Lines.value.filter( (line)=>{
     return !(line.prouct==null && line.price==null && line.quantity ==null)
   } )
-  router.post(props.store_url,{
-    document_number:document_number.value ,
-    default_account:default_account.value,
-    PaymentMethod:PaymentMethod.value.name,
-    Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
-    entry_lines:Etry_Lines.value,
-    document_catagory_id:page.props.document_catagory.id ,
-    lines:x ,
-    date:convert_date_to_sting(document_date.value),
-  },{
-    onError:(errors)=>{
-      //errorMassageModal.value=true
-      for (const key in errors) {
-        if (Object.hasOwnProperty.call(errors, key)) {
-          severity_style.value ='bg-red-600 text-white'
-          let error = errors[key];
-          toast.add({ severity: 'danger', summary: 'Input Error', detail:error , life: 10000 });
-          console.log(error)
-        }
-      }
-    },
-    onSuccess: page => {
-      severity_style.value ='bg-green-400 text-white'
-      toast.add({ severity: 'success', summary: 'New entry added', detail:'kkk' , life: 3000 });
-      clear_form()
-    },
+  router.post(props.store_url,
+      {
+        document_number:document_number.value ,
+        default_account:default_account.value,
+        PaymentMethod:PaymentMethod.value.name,
+        Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
+        entry_lines:Etry_Lines.value,
+        document_catagory_id:page.props.document_catagory.id ,
+        lines:x ,
+        date:DateObject.ToString(document_date.value) ,
+      },
+      {
+        onError:(errors)=>{
+            for (const key in errors) {
+              if (Object.hasOwnProperty.call(errors, key)) {
+                severity_style.value ='bg-red-600 text-white'
+                let error = errors[key];
+                toast.add({ severity: 'danger', summary: 'Input Error', detail:error , life: 10000 });
+                console.log(error)
+              }
+            }
+        },
+        onSuccess: page => {
+            severity_style.value ='bg-green-400 text-white'
+            toast.add({ severity: 'success', summary: 'New entry added', detail:'kkk' , life: 3000 });
+            clear_form()
+        },
   })
 }
 console.log(Etry_Lines.value)
@@ -513,13 +526,13 @@ console.log(Etry_Lines.value)
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400 ">
-                                    <ccc  v-model="lines.description"  @change="form_have_been_adjusted=true" 
+                                    <ccc  v-model="line.description"  @change="form_have_been_adjusted=true" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=5  Format="text" />
                                   </td>
 
-                                  <td class="whitespace-nowrap border border-gray-400 ">
+                                  <td class="whitespace-nowrap border border-gray-400 " :class="{'text-transparent': line.currency_rate==1}"   >
                                     <ccc v-model="line.currency" :TableObject="TableObject" :rows_index="index" :columns_index=6
-                                    @UpdateCurrencyRate="(rate)=>line.currency_rate=rate"  :Default="currencies[0]"  
+                                    @UpdateCurrencyRate="(rate)=>line.currency_rate=rate"   
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
                                       <template #emptySuggestions>
                                         <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>

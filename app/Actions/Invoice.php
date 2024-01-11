@@ -8,7 +8,6 @@ use App\Models\Purchase;
 
 use App\Models\Invoice as Invoice_line;
 use App\Models\Sale;
-use App\Models\EntrLines;
 
 use App\Actions\AccountingEnrty;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,7 +16,6 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
 use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
 use App\Rules\CompositeUnique;
@@ -43,9 +41,9 @@ class Invoice
 
 
     /**
-     * Create a new entry for transaction.
-     *
-     * @param  array  $input
+     * Create a new invoice for transaction.
+     *   @param  Document  $document
+     *   @param  array  $input
      */
     public function create(Document $document   ,array $input )
     {
@@ -65,7 +63,7 @@ class Invoice
                 'price'=>$line['price'],
                 'ammount'=>$line['ammount'],
                 'description'=> $line['description'],
-                'currency_id'=>$line['currencey']['id']??null,
+                'currency_id'=>$line['currency']['id']??null,
                 'currency_rate'=> $line['currency_rate'],
                 'date'=>$input['date'],
                 'cost_center_id'=> $line['cost_center']['id']?? null, 
@@ -118,8 +116,8 @@ class Invoice
     /**
      * updat entery lines.
      *
-     * @param  Entry  $entry
-     *  @param  array  $entry
+     * @param  Document  $document
+     *  @param  array  $input 
      */
     public function UpdatLines(Document $document ,array $input )
     {
@@ -139,7 +137,7 @@ class Invoice
                 'price'=>$line['price'],
                 'ammount'=>$line['ammount'],
                 'description'=> $line['description'],
-                'currency_id'=>$line['currencey']['id']??null,
+                'currency_id'=>$line['currency']['id']??null,
                 'currency_rate'=> $line['currency_rate'],
                 'date'=>$input['date'],
                 'cost_center_id'=> $line['cost_center']['id']?? null, 
@@ -147,6 +145,9 @@ class Invoice
             ];
         }
        //dd($data);
+        $document->date = $input['date']    ; $document->save();
+        $invoice->date = $input['date']     ; $invoice->save();
+
         $invoice->products()->detach();
         DB::table('invoices')->insert($data);
        // Invoice_line::upsert($data,['invoiceable_id',],

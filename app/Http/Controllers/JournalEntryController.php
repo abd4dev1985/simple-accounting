@@ -149,13 +149,13 @@ class JournalEntryController extends Controller
      */
     public function update( Document_catagory $document_catagory ,Document $document,Request $request)
     {   
-        //dd($request->all());
         $AccountingEnrty= app(AccountingEnrty::class);
         $validated_data =  $AccountingEnrty->validate($request->all());
         if (  $AccountingEnrty->validation_is_failed) {  
             return back()->withErrors($AccountingEnrty->validator)->withInput();
         }
         $entry = $AccountingEnrty->UpdatLines($document->entry,$validated_data);
+        $document->date = $request->date   ; $document->save();
         return back()->with('success','ok');
     }
 

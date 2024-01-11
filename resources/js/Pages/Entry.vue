@@ -7,6 +7,8 @@ import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
+import DateObject from '../DateObject.vue';
+
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import DangerButton from '@/Components/DangerButton.vue';    
@@ -48,6 +50,7 @@ function get_standard_object(){
 const page = usePage()
 // const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
+console.log(currencies[0])
 const Etry_Lines = ( page.props.entry_lines)? page.props.entry_lines : [] ;
 
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
@@ -88,7 +91,7 @@ for (let index = 0; index < rows_count; index++) {
     credit_amount:null,
     account:null,
     description:null,
-    currency:null,
+    currency:currencies[0],
     currency_rate:1,
     cost_center:null ,
     customfields: get_standard_object(),
@@ -215,18 +218,12 @@ function delete_document(){
   )
 }
 
-function  convert_date_to_sting(date){
-  if ( typeof date == 'string') {
-    return date
-  }else{ return date.toJSON().slice(0,10)                  }
-}
-
 function update_document() {
   let data={
     document_number:document_number.value ,
     document_catagory_id:page.props.document_catagory.id  ,
     entry_lines:form.value ,
-    date: convert_date_to_sting(document_date.value) ,
+    date:DateObject.ToString(document_date.value)
   }
 
   router.put(props.update_url, data,{
@@ -258,7 +255,7 @@ function create_document(){
     document_number:document_number.value ,
     document_catagory_id:document_catagory.id ,
     entry_lines:form.value ,
-    date: convert_date_to_sting(document_date.value),
+    date:DateObject.ToString(document_date.value),
   }
   router.post(URL, data,{
     onError:(errors)=>{
@@ -375,9 +372,9 @@ function create_document(){
                                 <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4  ">Credite</th>
                                 <th scope="col" class=" border-r border-b  dark:border-neutral-400  py-4">Account</th>
                                 <th scope="col" class=" block border-r border-b  overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Cost center</th>
                                 <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Currency</th>
-                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">rate</th>
-                                <th scope="col" class=" border-r border-b  dark:border-neutral-400 py-4">cost center</th>
+                                <th scope="col" class=" border-r border-b  dark:border-neutral-400 py-4">rate</th>
                                 <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4 border-2 dark:border-neutral-400">
                                   {{ field }}  
                                 </th>
@@ -410,29 +407,13 @@ function create_document(){
                                     </ccc>
                                   </td>
 
-                                  <td class="whitespace-nowrap border-gray-400 ">
+                                  <td class="whitespace-nowrap border-gray-400  ">
                                     <ccc  v-model="form[index].description"  @change="form_have_been_adjusted=true" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="text" />
                                   </td>
 
-                                  <td class="whitespace-nowrap  border-gray-400 ">
-                                    <ccc v-model="form[index].currency" :TableObject="TableObject" :rows_index="index" :columns_index=5
-                                    @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate"  :Default="currencies[0]"  
-                                    Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
-                                      <template #emptySuggestions>
-                                        <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>
-                                      </template>
-                                    </ccc>
-                                  </td>
-
-                                  <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap  border-gray-400 " >
-                                    <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=6 
-                                    :Default ="form[index].currency?.default_rate"  Format="number" 
-                                    />
-                                  </td>
-
                                   <td class="whitespace-nowrap border-r border-gray-400">
-                                    <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=7
+                                    <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=5
                                     Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center"
                                     :Suggestions="searchStore.available_cost_centers.value" >
                                       <template #emptySuggestions>
@@ -442,10 +423,26 @@ function create_document(){
                                     </ccc>
                                   </td>
 
+                                  <td class="whitespace-nowrap  border-gray-400  dark:text-gray-200 text-gray-800 ">
+                                    <ccc v-model="form[index].currency" :TableObject="TableObject" :rows_index="index" :columns_index=6
+                                    @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate" 
+                                    Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
+                                      <template #emptySuggestions>
+                                        <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>
+                                      </template>
+                                    </ccc>
+                                  </td>
+
+                                  <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap  border-gray-400  " >
+                                    <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7
+                                    :Default ="form[index].currency?.default_rate"  Format="number" 
+                                    />
+                                  </td>
+
                                   <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
                                     <ccc  v-model="form[index].customfields[field]" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=8  Format="text" />
-                                  </td>S
+                                  </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">
 

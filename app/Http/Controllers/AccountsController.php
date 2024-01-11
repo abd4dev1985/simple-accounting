@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\JournalEntry;
 use App\Models\Document_catagory;
 use App\Models\Document;
+
 use App\Models\Currency;
 use App\Models\Account;
 
@@ -12,7 +12,7 @@ use App\Actions\AccountingEnrty;
 
 
 use Illuminate\Support\Facades\Cache;
-use App\Models\EntrLines ;
+use App\Models\EntryLines ;
 
 use App\Http\Requests\StoreJournalEntryRequest;
 use App\Http\Requests\UpdateJournalEntryRequest;
@@ -24,6 +24,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Fluent ;
 use App\Actions\DatabaseManager;
 use App\Models\CustomField;
+use Dflydev\DotAccessData\Data;
 
 class AccountsController extends Controller
 {
@@ -44,6 +45,7 @@ class AccountsController extends Controller
         
     }
 
+
     /**
      * Show the form for creating a new resource.
      */
@@ -59,13 +61,22 @@ class AccountsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function ledgerBook(Account $account, Request $request)
+    public function ledgerBook( Request $request)
     {
-       // return  $account ;
-       
-        return EntrLines::where('account_id',$account->id)->
-        where('created_at','>',	"2023-11-28T12:53:23.000000Z")->
-        get();
+        $validator = Validator::make($request->all() ,[
+            'account'=>'required',
+            'StartDate'=>'required','date' ,
+            'EndDate'=>'required','date',
+            ],$masge=[
+
+            ],
+        );
+        if ($validator->fails()) {
+             return back()->withErrors($validator)->withInput();
+        }
+        $data = $validator->validated();
+        return  EntryLines::where('account_id',$data['account']['id'])->where('date','<=',$data['EndDate'])->get();  
+                           
     }
 
     /**
