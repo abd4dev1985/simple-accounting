@@ -16,20 +16,15 @@ import { useToast } from "primevue/usetoast";
 const toast = useToast();
 
 let severity_style= ref('');
-
-
+//define computed props
+const page = usePage()
 
 const LedgerBookForm = useForm({
   account: null,
-  StartDate:null ,
-  EndDate: null ,
+  StartDate:page.props.year_start ,
+  EndDate : new Date() ,
+  Currency:page.props.currencies[0]
 })
-
-
-
-//define computed props
-const page = usePage()
-// const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
 
 function submit(){
@@ -39,6 +34,7 @@ function submit(){
         account: data.account,
         StartDate: DateObject.ToString( data.StartDate )  ,
         EndDate: DateObject.ToString( data.EndDate )    ,
+        Currency:data.Currency
 
     }))
     .post('/account/ledgerBook')
@@ -106,6 +102,30 @@ function submit(){
                 }"
               />
         </div>
+        <!-- INVOICE CURRENCY INPUT  -->
+        <div class=" ">
+              <label class="block text-sm font-semibold text-left " for="">
+                 Currency
+              </label>
+              <AutoComplete v-model="LedgerBookForm.Currency" :suggestions="searchStore.filterd_currencies.value"  
+                @complete="searchStore.search_currencey" optionLabel="name" forceSelection
+                :pt="{
+                    input: {
+                      class: 'bg-white h-8 w-24 py-2 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                    },
+                  }">
+                  <template #empty>
+                      <div   class="font-semibold p-3 border-2 border-blue-500">
+                          <div class=""> currency <span class="text-blue-600">{{Invoice_Currency }}</span> dose not exist </div>
+                          <Link :href="searchStore.create_new_currencey_link.value" class="text-blue-600"> create new one</Link>
+                      </div>
+                  </template> 
+              </AutoComplete>
+            </div>
+
+
+
+
         <!-- submit -->
         <button type="submit" >ok</button>
     </form>

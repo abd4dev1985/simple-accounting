@@ -130,7 +130,6 @@ watch([PaymentMethod,Client_Or_Vendor_Account],([NewPaymentMethod,New_Client_Or_
   }
 })
 
-
 watch([Invoice_Currency,Invoice_Currency_Rate],([New_Invoice_Currency,New_Invoice_Currency_Rate])=>{
   for (let index = 0; index < Invoice_Lines.value.length; index++) {
     Etry_Lines.value[index].currency=New_Invoice_Currency
@@ -141,9 +140,9 @@ watch([Invoice_Currency,Invoice_Currency_Rate],([New_Invoice_Currency,New_Invoic
   }
 
 })
+ Invoice_Currency.value=select_currency()
 console.log(Invoice_Currency.value)
-//Invoice_Currency.value=select_currency()
-
+//debugger;
 
 let form = ref(lines)
 
@@ -312,7 +311,6 @@ function create_document(){
         },
   })
 }
-console.log(Etry_Lines.value)
 
 </script>
 
@@ -437,7 +435,7 @@ console.log(Etry_Lines.value)
                   <template #empty>
                       <div   class="font-semibold p-3 border-2 border-blue-500">
                           <div class=""> currency <span class="text-blue-600">{{Invoice_Currency }}</span> dose not exist </div>
-                          <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
+                          <Link :href="searchStore.create_new_currencey_link.value" class="text-blue-600"> create new one</Link>
                       </div>
                   </template> 
               </AutoComplete>

@@ -25,24 +25,56 @@ const showingNavigationDropdown = ref(false);
 const shadowBackGround = ref(false);
 
 const createWindow = useWinBox()
-let LedgerBooks = ref([])
-let LedgerBooksIndex= ref(1)
+let Account_LedgerBooks = ref([])
+let Inventory_Ledgers = ref([])
+let CostCenter_Ledgers = ref([])
 
-let OpenLedgerBook=()=>{
+
+let Account_LedgerBooks_Index= ref(1)
+let Inventory_Ledger_Index= ref(1)
+let CostCenter_Ledger_Index= ref(1)
+
+
+let Open_Account_LedgerBook=()=>{
     let winbox = createWindow({
-    mount: LedgerBooks.value[LedgerBooksIndex.value-1],
+    mount: Account_LedgerBooks.value[Account_LedgerBooks_Index.value-1],
     title: 'Ledger Book',
     index:40,
     class: 'bg-sky-600',
     width: "75%" , height: "85%" ,
     x: "center", y: "center",
     })
-    LedgerBooksIndex.value++
+    Account_LedgerBooks_Index.value++
     //winbox.setUrl("http://127.0.0.1:8000/teams/create", function(){ 
         /* extern page loaded */
     //})
 }
 
+let Open_Inventory_Ledger=()=>{
+    let winbox = createWindow({
+    mount: Inventory_Ledgers.value[Inventory_Ledger_Index.value-1],
+    title: 'Inventory Ledger ',
+    index:40,
+    class: 'bg-sky-600',
+    width: "75%" , height: "85%" ,
+    x: "center", y: "center",
+    })
+    Inventory_Ledger_Index.value++
+}
+
+let Open_Costcenter_Ledger= ()=>{
+
+    let winbox = createWindow({
+    mount: CostCenter_Ledgers.value[CostCenter_Ledger_Index.value-1],
+    title: 'Cost Center Ledger ',
+    index:40,
+    class: 'bg-sky-600',
+    width: "75%" , height: "85%" ,
+    x: "center", y: "center",
+    })
+    CostCenter_Ledger_Index.value++
+
+}
 
 
 let screenWidth=ref(0);
@@ -118,9 +150,16 @@ const logout = () => {
         <Head :title="title" />
         <Banner />
         <div class="hidden"  >
-            <div v-for="n in LedgerBooksIndex" ref="LedgerBooks">
+            <div v-for="n in Account_LedgerBooks_Index" ref="Account_LedgerBooks">
                 <LedgerBookForm />
             </div>
+            <div v-for="n in Inventory_Ledger_Index" ref="Inventory_Ledgers">
+                <LedgerBookForm />
+            </div>
+            <div v-for="n in CostCenter_Ledger_Index" ref="CostCenter_Ledgers">
+                <LedgerBookForm />
+            </div>
+
         </div>
 
         <div class="relative min-h-screen bg-gray-100 dark:bg-gray-900 ">
@@ -379,7 +418,9 @@ const logout = () => {
                 <!-- SIDE BAR-->
                 <div v-show="showSidebar"  class="larg:relative  flex-none fixed inset-y-0 left-0  w-1/5  min-w-[13rem] bg-gray-800 min-h-screen z-30 text-gray-100 ">
                     <!-- Logo -->
-                     <SideBar @OpenLedgerBook="OpenLedgerBook"   />
+                     <SideBar @Open_Account_LedgerBook="Open_Account_LedgerBook"
+                      @Open_Costcenter_Ledger="Open_Costcenter_Ledger"
+                      @Open_Inventory_Ledger="Open_Inventory_Ledger" />
                 </div>
                 <!-- Page Heading 
                     <header v-if="$slots.header" class="bg-pink-500 dark:bg-gray-800 shadow">

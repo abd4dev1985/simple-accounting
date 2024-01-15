@@ -75,7 +75,10 @@ class AccountsController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
-        return  EntryLines::where('account_id',$data['account']['id'])->where('date','<=',$data['EndDate'])->get();  
+        return  EntryLines::where('account_id',$data['account']['id'])
+                ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
+                //->where('date','<=',$data['EndDate'])
+                ->get();  
                            
     }
 
