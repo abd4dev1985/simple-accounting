@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import { onMounted } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3';
 import LedgerBookForm from '@/pages/LedgerBookForm.vue';
+import InventoryLedger from '@/pages/InventoryLedger.vue';
 
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
@@ -154,7 +155,7 @@ const logout = () => {
                 <LedgerBookForm />
             </div>
             <div v-for="n in Inventory_Ledger_Index" ref="Inventory_Ledgers">
-                <LedgerBookForm />
+                <InventoryLedger />
             </div>
             <div v-for="n in CostCenter_Ledger_Index" ref="CostCenter_Ledgers">
                 <LedgerBookForm />

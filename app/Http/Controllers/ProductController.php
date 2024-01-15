@@ -13,6 +13,7 @@ use App\Actions\AccountingEnrty;
 
 use Illuminate\Support\Facades\Cache;
 use App\Models\EntryLines ;
+use App\Models\Invoice ;
 
 use App\Http\Requests\StoreJournalEntryRequest;
 use App\Http\Requests\UpdateJournalEntryRequest;
@@ -26,10 +27,8 @@ use App\Actions\DatabaseManager;
 use App\Models\CustomField;
 use Dflydev\DotAccessData\Data;
 
-class AccountsController extends Controller
+class ProductController extends Controller
 {
-
-
     public function __construct(Request $request)
     {
         $this->middleware('auth');
@@ -37,14 +36,16 @@ class AccountsController extends Controller
 
     }
 
+    
+    
+    
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        
+        //
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -57,15 +58,47 @@ class AccountsController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-   
+    public function store(Request $request)
+    {
+        //
+    }
+
     /**
      * Display the specified resource.
      */
-    
+    public function show(string $id)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit(string $id)
+    {
+        //
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(string $id)
+    {
+        //
+    }
+
     public function ledgerBook( Request $request)
     {
         $validator = Validator::make($request->all() ,[
-            'account'=>'required',
+            'product'=>'required',
             'StartDate'=>'required','date' ,
             'EndDate'=>'required','date',
             ],$masge=[
@@ -76,34 +109,13 @@ class AccountsController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
-        return  EntryLines::where('account_id',$data['account']['id'])
+        return  Invoice::where('product_id',$data['product']['id'])
                 ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
                 //->where('date','<=',$data['EndDate'])
                 ->get();  
                            
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit()
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update()
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy()
-    {
-        //
-    }
 }

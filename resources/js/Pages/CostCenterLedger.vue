@@ -37,7 +37,7 @@ function submit(){
         Currency:data.Currency
 
     }))
-    .post(route('accounts.ledgerBook'))
+    .post('/account/ledgerBook')
 
 }
 

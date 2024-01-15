@@ -18,6 +18,8 @@ use App\Actions\ImportExcelFile;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\AccountsController;
+use App\Http\Controllers\ProductController;
+
 use App\Http\Controllers\IncomePaymentReceiptController;
 use App\Models\Document_catagory;
 use App\Models\Document;
@@ -90,6 +92,10 @@ Route::controller(AccountsController::class)->group(function () {
     Route::post('/account/ledgerBook','ledgerBook')->name('accounts.ledgerBook');
     Route::delete('/account/{account}/', 'destroy')->name('account.delete');
 });
+
+Route::post('/products/ledgerBook', [ProductController::class, 'ledgerBook'])->name('products.ledgerBook');
+
+Route::resource('products', ProductController::class);
 
 Route::get('/testcache', function () {
     Cache::store('tentant')->put('last general_entry', Document::find(40));
