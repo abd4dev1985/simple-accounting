@@ -109,10 +109,11 @@ class ProductController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
-        return  Invoice::where('product_id',$data['product']['id'])
-                ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
-                //->where('date','<=',$data['EndDate'])
-                ->get();  
+        $invoice =Invoice::where('product_id',$data['product']['id'])
+            ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
+            ->get();  
+            // return back()->with('inventory_ledger',$invoice);
+            return  $invoice;
                            
     }
 

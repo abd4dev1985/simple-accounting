@@ -32,7 +32,8 @@ let CostCenter_Ledgers = ref([])
 
 
 let Account_LedgerBooks_Index= ref(1)
-let Inventory_Ledger_Index= ref(1)
+let Inventory_Ledger_Index= ref(0)
+let Inventory_Ledger_wb =ref([])
 let CostCenter_Ledger_Index= ref(1)
 
 
@@ -52,15 +53,16 @@ let Open_Account_LedgerBook=()=>{
 }
 
 let Open_Inventory_Ledger=()=>{
-    let winbox = createWindow({
-    mount: Inventory_Ledgers.value[Inventory_Ledger_Index.value-1],
-    title: 'Inventory Ledger ',
-    index:40,
-    class: 'bg-sky-600',
-    width: "75%" , height: "85%" ,
-    x: "center", y: "center",
-    })
+    // let winbox = createWindow({
+    // mount: Inventory_Ledgers.value[Inventory_Ledger_Index.value-1],
+   //  title: 'Inventory Ledger ',
+    // index:40,
+    //class: 'bg-sky-600',
+    // width: "75%" , height: "85%" ,
+    // x: "center", y: "center",
+   //  })
     Inventory_Ledger_Index.value++
+
 }
 
 let Open_Costcenter_Ledger= ()=>{
@@ -150,12 +152,12 @@ const logout = () => {
     <div>
         <Head :title="title" />
         <Banner />
+        <div v-for="n in Inventory_Ledger_Index" ref="Inventory_Ledgers" :key="n">
+            <InventoryLedger :index="n"   />
+        </div>
         <div class="hidden"  >
             <div v-for="n in Account_LedgerBooks_Index" ref="Account_LedgerBooks">
                 <LedgerBookForm />
-            </div>
-            <div v-for="n in Inventory_Ledger_Index" ref="Inventory_Ledgers">
-                <InventoryLedger />
             </div>
             <div v-for="n in CostCenter_Ledger_Index" ref="CostCenter_Ledgers">
                 <LedgerBookForm />
