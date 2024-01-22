@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Document_catagory;
 use App\Models\Document;
+use App\Models\Product;
 
 use App\Models\Currency;
 use App\Models\Account;
@@ -99,8 +100,9 @@ class ProductController extends Controller
     {
         $validator = Validator::make($request->all() ,[
             'product'=>'required',
-            'StartDate'=>'required','date' ,
-            'EndDate'=>'required','date',
+            'StartDate'=>['required','date' ],
+            'EndDate'=>['required','date'],
+            'winbox_id'=>'required',
             ],$masge=[
 
             ],
@@ -109,11 +111,19 @@ class ProductController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
-        $invoice =Invoice::where('product_id',$data['product']['id'])
-            ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
-            ->get();  
-            // return back()->with('inventory_ledger',$invoice);
-            return  $invoice;
+        //$product= Product::find($data['product']['id']);
+        $product_invoices =Invoice::where('product_id',$data['product']['id'])
+        ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])->get(); 
+
+        $product_invoices =  $product_invoices->map( function($item)use($data) {
+            $item['name'] = $data['product']['name'];
+            return $item ;
+        });
+        return back()->with('inventory_ledger.'.$data['winbox_id'],$product_invoices);
+
+           // return Inertia::render('InventoryLedger', [
+             //   'invoices'=>$product_invoices ,
+          //  ]);
                            
     }
 

@@ -56,6 +56,7 @@ class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'currencies' => ($request->user())? Currency::all():null,
             'year_start'=> '1/1/2024',
+            'inventory_ledger' => $request->session()->get('inventory_ledger'),
             'default_currency'=> ($request->user())? Currency::where('id',1)->first():null ,
         ]);
     }
