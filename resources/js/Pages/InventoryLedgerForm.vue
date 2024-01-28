@@ -7,7 +7,9 @@ import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
+import DataTable from '@/pages/DataTable.vue';
 import InventoryLedger from '@/pages/InventoryLedger.vue';
+
 
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import ccc from '@/Components/ccc.vue';
@@ -85,7 +87,7 @@ function submit(){
 <div  class="hidden" >
   <div   class=" m-4" ref="inventory_ledger" >
               
-        <h4  class="m-2   text-2xl" >Inventory Ledger</h4>
+        <h4  class="m-2 text-2xl" >Inventory Ledger</h4>
         <form   v-if="ShowForm"    @submit.prevent="submit"   >
             <!-- Default Account Input -->
             <div class=" my-5">
@@ -95,6 +97,7 @@ function submit(){
                     :pt="{
                         input: {
                         class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                        placeholder:'All Products',
                         },
                     }">
                     <template #empty>

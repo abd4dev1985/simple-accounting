@@ -115,10 +115,29 @@ class ProductController extends Controller
         $product_invoices =Invoice::where('product_id',$data['product']['id'])
         ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])->get(); 
 
-        $product_invoices =  $product_invoices->map( function($item)use($data) {
-            $item['name'] = $data['product']['name'];
-            return $item ;
-        });
+        $total_unit_in_store=0;
+
+        // $product_invoices =  $product_invoices->map( function($item)use($data,$total_unit_in_store) {
+        //    $item['name'] = $data['product']['name'];
+        //     if ($item['invoiceable_type']=='purchase') {
+         //       $total_unit_in_store += $item['quantity'];
+         //    }
+
+         //   return $item ;
+       // });
+        $product_invoices =Invoice::selectRaw('
+        SUM(IF(invoiceable_type="purchase", quantity*1,quantity*-1 ))  as in_out_quantity,
+            products.name,
+            product_id ')   
+           ->join('products', 'invoices.product_id', '=', 'products.id')
+           
+        ->groupBy('product_id','products.name')
+        ->get();
+
+
+
+
+        //dd( $product_invoices);
         return back()->with('inventory_ledger.'.$data['winbox_id'],$product_invoices);
 
            // return Inertia::render('InventoryLedger', [
