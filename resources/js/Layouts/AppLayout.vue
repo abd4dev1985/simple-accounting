@@ -54,16 +54,8 @@ let Open_Account_LedgerBook=()=>{
 }
 
 let Open_Inventory_Ledger=()=>{
-    // let winbox = createWindow({
-    // mount: Inventory_Ledgers.value[Inventory_Ledger_Index.value-1],
-   //  title: 'Inventory Ledger ',
-    // index:40,
-    //class: 'bg-sky-600',
-    // width: "75%" , height: "85%" ,
-    // x: "center", y: "center",
-   //  })
     Inventory_Ledger_Index.value++
-
+    closeSidebar();
 }
 
 let Open_Costcenter_Ledger= ()=>{

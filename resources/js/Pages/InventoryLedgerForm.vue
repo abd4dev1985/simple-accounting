@@ -28,12 +28,15 @@ let winbox ;
 let inventory_ledger =ref()
 
 onMounted(() => {
+  let width= (screen.width>1000)? "75%": "100%" ;
+  let height= (screen.width>1000)? "90%": "100%" ;
+  console.log(width)
   winbox=createWindow({
      mount: inventory_ledger.value,
      title:'Inventory Ledger ',
      index:40,
      class:'bg-sky-600',
-     width:"75%" , height: "85%" ,
+     width: width , height: height ,
      x: "center", y: "center",
 
   })

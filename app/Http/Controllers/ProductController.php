@@ -27,6 +27,7 @@ use Illuminate\Support\Fluent ;
 use App\Actions\DatabaseManager;
 use App\Models\CustomField;
 use Dflydev\DotAccessData\Data;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductController extends Controller
 {
@@ -99,7 +100,8 @@ class ProductController extends Controller
     public function ledgerBook( Request $request)
     {
         $validator = Validator::make($request->all() ,[
-            'product'=>'required',
+            'product'=>['nullable','array'],
+            'product.id'=>['required_with:product','numeric'],
             'StartDate'=>['required','date' ],
             'EndDate'=>['required','date'],
             'winbox_id'=>'required',
@@ -109,40 +111,24 @@ class ProductController extends Controller
         );
         if ($validator->fails()) {
              return back()->withErrors($validator)->withInput();
-        }
+        } 
         $data = $validator->validated();
-        //$product= Product::find($data['product']['id']);
-        $product_invoices =Invoice::where('product_id',$data['product']['id'])
-        ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])->get(); 
 
-        $total_unit_in_store=0;
-
-        // $product_invoices =  $product_invoices->map( function($item)use($data,$total_unit_in_store) {
-        //    $item['name'] = $data['product']['name'];
-        //     if ($item['invoiceable_type']=='purchase') {
-         //       $total_unit_in_store += $item['quantity'];
-         //    }
-
-         //   return $item ;
-       // });
         $product_invoices =Invoice::selectRaw('
-        SUM(IF(invoiceable_type="purchase", quantity*1,quantity*-1 ))  as in_out_quantity,
-            products.name,
-            product_id ')   
+            SUM(IF(invoiceable_type="purchase", quantity*1,quantity*-1 ))  as in_stock , products.name, product_id ') 
            ->join('products', 'invoices.product_id', '=', 'products.id')
-           
-        ->groupBy('product_id','products.name')
-        ->get();
+           ->where(function(Builder $query ) use($data){
+                if (array_key_exists("product",$data)) {
+                    $query->where('product_id',$data['product']['id']);
+                }
+           })
+           ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])
+            ->groupBy('product_id','products.name')
+            ->get();
 
-
-
-
-        //dd( $product_invoices);
         return back()->with('inventory_ledger.'.$data['winbox_id'],$product_invoices);
 
-           // return Inertia::render('InventoryLedger', [
-             //   'invoices'=>$product_invoices ,
-          //  ]);
+        
                            
     }
 

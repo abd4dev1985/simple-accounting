@@ -11,10 +11,11 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import DataTable from 'primevue/datatable';
+import InputText from 'primevue/inputtext';
 import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';   
 import Row from 'primevue/row';                   
-
+import { FilterMatchMode } from 'primevue/api';
 
 
 let props =defineProps({
@@ -28,24 +29,47 @@ let props =defineProps({
 let severity_style= ref('');
 //define computed props
 const page = usePage()
-
-
 const currencies= (page.props.currencies)? page.props.currencies:[];
 
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
+   
+});
 
 </script>
 
 <template>
 
-
+  
   <div class="card"  >
-      <DataTable :value="invoices" tableStyle="min-width: 50rem">
-            <Column field="product_id" header="product_id"></Column>
-            <Column field="invoiceable_type" header="invoiceable_type"></Column>
-            <Column field="name" header="Product name"></Column>
-            <Column field="quantity" header="Quantity"></Column>
-            <Column field="price" header="Price"></Column>
-            <Column field="ammount" header="Ammount"></Column>
+      <DataTable :value="invoices" v-model:filters="filters"  filterDisplay="row"
+       :globalFilterFields="['name',]">
+        <template #header>
+          <div class="flex justify-content-end">
+              <span class="p-input-icon-left">
+                  <i class="pi pi-search" />
+                  <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
+              </span>
+          </div>
+        </template>
+
+
+          <Column field="product_id" header="product_id" class="mobile:hidden">
+          </Column>
+
+          <Column field="name"    header="Product name">
+            <template #body="{ data }">
+                  {{ data.name }}
+            </template>
+            <template #filter="{ filterModel, filterCallback }"  >
+
+                  <InputText v-model="filterModel.value"  type="text" @input="filterCallback()" class="p-column-filter" placeholder="Search by name" />
+            </template>
+          </Column>
+
+          <Column field="in_stock" header="In Stock"></Column>
+         
       </DataTable>
   </div>
 
