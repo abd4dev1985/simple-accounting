@@ -16,6 +16,7 @@ import Column from 'primevue/column';
 import ColumnGroup from 'primevue/columngroup';   
 import Row from 'primevue/row';                   
 import { FilterMatchMode } from 'primevue/api';
+import Button from 'primevue/button';
 
 
 let props =defineProps({
@@ -24,7 +25,8 @@ let props =defineProps({
 })
 
 
-
+const dt = ref();
+const exportCSV = () => { dt.value.exportCSV()}
 
 let severity_style= ref('');
 //define computed props
@@ -43,15 +45,19 @@ const filters = ref({
 
   
   <div class="card"  >
-      <DataTable :value="invoices" v-model:filters="filters"  filterDisplay="row"
+      <DataTable :value="invoices" v-model:filters="filters"  filterDisplay="row" ref="dt"
        :globalFilterFields="['name',]">
         <template #header>
-          <div class="flex justify-content-end">
+          <div class="flex justify-between">
               <span class="p-input-icon-left">
                   <i class="pi pi-search" />
                   <InputText v-model="filters['global'].value" placeholder="Keyword Search" />
               </span>
+            <Button icon="pi pi-external-link" label="Export" @click="exportCSV($event)" />
           </div>
+     
+           
+
         </template>
 
 
