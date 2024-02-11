@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Actions\DatabaseManager ;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Product extends Model
 {
@@ -44,6 +45,17 @@ class Product extends Model
     /**
      * Get sales of product.
      */
+
+
+     /**
+     * Get the post that owns the comment.
+     */
+    public function catagory(): BelongsTo
+    {
+        return $this->belongsTo(ProductCatagory::class,'catagory_id');
+    }
+
+
     public function sales(): MorphToMany
     {
         return $this->morphedByMany(Sale::class, 'invoiceable','invoices')

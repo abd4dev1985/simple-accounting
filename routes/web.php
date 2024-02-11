@@ -12,6 +12,8 @@ use App\Models\User;
 
 use App\Models\Invoice;
 use App\Models\EntryLines;
+use App\Models\Account;
+
 
 use App\Actions\ImportExcelFile;
 
@@ -19,6 +21,7 @@ use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\ProductController;
+use App\Actions\TreeAccounts;
 
 use App\Http\Controllers\IncomePaymentReceiptController;
 use App\Models\Document_catagory;
@@ -32,6 +35,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SearchController;
+use App\Models\Product;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,7 +121,10 @@ Route::get('/cleanjson', function () {
 Route::get('/testspeed', function () {
    return Document::where('number',6)->get();
 })->middleware('CurrentDatabase');
-
+Route::get('/testpod', function () {
+   
+    return  product::with('catagory')->get();
+ })->middleware('CurrentDatabase');
 
 
 Route::get('/testexcel', function () {
@@ -173,6 +180,13 @@ Route::get('/assignRole', function () {
     //$user->currentTeam();
     return  $user  ;
 });
+Route::get('/testaccount', function () {
+    $tree_acounts= app(TreeAccounts::class);
+    $tree_acounts->create();
+    return Account::all();
+  
+})->middleware('CurrentDatabase');
+
 
 
 

@@ -495,7 +495,6 @@ function create_document(){
                                   <td class="sticky left-0 bg-inherit z-10  text-center font-medium border  border-gray-400">
                                       <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
                                   </td>
-
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
                                     <ccc v-model="line.product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']"
                                     @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
@@ -554,7 +553,7 @@ function create_document(){
                                       </template>
                                     </ccc>
                                   </td>
-
+                                    <td>{{ console.log(line) }}</td>
                                   <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
                                     <ccc  v-model="line.customfields[field]" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=9  Format="text" />

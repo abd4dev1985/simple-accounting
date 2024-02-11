@@ -32,7 +32,7 @@ class CreateAccountsTable extends Migration
           $table->string('name');
           $table->integer('account_no');
           $table->integer('father_account_id')->nullable();
-          $table->boolean('has_sons_acoounts')->nullable();
+          $table->boolean('has_sons_accounts')->nullable();
           $table->integer('statment_id');
           $table->float('balance')->nullable();
           $table->timestamps();

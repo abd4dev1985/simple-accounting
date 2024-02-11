@@ -25,6 +25,8 @@ class Account extends Model
      */
     protected $connection = 'tentant';
 
+    public static $ancestors=[];
+
     /**
      * entries related to account.
      */
@@ -60,6 +62,28 @@ class Account extends Model
         ->withPivot('debit_amount', 'credit_amount','description');
     }
 
- 
+    public function sub_accounts()
+    {
+        return $this::where('father_account_id',$this->id)->get();
+    }
+
+    public function father_account()
+    {
+        return $this::where('id',$this->father_account_id)->first();
+    }
+
+    public   function get_ancestors()
+    {
+       $account =$this->father_account();
+       if (! is_null($account)) {
+        $this::$ancestors[]=$account;
+        $account->get_ancestors();
+       }else{
+        return $this::$ancestors  ;
+       }
+      
+
+       
+    }
 
 }
