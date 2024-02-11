@@ -30,7 +30,7 @@ class DatabaseManager
     public function currentDatabase(Request $request )
     {
       $db_name= $request->user()->currentTeam->name ;
-      $db_name = Str::slug($db_name,'_');
+      $db_name = Str::slug($db_name,'-');
       $user_name = "user-".$db_name;
       $password=null ;
       config([
@@ -61,6 +61,7 @@ class DatabaseManager
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_09_29_230956_create_cache_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_11_06_090053_create_custom_fields_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_12_08_185118_create_invoices_table.php');
+      Artisan::call('migrate --database=tentant --path=/database/migrations/2024_02_03_090517_create_product_catagories_table.php');
 
 
 
