@@ -34,15 +34,17 @@ class TreeAccounts
         ['id'=>9, 'account_no'=>111,'name'=>'Lands','father_account_id'=>7, 'has_sons_accounts'=>false,'statment_id'=>1 ],
         ['id'=>10,'account_no'=>112,'name'=>'Buldings','father_account_id'=>7, 'has_sons_accounts'=>false,'statment_id'=>1 ],
         ['id'=>11,'account_no'=>113,'name'=>'Cars','father_account_id'=>7, 'has_sons_accounts'=>false,'statment_id'=>1 ],
-        ['id'=>12,'account_no'=>113,'name'=>'Furniture ','father_account_id'=>7, 'has_sons_accounts'=>false,'statment_id'=>1 ],
+        //['id'=>12,'account_no'=>113,'name'=>'Furniture ','father_account_id'=>7, 'has_sons_accounts'=>false,'statment_id'=>1 ],
 
         // Current Asset  subaccounts
         ['id'=>13,'account_no'=>121,'name'=>'Customers','father_account_id'=>8, 'has_sons_accounts'=>true,'statment_id'=>1 ],
         ['id'=>14,'account_no'=>122,'name'=> 'Other debitors','father_account_id'=>8, 'has_sons_accounts'=>true,'statment_id'=>1 ],
         ['id'=>15,'account_no'=>123,'name'=> 'Stock','father_account_id'=>8, 'has_sons_accounts'=>true,'statment_id'=>1 ],
         ['id'=>16,'account_no'=>124,'name'=> 'Prepaid Expenses','father_account_id'=>8, 'has_sons_accounts'=>true,'statment_id'=>1 ],
+        ['id'=>12,'account_no'=>125,'name'=>'cash ','father_account_id'=>8, 'has_sons_accounts'=>false,'statment_id'=>1 ],
+
         // Customers  subaccounts
-        ['id'=>17,'account_no'=>121001,'name'=> '','father_account_id'=>13, 'has_sons_accounts'=>false,'statment_id'=>1 ],
+        ['id'=>17,'account_no'=>121001,'name'=> 'ahmad','father_account_id'=>13, 'has_sons_accounts'=>false,'statment_id'=>1 ],
 
         // NEt Purchases  subaccounts
         ['id'=>18,'account_no'=>51,'name'=> 'Purchases','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>2 ],

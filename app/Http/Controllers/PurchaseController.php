@@ -55,8 +55,8 @@ class PurchaseController extends Controller
                     'document_catagory'=> $document_catagory->id,
                 ]),
                 'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
-                'cash_account'=>Account::find(101),
-                'default_account'=>Account::find(100),
+                'cash_account'=>Account::find(12),
+                'default_account'=>Account::find(18),
                 'pervious_document_url' => !($last_document) ? null: route('purchase.show',[
                     'document_catagory'=>$document_catagory->name,
                     'document'=>$last_document->number,

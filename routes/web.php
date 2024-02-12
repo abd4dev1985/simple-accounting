@@ -181,10 +181,12 @@ Route::get('/assignRole', function () {
     return  $user  ;
 });
 Route::get('/testaccount', function () {
-    $tree_acounts= app(TreeAccounts::class);
-    $tree_acounts->create();
-    return Account::all();
-  
+   // $tree_acounts= app(TreeAccounts::class);
+   // $tree_acounts->create();
+    Account::whereBetween('id',[25,200])->get();
+    $account =Account::all();
+    $account= $account ->groupBy('father_account_id');
+    return  $account;
 })->middleware('CurrentDatabase');
 
 
