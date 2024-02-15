@@ -10,6 +10,7 @@ use App\Models\Account;
 
 use App\Actions\AccountingEnrty;
 
+use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Support\Facades\Cache;
 use App\Models\EntryLines ;
@@ -65,7 +66,7 @@ class AccountsController extends Controller
     public function ledgerBook( Request $request)
     {
         $validator = Validator::make($request->all() ,[
-            'account'=>'required',
+            //'account'=>'required',
             'StartDate'=>'required','date' ,
             'EndDate'=>'required','date',
             ],$masge=[
@@ -78,11 +79,42 @@ class AccountsController extends Controller
         $data = $validator->validated();
         return  EntryLines::where('account_id',$data['account']['id'])
                 ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
-                //->where('date','<=',$data['EndDate'])
+                ->where('date','<=',$data['EndDate'])
                 ->get();  
                            
     }
+     /**
+     * Display the Trial_Balance
+     */
+    public function TrialBalance( Request $request)
+    {
+        $validator = Validator::make($request->all() ,[
+            //'account'=>'required',
+            'StartDate'=>'required','date' ,
+            'EndDate'=>'required','date',
+            ],$masge=[
 
+            ],
+        );
+        if ($validator->fails()) {
+             return back()->withErrors($validator)->withInput();
+        }
+        $data = $validator->validated();
+
+        $accounts =EntryLines::selectRaw('
+            SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance , accounts.name, account_id') 
+           ->join('accounts', 'account_entry.account_id', '=', 'accounts.id')
+          // ->where(function(Builder $query ) use($data){
+           //     if (array_key_exists("product",$data)) {
+           //         $query->where('product_id',$data['product']['id']);
+            //    }
+          // })
+           ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])
+            ->groupBy('account_id','accounts.name')
+            ->get();
+            return   $accounts ;
+                           
+    }
     /**
      * Show the form for editing the specified resource.
      */

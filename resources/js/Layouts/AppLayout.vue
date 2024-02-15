@@ -5,6 +5,8 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import LedgerBookForm from '@/pages/LedgerBookForm.vue';
 import InventoryLedger from '@/pages/InventoryLedger.vue';
 import InventoryLedgerForm from '@/pages/InventoryLedgerForm.vue';
+import TrialBalanceForm from '@/pages/TrialBalanceForm.vue';
+
 
 import ApplicationMark from '@/Components/ApplicationMark.vue';
 import Banner from '@/Components/Banner.vue';
@@ -47,11 +49,14 @@ const shadowBackGround = ref(false);
 const createWindow = useWinBox()
 let Account_LedgerBooks = ref([])
 let Inventory_Ledgers = ref([])
+let TrialBalanceForms = ref([])
 let CostCenter_Ledgers = ref([])
 
 
 let Account_LedgerBooks_Index= ref(1)
 let Inventory_Ledger_Index= ref(0)
+let TrialBalanceForms_Index= ref(0)
+
 let Inventory_Ledger_wb =ref([])
 let CostCenter_Ledger_Index= ref(1)
 
@@ -73,6 +78,10 @@ let Open_Account_LedgerBook=()=>{
 
 let Open_Inventory_Ledger=()=>{
     Inventory_Ledger_Index.value++
+    closeSidebar();
+}
+let Open_TrialBalance_Form=()=>{
+    TrialBalanceForms_Index.value++
     closeSidebar();
 }
 
@@ -165,6 +174,9 @@ const logout = () => {
         <Banner />
         <div v-for="n in Inventory_Ledger_Index" ref="Inventory_Ledgers" :key="n">
             <InventoryLedgerForm :index="n"   />
+        </div>
+        <div v-for="n in TrialBalanceForms_Index" ref="Inventory_Ledgers" :key="n">
+            <TrialBalanceForm :index="n"   />
         </div>
         <div class="hidden"  >
             <div v-for="n in Account_LedgerBooks_Index" ref="Account_LedgerBooks">
@@ -434,6 +446,7 @@ const logout = () => {
                     <!-- Logo -->
                      <SideBar @Open_Account_LedgerBook="Open_Account_LedgerBook"
                       @Open_Costcenter_Ledger="Open_Costcenter_Ledger"
+                      @Open_TrialBalance_Form="Open_TrialBalance_Form" 
                       @Open_Inventory_Ledger="Open_Inventory_Ledger" />
                 </div>
                 <!-- Page Heading 

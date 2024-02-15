@@ -49,6 +49,7 @@ defineProps({
 
             <template  #menue_items >
                 <div  @click="$emit('Open_Account_LedgerBook')" class="py-1 text-left pl-3 cursor-pointer "  >Ledger Book</div>
+                <div  @click="$emit('Open_TrialBalance_Form')" class="py-1 text-left pl-3 cursor-pointer "  >Trail Balance</div>
                 <div  class="py-1 text-left pl-3 cursor-pointer  " >Begin Entry </div>       
             </template> 
         </SubMenue>

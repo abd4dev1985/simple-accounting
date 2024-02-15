@@ -36,6 +36,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SearchController;
 use App\Models\Product;
+use League\CommonMark\Extension\InlinesOnly\ChildRenderer;
+use PhpParser\Node\Stmt\Foreach_;
 
 /*
 |--------------------------------------------------------------------------
@@ -94,6 +96,8 @@ Route::controller(PurchaseController::class)->group(function () {
 Route::controller(AccountsController::class)->group(function () {
     //Route::get('/account/ledgerBookForm/{account?}','ledgerBook_form')->name('accounts.ledgerBookForm');
     Route::post('/account/ledgerBook','ledgerBook')->name('accounts.ledgerBook');
+    Route::post('/account/TrialBalance','TrialBalance')->name('accounts.TrialBalance');
+
     Route::delete('/account/{account}/', 'destroy')->name('account.delete');
 });
 
@@ -180,17 +184,6 @@ Route::get('/assignRole', function () {
     //$user->currentTeam();
     return  $user  ;
 });
-Route::get('/testaccount', function () {
-   // $tree_acounts= app(TreeAccounts::class);
-   // $tree_acounts->create();
-    Account::whereBetween('id',[25,200])->get();
-    $account =Account::all();
-    $account= $account ->groupBy('father_account_id');
-    return  $account;
-})->middleware('CurrentDatabase');
-
-
-
 
 Route::get('/migrate_force', function (Request $request) {
     //Artisan::call('migrate --database=tentant --path=/database/migrations/2023_11_06_090053_create_custom_fields_table.php');
