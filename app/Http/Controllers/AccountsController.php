@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Support\Facades\Cache;
 use App\Models\EntryLines ;
+use Illuminate\Database\Query\JoinClause ;
 
 use App\Http\Requests\StoreJournalEntryRequest;
 use App\Http\Requests\UpdateJournalEntryRequest;
@@ -69,6 +70,8 @@ class AccountsController extends Controller
             //'account'=>'required',
             'StartDate'=>'required','date' ,
             'EndDate'=>'required','date',
+            'winbox_id'=>'required',
+
             ],$masge=[
 
             ],
@@ -89,9 +92,12 @@ class AccountsController extends Controller
     public function TrialBalance( Request $request)
     {
         $validator = Validator::make($request->all() ,[
-            //'account'=>'required',
+            'account'=>['nullable','array'],
+            'account.id'=>['required_with:account','numeric'],
             'StartDate'=>'required','date' ,
             'EndDate'=>'required','date',
+            'winbox_id'=>'required',
+
             ],$masge=[
 
             ],
@@ -100,20 +106,17 @@ class AccountsController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
+        $id = (array_key_exists("account",$data))? $data['account']['id']:null;
 
-        $accounts =EntryLines::selectRaw('
-            SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance , accounts.name, account_id') 
-           ->join('accounts', 'account_entry.account_id', '=', 'accounts.id')
-          // ->where(function(Builder $query ) use($data){
-           //     if (array_key_exists("product",$data)) {
-           //         $query->where('product_id',$data['product']['id']);
-            //    }
-          // })
-           ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])
-            ->groupBy('account_id','accounts.name')
-            ->get();
-            return   $accounts ;
-                           
+        $balances  =Account::balances($id,$data['StartDate'],$data['EndDate']);
+        
+       
+           //return  Account::Descendants_accounts($id,$balances);
+            $accounts=Account::Descendants_accounts($id,$balances);
+            return back()->with('tial_balance.'.$data['winbox_id'],$accounts);
+
+            
+                                  
     }
     /**
      * Show the form for editing the specified resource.

@@ -125,9 +125,9 @@ Route::get('/cleanjson', function () {
 Route::get('/testspeed', function () {
    return Document::where('number',6)->get();
 })->middleware('CurrentDatabase');
-Route::get('/testpod', function () {
-   
-    return  product::with('catagory')->get();
+Route::get('/balance', function () {
+   Account::where('id','>',0)->update(['balance'=>null]);
+    return  Account::all();
  })->middleware('CurrentDatabase');
 
 

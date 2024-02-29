@@ -57,6 +57,13 @@ class TreeAccounts
         ['id'=>23,'account_no'=>62,'name'=> 'Salse return','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>2 ],
         ['id'=>24,'account_no'=>63,'name'=> 'Salse discounts','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>2 ],
 
+        //Liabilities  subaccounts
+        ['id'=>25,'account_no'=>21,'name'=> 'fixed Liabilities','father_account_id'=>2, 'has_sons_accounts'=>true,'statment_id'=>1 ],
+        ['id'=>26,'account_no'=>22,'name'=> 'Current Liabilities','father_account_id'=>2, 'has_sons_accounts'=>true,'statment_id'=>1 ],
+
+        //fixed Liabilities  subaccounts
+        ['id'=>27,'account_no'=>21,'name'=> 'capital fund','father_account_id'=>26, 'has_sons_accounts'=>true,'statment_id'=>1 ],
+
 
     ];
     public $items=[];

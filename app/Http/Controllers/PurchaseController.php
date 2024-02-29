@@ -135,6 +135,7 @@ class PurchaseController extends Controller
     public function show(Document_catagory $document_catagory, Document $document)
     {
         $purchase =$document->purchase()->first();
+        //dd( $purchase->products );
         $invoice_line = $purchase->products->map(function($item){
             $item['pivot']['product'] =  ['id'=>$item['id']  ,'name'=>$item['name'] ];
             return $item['pivot'];

@@ -33,7 +33,7 @@ onMounted(() => {
   console.log(width)
   winbox=createWindow({
      mount: inventory_ledger.value,
-     title:'Inventory Ledger ',
+     title:'trial balance',
      index:40,
      class:'bg-sky-600',
      width: width , height: height ,
@@ -70,7 +70,7 @@ function submit(){
     .post(route('accounts.TrialBalance'),{
       onSuccess: () =>{
          // winbox.close()
-         FormResult.value=page.props.inventory_ledger[winbox.id]
+         FormResult.value=page.props.tial_balance[winbox.id]
          ShowForm.value=false
 
       }, 
@@ -89,7 +89,7 @@ function submit(){
 <div  class="hidden" >
   <div   class=" m-4" ref="inventory_ledger" >
               
-        <h4  class="m-2 text-2xl" >Trial Balance</h4>
+        <h4  class="m-2 text-2xl" >Trial Balance </h4>
         <form   v-if="ShowForm"    @submit.prevent="submit"   >
             <!-- Default Account Input -->
             <div class=" my-5">
@@ -172,7 +172,7 @@ function submit(){
         </form>
         <!-- result -->
         <div v-if="FormResult"  >
-          <InventoryLedger :invoices="FormResult" />
+          {{ FormResult }}
         </div>
         
 

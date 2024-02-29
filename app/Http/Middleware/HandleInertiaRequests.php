@@ -57,6 +57,8 @@ class HandleInertiaRequests extends Middleware
             'currencies' => ($request->user())? Currency::all():null,
             'year_start'=> '1/1/2024',
             'inventory_ledger' => $request->session()->get('inventory_ledger'),
+            'tial_balance' => $request->session()->get('tial_balance'),
+
             'default_currency'=> ($request->user())? Currency::where('id',1)->first():null ,
         ]);
     }

@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use SebastianBergmann\Type\NullType;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Query\JoinClause ;
+
 
 class Account extends Model
 {
@@ -32,6 +36,7 @@ class Account extends Model
      */
     public function entries(): BelongsToMany
     {
+        
         return $this->belongsToMany(Entry::class)
         ->withPivot('debit_amount', 'credit_amount','description','currency_id','currency_rate','customfields','date',);
     }
@@ -62,9 +67,93 @@ class Account extends Model
         ->withPivot('debit_amount', 'credit_amount','description');
     }
 
+    /**
+     *  return account with balance or sub_accounts with balance
+     */
+    public static function balances($id,$start_date,$end_date )
+    {
+        $balances =EntryLines::selectRaw('
+        accounts.name,SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance , account_id ,father_account_id') 
+       ->join('accounts', 'account_entry.account_id', '=', 'accounts.id')
+        ->where(function(Builder $query ) use($id){
+           if ( isset($id) ) {
+                $ID_list =self::Get_Children_ids($id) ;
+                $query->whereIn('account_id',$ID_list);
+            }
+       })
+       ->whereBetween('date', [ $start_date,$end_date ])
+        ->groupBy('account_id','accounts.name','father_account_id');
+        return $balances ;
+       // ->get();
+        
+    }
+
+
+
     public function sub_accounts()
     {
         return $this::where('father_account_id',$this->id)->get();
+    }
+
+    public static function Get_Children_ids($account_id){
+
+        $grouped_accounts = self::all()->groupBy('father_account_id');
+        $ids=[$account_id];
+        if ($grouped_accounts->has($account_id)) {
+            $account_children= $grouped_accounts[$account_id];
+            foreach ($account_children as $child) {
+                $GLOBALS['ids'][]=$child->id ;
+                self::Get_Children_ids($child->id);
+            }
+            return $GLOBALS['ids']   ;
+        }else{
+             return  $ids  ;
+        }
+       
+    }
+
+    public static function Get_Children($account,$groupedaAcounts){
+        $ids=[];
+        if ($groupedaAcounts->has($account->id)) {
+            $account['children'] = $groupedaAcounts[$account->id];
+            foreach ($account['children'] as $child) {
+                $GLOBALS['ids'][]=$child->id ;
+                self::Get_Children($child,$groupedaAcounts);
+            }
+        }
+
+        return [ 'accounts'=>$account ,'ids'=>$GLOBALS['ids']   ];
+    }
+
+    public static function Descendants_accounts( $id,$balances=null)
+    {
+        $accounts_with_balances = self::selectRaw('id,balances.balance,accounts.name,accounts.father_account_id')
+        ->leftJoinSub($balances, 'balances', function (JoinClause $join) {
+            $join->on('accounts.id', '=', 'balances.account_id');
+        })->get();  
+        $accounts_grouped_by_parent =  $accounts_with_balances->groupBy('father_account_id');
+
+        if (isset($id)) {
+            return self::Get_Children(self::find($id),$accounts_grouped_by_parent);
+        }else{
+            $accounts= self::whereIn('id',[1,2,3,4,5])->get();
+            return $accounts->map( function($account) use($accounts_grouped_by_parent){
+                return self::Get_Children(self::find($account->id),$accounts_grouped_by_parent);
+            });
+        }  
+
+
+        //dd( $accounts_grouped_by_parent);
+        //$grouped_accounts = $grouped_accounts?->groupBy('father_account_id') ?? self::all()->groupBy('father_account_id');
+      //  $grouped_accounts= self::all()   ;
+      ////  if (isset($id)) {
+      ///      return self::Get_Children(self::find($id),$grouped_accounts);
+      //  }else{
+        //    $accounts= self::whereIn('id',[1,2,3,4,5])->get();
+        //    return $accounts->map( function($account) use($grouped_accounts){
+         //       return self::Get_Children(self::find($account->id),$grouped_accounts);
+         //   });
+       // }  
     }
 
     public function father_account()
