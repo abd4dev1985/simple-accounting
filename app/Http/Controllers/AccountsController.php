@@ -2,15 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Document_catagory;
-use App\Models\Document;
-
-use App\Models\Currency;
+use Illuminate\Contracts\Database\Eloquent\Builder;
 use App\Models\Account;
 
 use App\Actions\AccountingEnrty;
 
-use Illuminate\Database\Eloquent\Builder;
 
 use Illuminate\Support\Facades\Cache;
 use App\Models\EntryLines ;
@@ -22,11 +18,6 @@ use App\Models\Entry;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Fluent ;
-use App\Actions\DatabaseManager;
-use App\Models\CustomField;
-use Dflydev\DotAccessData\Data;
 
 class AccountsController extends Controller
 {
@@ -67,7 +58,7 @@ class AccountsController extends Controller
     public function ledgerBook( Request $request)
     {
         $validator = Validator::make($request->all() ,[
-            //'account'=>'required',
+            'account'=>'required',
             'StartDate'=>'required','date' ,
             'EndDate'=>'required','date',
             'winbox_id'=>'required',
@@ -80,10 +71,45 @@ class AccountsController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
-        return  EntryLines::where('account_id',$data['account']['id'])
-                ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
-                ->where('date','<=',$data['EndDate'])
-                ->get();  
+        $account = Account::find($data['account']['id']);
+
+        $Account_with_SubAccounts =$account->Sub_Accounts();
+        $Accounts_Ids_Array = Account::find($data['account']['id'])->Sub_Accounts_Ids();
+
+        //$accounts = Account::with('entries')->whereIn('id', $Accounts_Ids_Array)->get();
+
+        $entries = EntryLines::whereIn('account_id',$Accounts_Ids_Array )
+        ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
+        ->where('date','<=',$data['EndDate'])->get()->groupBy('account_id');
+
+        $accounts = $Account_with_SubAccounts->map( function( $account ) use( $entries){
+        if ($entries->has($account->id)) {
+                $account->entries = $entries[$account->id];
+            }
+            return $account;
+        });
+         if (count( $accounts)<2) {
+            return back()->with('Account_Ledger_Book.'.$data['winbox_id'],$accounts->first());
+        }
+
+        $Account_GroupedBy_Parent = $accounts->groupBy('father_account_id');
+        function Tree_Account($account,$Account_GroupedBy_Parent){
+            if ($Account_GroupedBy_Parent->has($account->id)) {
+                $account->children = $Account_GroupedBy_Parent[$account->id];
+                foreach ($account->children as $child) {
+                    Tree_Account($child,$Account_GroupedBy_Parent);
+                }
+            }
+            return $account;
+        }
+        $account_tree = Tree_Account($account,$Account_GroupedBy_Parent) ;
+        //dd ($account_tree)  ;
+        return back()->with('Account_Ledger_Book.'.$data['winbox_id'],$account_tree);
+
+        // return  EntryLines::whereIn('account_id',$Accounts_Ids_Array )
+        //        ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
+         //       ->where('date','<=',$data['EndDate'])
+        //        ->get()->groupBy('account_id');  
                            
     }
      /**
@@ -111,7 +137,6 @@ class AccountsController extends Controller
         $balances  =Account::balances($id,$data['StartDate'],$data['EndDate']);
         
        
-           //return  Account::Descendants_accounts($id,$balances);
             $accounts=Account::Descendants_accounts($id,$balances);
             return back()->with('tial_balance.'.$data['winbox_id'],$accounts);
 

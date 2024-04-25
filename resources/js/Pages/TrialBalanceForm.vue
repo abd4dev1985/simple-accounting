@@ -8,7 +8,7 @@ import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
 import DataTable from '@/pages/DataTable.vue';
-import InventoryLedger from '@/pages/InventoryLedger.vue';
+import TrialBalance from '@/pages/TrialBalance.vue';
 
 
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
@@ -172,7 +172,10 @@ function submit(){
         </form>
         <!-- result -->
         <div v-if="FormResult"  >
-          {{ FormResult }}
+          <TrialBalance :accounts="FormResult"  >
+            
+          </TrialBalance>
+
         </div>
         
 

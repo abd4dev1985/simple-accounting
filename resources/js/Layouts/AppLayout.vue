@@ -19,23 +19,24 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { useWinBox } from 'vue-winbox'
 import { VueWinBox } from 'vue-winbox'
 
-if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-  console.log("enumerateDevices() not supported.");
-} else {
+// if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+  // console.log("enumerateDevices() not supported.");
+//} else {
   // List cameras and microphones.
-  navigator.mediaDevices
-    .enumerateDevices()
-    .then((devices) => {
-      devices.forEach((device) => {
-        console.log(device)
-        console.log(`${device.kind}: ${device.label} id = ${device.deviceId}`);
-      });
-    })
-    .catch((err) => {
-      console.log(`${err.name}: ${err.message}`);
-    });
-}
-navigator.mediaDevices
+
+  // navigator.mediaDevices
+  //  .enumerateDevices()
+   // .then((devices) => {
+   //   devices.forEach((device) => {
+    //    console.log(device)
+    //    console.log(`${device.kind}: ${device.label} id = ${device.deviceId}`);
+    //  });
+    // })
+    //.catch((err) => {
+    //  console.log(`${err.name}: ${err.message}`);
+   // });
+//}
+// navigator.mediaDevices
 
 
 
@@ -53,7 +54,7 @@ let TrialBalanceForms = ref([])
 let CostCenter_Ledgers = ref([])
 
 
-let Account_LedgerBooks_Index= ref(1)
+let Account_LedgerBooks_Index= ref(0)
 let Inventory_Ledger_Index= ref(0)
 let TrialBalanceForms_Index= ref(0)
 
@@ -62,18 +63,9 @@ let CostCenter_Ledger_Index= ref(1)
 
 
 let Open_Account_LedgerBook=()=>{
-    let winbox = createWindow({
-    mount: Account_LedgerBooks.value[Account_LedgerBooks_Index.value-1],
-    title: 'Ledger Book',
-    index:40,
-    class: 'bg-sky-600',
-    width: "75%" , height: "85%" ,
-    x: "center", y: "center",
-    })
-    Account_LedgerBooks_Index.value++
-    //winbox.setUrl("http://127.0.0.1:8000/teams/create", function(){ 
-        /* extern page loaded */
-    //})
+     Account_LedgerBooks_Index.value ++
+     closeSidebar();
+
 }
 
 let Open_Inventory_Ledger=()=>{
@@ -86,16 +78,6 @@ let Open_TrialBalance_Form=()=>{
 }
 
 let Open_Costcenter_Ledger= ()=>{
-
-    let winbox = createWindow({
-    mount: CostCenter_Ledgers.value[CostCenter_Ledger_Index.value-1],
-    title: 'Cost Center Ledger ',
-    index:40,
-    class: 'bg-sky-600',
-    width: "75%" , height: "85%" ,
-    x: "center", y: "center",
-    })
-    CostCenter_Ledger_Index.value++
 
 }
 
@@ -172,21 +154,16 @@ const logout = () => {
     <div>
         <Head :title="title" />
         <Banner />
-        <div v-for="n in Inventory_Ledger_Index" ref="Inventory_Ledgers" :key="n">
+        <div v-for="n in Account_LedgerBooks_Index "  :key="n">
+            <LedgerBookForm :index="n"   />
+        </div>
+        <div v-for="n in Inventory_Ledger_Index"  :key="n">
             <InventoryLedgerForm :index="n"   />
         </div>
-        <div v-for="n in TrialBalanceForms_Index" ref="Inventory_Ledgers" :key="n">
+        <div v-for="n in TrialBalanceForms_Index" :key="n">
             <TrialBalanceForm :index="n"   />
         </div>
-        <div class="hidden"  >
-            <div v-for="n in Account_LedgerBooks_Index" ref="Account_LedgerBooks">
-                <LedgerBookForm />
-            </div>
-            <div v-for="n in CostCenter_Ledger_Index" ref="CostCenter_Ledgers">
-                <LedgerBookForm />
-            </div>
-
-        </div>
+        
 
         <div class="relative min-h-screen bg-gray-100 dark:bg-gray-900 ">
             <nav class="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700">

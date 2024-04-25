@@ -122,9 +122,11 @@ Route::get('/cleanjson', function () {
 })->middleware('CurrentDatabase');
 
 
-Route::get('/testspeed', function () {
-   return Document::where('number',6)->get();
+Route::get('/nodetree', function () {
+ return Account::find(1)->sub_accounts();
+      
 })->middleware('CurrentDatabase');
+
 Route::get('/balance', function () {
    Account::where('id','>',0)->update(['balance'=>null]);
     return  Account::all();

@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use SebastianBergmann\Type\NullType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause ;
+use Illuminate\Support\Facades\DB;
+
 
 
 class Account extends Model
@@ -89,10 +91,33 @@ class Account extends Model
     }
 
 
-
+    /**
+     *  return account with sub_accounts 
+     */
     public function sub_accounts()
     {
-        return $this::where('father_account_id',$this->id)->get();
+        $accounts= DB::connection('tentant')->select('
+            WITH RECURSIVE account_tree AS (
+                SELECT id, name, father_account_id, 1 AS level
+                FROM accounts 
+                WHERE (father_account_id IS NULL AND id = ?) OR id = ?
+                UNION ALL
+                SELECT a.id, a.name, a.father_account_id, at.level + 1 AS level
+                FROM accounts a
+                JOIN account_tree at   ON a.father_account_id = at.id
+            )
+            SELECT * FROM account_tree;'
+        ,[ $this->id,$this->id]);
+        return  collect($accounts);
+        //return $this::where('father_account_id',$this->id)->get();
+    }
+
+    public function Sub_Accounts_Ids()
+    {
+        $Sub_Accounts_Ids = $this->sub_accounts()->map(function($account){
+            return $account->id;
+        });
+        return $Sub_Accounts_Ids ;
     }
 
     public static function Get_Children_ids($account_id){
@@ -113,7 +138,6 @@ class Account extends Model
     }
 
     public static function Get_Children($account,$groupedaAcounts){
-        $ids=[];
         if ($groupedaAcounts->has($account->id)) {
             $account['children'] = $groupedaAcounts[$account->id];
             foreach ($account['children'] as $child) {
@@ -122,9 +146,9 @@ class Account extends Model
             }
         }
 
-        return [ 'accounts'=>$account ,'ids'=>$GLOBALS['ids']   ];
+        return $account;
     }
-
+    
     public static function Descendants_accounts( $id,$balances=null)
     {
         $accounts_with_balances = self::selectRaw('id,balances.balance,accounts.name,accounts.father_account_id')
@@ -134,7 +158,7 @@ class Account extends Model
         $accounts_grouped_by_parent =  $accounts_with_balances->groupBy('father_account_id');
 
         if (isset($id)) {
-            return self::Get_Children(self::find($id),$accounts_grouped_by_parent);
+            return [self::Get_Children(self::find($id),$accounts_grouped_by_parent)];
         }else{
             $accounts= self::whereIn('id',[1,2,3,4,5])->get();
             return $accounts->map( function($account) use($accounts_grouped_by_parent){
@@ -169,10 +193,15 @@ class Account extends Model
         $account->get_ancestors();
        }else{
         return $this::$ancestors  ;
-       }
-      
-
-       
+       } 
     }
+    public  function DescendantsAccounts( )
+    {
+    
+    }
+
+
+
+
 
 }
