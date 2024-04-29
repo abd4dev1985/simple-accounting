@@ -2,9 +2,10 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3';
-import LedgerBookForm from '@/pages/LedgerBookForm.vue';
-import InventoryLedger from '@/pages/InventoryLedger.vue';
-import InventoryLedgerForm from '@/pages/InventoryLedgerForm.vue';
+import LedgerBookForm from '@/pages/LedgerAccount/LedgerBookForm.vue';
+import InventoryLedgerForm from '@/pages/Inventory/InventoryLedgerForm.vue';
+import InventoryValuationForm from '@/pages/Inventory/InventoryValuationForm.vue';
+
 import TrialBalanceForm from '@/pages/TrialBalanceForm.vue';
 
 
@@ -19,24 +20,6 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import { useWinBox } from 'vue-winbox'
 import { VueWinBox } from 'vue-winbox'
 
-// if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-  // console.log("enumerateDevices() not supported.");
-//} else {
-  // List cameras and microphones.
-
-  // navigator.mediaDevices
-  //  .enumerateDevices()
-   // .then((devices) => {
-   //   devices.forEach((device) => {
-    //    console.log(device)
-    //    console.log(`${device.kind}: ${device.label} id = ${device.deviceId}`);
-    //  });
-    // })
-    //.catch((err) => {
-    //  console.log(`${err.name}: ${err.message}`);
-   // });
-//}
-// navigator.mediaDevices
 
 
 
@@ -50,12 +33,16 @@ const shadowBackGround = ref(false);
 const createWindow = useWinBox()
 let Account_LedgerBooks = ref([])
 let Inventory_Ledgers = ref([])
+let Inventory_Valuation = ref([])
+
 let TrialBalanceForms = ref([])
 let CostCenter_Ledgers = ref([])
 
 
 let Account_LedgerBooks_Index= ref(0)
 let Inventory_Ledger_Index= ref(0)
+let Inventory_Valuation_Index= ref(0)
+
 let TrialBalanceForms_Index= ref(0)
 
 let Inventory_Ledger_wb =ref([])
@@ -65,13 +52,18 @@ let CostCenter_Ledger_Index= ref(1)
 let Open_Account_LedgerBook=()=>{
      Account_LedgerBooks_Index.value ++
      closeSidebar();
+}
 
+let Open_Inventory_Valuation=()=>{
+    Inventory_Valuation_Index.value++
+    closeSidebar();
 }
 
 let Open_Inventory_Ledger=()=>{
     Inventory_Ledger_Index.value++
     closeSidebar();
 }
+
 let Open_TrialBalance_Form=()=>{
     TrialBalanceForms_Index.value++
     closeSidebar();
@@ -156,6 +148,9 @@ const logout = () => {
         <Banner />
         <div v-for="n in Account_LedgerBooks_Index "  :key="n">
             <LedgerBookForm :index="n"   />
+        </div>
+        <div v-for="n in Inventory_Valuation_Index"  :key="n">
+            <InventoryValuationForm :index="n"   />
         </div>
         <div v-for="n in Inventory_Ledger_Index"  :key="n">
             <InventoryLedgerForm :index="n"   />
@@ -424,6 +419,8 @@ const logout = () => {
                      <SideBar @Open_Account_LedgerBook="Open_Account_LedgerBook"
                       @Open_Costcenter_Ledger="Open_Costcenter_Ledger"
                       @Open_TrialBalance_Form="Open_TrialBalance_Form" 
+                      @Open_Inventory_Valuation="Open_Inventory_Valuation" 
+
                       @Open_Inventory_Ledger="Open_Inventory_Ledger" />
                 </div>
                 <!-- Page Heading 

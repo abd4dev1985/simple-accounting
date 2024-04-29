@@ -5,14 +5,13 @@ import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
-import searchStore from '../searchStore.vue';
-import DateObject from '../DateObject.vue';
+import searchStore from '../../searchStore.vue';
+import DateObject from '../../DateObject.vue';
 import DataTable from '@/pages/DataTable.vue';
-import InventoryLedger from '@/pages/InventoryLedger.vue';
+import InventoryValuation from '@/pages/Inventory/InventoryValuation.vue';
 
 
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
-import ccc from '@/Components/ccc.vue';
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
 import { useWinBox } from 'vue-winbox'
@@ -25,14 +24,14 @@ let props =defineProps({
 })
 const createWindow = useWinBox()
 let winbox ;
-let inventory_ledger =ref()
+let inventory_Valuation =ref()
 
 onMounted(() => {
   let width= (screen.width>1000)? "75%": "100%" ;
   let height= (screen.width>1000)? "90%": "100%" ;
   console.log(width)
   winbox=createWindow({
-     mount: inventory_ledger.value,
+     mount: inventory_Valuation.value,
      title:'Inventory Ledger ',
      index:40,
      class:'bg-sky-600',
@@ -67,10 +66,10 @@ function submit(){
         Currency:data.Currency,
         winbox_id:winbox.id,
     }))
-    .post(route('products.ledgerBook'),{
+    .post(route('InventoryValuation'),{
       onSuccess: () =>{
          // winbox.close()
-         FormResult.value=page.props.inventory_ledger[winbox.id]
+         FormResult.value=page.props.inventory_Valuation[winbox.id]
          ShowForm.value=false
 
       }, 
@@ -87,9 +86,9 @@ function submit(){
 
 <template>
 <div  class="hidden" >
-  <div   class=" m-4" ref="inventory_ledger" >
+  <div   class=" m-4" ref="inventory_Valuation" >
               
-        <h4  class="m-2 text-2xl" >Inventory Ledger</h4>
+        <h4  class="m-2 text-2xl" >Inventory Valuation</h4>
         <form   v-if="ShowForm"    @submit.prevent="submit"   >
             <!-- Default Account Input -->
             <div class=" my-5">
@@ -143,7 +142,7 @@ function submit(){
                     }"
                   />
             </div>
-            <!-- INVOICE CURRENCY INPUT  -->
+            <!-- valuation  CURRENCY INPUT  -->
             <div class=" ">
                   <label class="block text-sm font-semibold text-left " for="">
                     Currency
@@ -164,15 +163,12 @@ function submit(){
                   </AutoComplete>
                 </div>
 
-
-
-
             <!-- submit -->
             <button type="submit" >ok</button>
         </form>
         <!-- result -->
         <div v-if="FormResult"  >
-          <InventoryLedger :invoices="FormResult" />
+          <InventoryValuation :products="FormResult" />
         </div>
         
 

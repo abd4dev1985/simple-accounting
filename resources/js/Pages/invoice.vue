@@ -337,7 +337,7 @@ function create_document(){
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
             </div>
           </h1>
-
+          <!-- header inputs like enrtry no,payment method,date and Currency  -->
           <div class="flex flex-wrap gap-y-5 gap-x-5 tab:gap-x-8     tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
             <!-- INPUT DOCUMENT NUMBER -->
             <div class="flex-initial  w-max">
@@ -470,9 +470,9 @@ function create_document(){
 
 
             
-            <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
-               <!-- entry table   -->
-               <div ref="scrollable_table"  class=" lg:h-[410px] mx-6 relative  overflow-auto scrollbar larg:max-w-[73vw]     " >
+            <form class="sm:-mx-1 lg:-mx-2 h-screen flex flex-col " id="myform" @submit.prevent="submit">
+               <!-- invoice table   -->
+               <div ref="scrollable_table"  class=" flex-initial  h-[45vh] mobile:h-[30vh]  mx-6  relative  overflow-auto scrollbar larg:max-w-[73vw]     " >
                     <table class=" dark:text-gray-200   text-center border-collapse text-sm font-light">
                         
                             <thead ref="tableHeader" class="sticky top-0   z-[20] dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
@@ -568,23 +568,33 @@ function create_document(){
                             
                     </table>
                 </div>
-
-                <div class=" w-60 inline-flex justify-around bg-sky-200  ">
-                  <div class="">Total ammount</div>
-
-                    <div class="">{{ format_number(Totals_Ammount) }}</div>
-                </div>
+                
               <!-- buttons --> 
-              <div  class="flex justify-end w-9/12  my-0.5 float-right  mr-9">
-                <Link @click.prevent="console.log(form_have_been_adjusted)" href="/create_entry/general_entry/documents" class=" p-2 mx-4 font-semibold rounded-md bg-black text-white "  >New  {{ form_have_been_adjusted }}</Link>
-                <button @click="update_document" class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Update</button>
-                <div @click="DeleteModal=true" class=" p-2 mx-4 font-semibold rounded-md bg-red-600 text-white "   >Delete</div>
-                <button class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Print</button>
-                <button class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "  type="submit" >save</button>
+              <div  class="flex-none grid justify-start grid-cols-5 tab:grid-cols-10 items-start  h-[20vh] space-x-5 mobile:space-x-2 w-full gap-y-5  my-3  ">
+                
+                <button class="block mobile:col-span-2 ml-5 py-2 px-4 font-semibold rounded-md bg-sky-700 text-white min-w-max "  type="submit" >
+                   <span v-if="operation=='create'" >save </span>  <span v-else="operation=='create'" >Update </span>
+                </button>
+                
+                <div @click="DeleteModal=true" class="mobile:col-span-2 p-2 min-w-max font-semibold rounded-md bg-red-600 text-white text-center "   >Delete</div>
+                
+                <button @click="update_document" class="mobile:col-span-2 p-2 min-w-max font-semibold rounded-md text-gray-900 border-2 border-gray-600"   >Share</button>
+
+                <Link @click.prevent="console.log(route('purchase.create',props.document_catagory.name))" :href="route('purchase.create',props.document_catagory.name)" class="block mobile:col-span-2 min-w-max p-2 font-semibold rounded-md bg-black text-white text-center "  >
+                  New  
+                </Link>
+
+                <button class="block mobile:col-span-2 min-w-fit p-2  font-semibold rounded-md bg-white text-gray-800 border-2 px-4 border-gray-600"   >Print</button>
+
+                <div class="col-span-5 tab:order-none order-first  font-bold text-right ">
+                  <div class="tab:ml-[40%]  p-2 rounded-md bg-white text-sky-950 w-max ring-1 shadow-2xl " >
+                    Total ammount <span class=" mx-4">{{Totals_Ammount?format_number(Totals_Ammount):0 }}</span>
+                  </div>
+                </div>
+
 
               </div>
             </form>
-            <div   class="clear-both"></div>
             <Toast 
               :pt="{ 
                     root:{class: 'opacity-95'},

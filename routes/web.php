@@ -102,6 +102,8 @@ Route::controller(AccountsController::class)->group(function () {
 });
 
 Route::post('/products/ledgerBook', [ProductController::class, 'ledgerBook'])->name('products.ledgerBook');
+Route::post('/products/InventoryValuation', [ProductController::class, 'InventoryValuation'])->name('InventoryValuation');
+
 
 Route::resource('products', ProductController::class);
 

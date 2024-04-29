@@ -3,7 +3,7 @@
 import { reactive ,computed,watch,onMounted,ref,defineAsyncComponent  } from 'vue'
 import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
-import DateObject from '../DateObject.vue';
+import DateObject from '../../DateObject.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 import DataTable from 'primevue/datatable';

@@ -10,7 +10,7 @@ import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import SubMenue from '@/Components/SubMenue.vue';
 
-const emit = defineEmits(['Open_Account_LedgerBook','Open_Inventory_Ledger','Open_Costcenter_Ledger'])
+const emit = defineEmits(['Open_Account_LedgerBook','Open_Inventory_Ledger','Open_Costcenter_Ledger','Open_Inventory_Valuation'])
 
 defineProps({
     title: String,
@@ -83,7 +83,8 @@ defineProps({
 
             <template  #menue_items >
                 <div @click="$emit('Open_Inventory_Ledger')" class="py-1 text-left pl-3 cursor-pointer "  >Inventory Ledger</div>
-                <div  class="py-1 text-left pl-3 " >Begin Entry </div>       
+                <div @click="$emit('Open_Inventory_Valuation')" class="py-1 text-left pl-3 cursor-pointer "  >Inventory Valuation</div>
+
             </template> 
         </SubMenue>
 
@@ -114,7 +115,7 @@ defineProps({
 
             <template  #menue_items >            
                 <div  class="py-1 text-left pl-3 " >
-                    <Link  href="/create_purchase/purchase_invoice/documents" >General Purchases</Link>
+                    <Link  :href="route('purchase.create','General purchase')" >General Purchases</Link>
                 </div>       
             </template> 
         </SubMenue>

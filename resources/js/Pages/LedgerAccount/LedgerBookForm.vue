@@ -5,9 +5,9 @@ import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
-import searchStore from '../searchStore.vue';
-import DateObject from '../DateObject.vue';
-import LedgerBook from '@/pages/LedgerBook.vue';
+import searchStore from '../../searchStore.vue';
+import DateObject from '@/DateObject.vue';
+import LedgerBook from '@/pages/LedgerAccount/LedgerBook.vue';
 
 import { useWinBox } from 'vue-winbox'
 
