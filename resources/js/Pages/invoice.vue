@@ -1,7 +1,7 @@
 <script setup>
 
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { reactive ,computed,watch,onUpdated,ref,  } from 'vue'
+import { reactive ,computed,watch,onUpdated,ref,onMounted  } from 'vue'
 import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import AutoComplete from 'primevue/autocomplete';
 import Dropdown from 'primevue/dropdown';
@@ -9,6 +9,7 @@ import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
+import MoblieInvoiceTable from '@/Pages/MoblieInvoiceTable.vue';
 
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
@@ -19,9 +20,24 @@ import { useToast } from "primevue/usetoast";
 import { useWinBox } from 'vue-winbox'
 
 const toast = useToast();
+let screenWidth=ref(0);
+screenWidth.value= document.getElementById("app").offsetWidth
+let Device_is_Mobile = ref(screenWidth.value <=800?true:false )
+
+
 const createWindow = useWinBox()
 
 let severity_style= ref('');
+
+onMounted(() => {
+    if (window !== undefined) {
+        window.addEventListener('resize', ()=>{
+        screenWidth.value= document.getElementById("app").offsetWidth
+        Device_is_Mobile.value = screenWidth.value <=800?true:false 
+
+        })
+    }
+})
 
 let props =defineProps({
     entry_lines:{ type: Array , default:[] }   ,
@@ -141,7 +157,6 @@ watch([Invoice_Currency,Invoice_Currency_Rate],([New_Invoice_Currency,New_Invoic
 
 })
  Invoice_Currency.value=select_currency()
-console.log(Invoice_Currency.value)
 //debugger;
 
 let form = ref(lines)
@@ -472,7 +487,17 @@ function create_document(){
             
             <form class="sm:-mx-1 lg:-mx-2 h-screen flex flex-col " id="myform" @submit.prevent="submit">
                <!-- invoice table   -->
-               <div ref="scrollable_table"  class=" flex-initial  h-[45vh] mobile:h-[30vh]  mx-6  relative  overflow-auto scrollbar larg:max-w-[73vw]     " >
+
+               <div v-if="Device_is_Mobile"  >
+                  <div>ITEMS</div>
+                  <div v-for="(line,index) in Invoice_Lines"  :key="index" >
+
+                  </div>
+               </div>
+               <MoblieInvoiceTable   v-if="Device_is_Mobile"   >
+
+               </MoblieInvoiceTable>
+               <div v-if="!Device_is_Mobile"   ref="scrollable_table"  class=" flex-initial  h-[45vh] mobile:h-[30vh]  mx-6  relative  overflow-auto scrollbar larg:max-w-[73vw]     " >
                     <table class=" dark:text-gray-200   text-center border-collapse text-sm font-light">
                         
                             <thead ref="tableHeader" class="sticky top-0   z-[20] dark:bg-gray-700 bg-white border-b-2 font-medium dark:border-neutral-500">
@@ -553,7 +578,7 @@ function create_document(){
                                       </template>
                                     </ccc>
                                   </td>
-                                    <td>{{ console.log(line) }}</td>
+                                    <td></td>
                                   <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
                                     <ccc  v-model="line.customfields[field]" 
                                     :TableObject="TableObject"  :rows_index="index" :columns_index=9  Format="text" />
@@ -578,7 +603,7 @@ function create_document(){
                 
                 <div @click="DeleteModal=true" class="mobile:col-span-2 p-2 min-w-max font-semibold rounded-md bg-red-600 text-white text-center "   >Delete</div>
                 
-                <button @click="update_document" class="mobile:col-span-2 p-2 min-w-max font-semibold rounded-md text-gray-900 border-2 border-gray-600"   >Share</button>
+                <button @click="update_document" class="mobile:col-span-2 p-1.5 min-w-max font-semibold rounded-md text-gray-900 border-2 border-gray-600"   >Share</button>
 
                 <Link @click.prevent="console.log(route('purchase.create',props.document_catagory.name))" :href="route('purchase.create',props.document_catagory.name)" class="block mobile:col-span-2 min-w-max p-2 font-semibold rounded-md bg-black text-white text-center "  >
                   New  
