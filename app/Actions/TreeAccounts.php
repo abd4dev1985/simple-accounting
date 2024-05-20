@@ -47,15 +47,15 @@ class TreeAccounts
         ['id'=>17,'account_no'=>121001,'name'=> 'ahmad','father_account_id'=>13, 'has_sons_accounts'=>false,'statment_id'=>1 ],
 
         // NEt Purchases  subaccounts
-        ['id'=>18,'account_no'=>51,'name'=> 'Purchases','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>2 ],
-        ['id'=>19,'account_no'=>52,'name'=> 'Purchases return','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>2 ],
-        ['id'=>20,'account_no'=>53,'name'=> 'Purchases transport expenses','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>2 ],
-        ['id'=>21,'account_no'=>54,'name'=> 'Purchases discounts','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>2 ],
+        ['id'=>18,'account_no'=>51,'name'=> 'Purchases','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>3 ],
+        ['id'=>19,'account_no'=>52,'name'=> 'Purchases return','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>3 ],
+        ['id'=>20,'account_no'=>53,'name'=> 'Purchases transport expenses','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>3 ],
+        ['id'=>21,'account_no'=>54,'name'=> 'Purchases discounts','father_account_id'=>5, 'has_sons_accounts'=>false,'statment_id'=>3 ],
 
         //NEt Sales  subaccounts
-        ['id'=>22,'account_no'=>61,'name'=> 'Salse','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>2 ],
-        ['id'=>23,'account_no'=>62,'name'=> 'Salse return','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>2 ],
-        ['id'=>24,'account_no'=>63,'name'=> 'Salse discounts','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>2 ],
+        ['id'=>22,'account_no'=>61,'name'=> 'Salse','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>3 ],
+        ['id'=>23,'account_no'=>62,'name'=> 'Salse return','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>3 ],
+        ['id'=>24,'account_no'=>63,'name'=> 'Salse discounts','father_account_id'=>6, 'has_sons_accounts'=>false,'statment_id'=>3 ],
 
         //Liabilities  subaccounts
         ['id'=>25,'account_no'=>21,'name'=> 'fixed Liabilities','father_account_id'=>2, 'has_sons_accounts'=>true,'statment_id'=>1 ],

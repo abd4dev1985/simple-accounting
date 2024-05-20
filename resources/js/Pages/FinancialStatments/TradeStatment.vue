@@ -5,8 +5,6 @@ import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
-import searchStore from '../searchStore.vue';
-import DateObject from '../DateObject.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 

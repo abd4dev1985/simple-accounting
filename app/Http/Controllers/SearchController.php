@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Validator;
 use Inertia\Inertia;
 use App\Models\Account;
 use App\Models\Product;
+use App\Models\CustomField;
+
 
 use App\Models\CostCenter ;
 use Illuminate\Http\RedirectResponse;
@@ -46,4 +48,16 @@ class SearchController extends Controller
         $suggested_products = Product::where('name','like','%'.$qurey.'%')->get();
         return $suggested_products ;
     }
+
+    public function search_custom_fieled(Request $request)
+    {
+        $qurey = $request->searchForCustomfield;
+        
+        $suggested_custom_fields = CustomField::where('name','like','%'.$qurey.'%')->get();
+        return $suggested_custom_fields ;
+    }
+
+
+
+
 }

@@ -5,11 +5,11 @@ namespace App\Actions;
 use App\Models\Document;
 use App\Models\Entry;
 use App\Models\Purchase;
-
+use App\Models\Product;
 use App\Models\Invoice as Invoice_line;
 use App\Models\Sale;
+use App\Actions\Inventory\Inventory;
 
-use App\Actions\AccountingEnrty;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Query\Builder;
@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
 use App\Rules\CompositeUnique;
+use Closure;
 
 class Invoice 
 {
@@ -47,8 +48,15 @@ class Invoice
      */
     public function create(Document $document   ,array $input )
     {
-        $purchase=Purchase::create(['document_id'=>$document->id]);
-         // dtata1 for inoice lines
+        switch ($this->invoice_type) {
+            case 'purchase':
+                $invoice = Purchase::create(['document_id'=>$document->id]);
+            break;
+            case 'sale':
+                $invoice = Sale::create(['document_id'=>$document->id]);
+            break;    
+            
+        }
         $data =[];
         $tota_ammount=0;
 
@@ -56,7 +64,7 @@ class Invoice
         foreach ($lines as $index=> $line) {
             $tota_ammount+=$line['ammount'];
             $data[$index] =[
-                'invoiceable_id'=>$purchase->id,
+                'invoiceable_id'=>$invoice->id,
                 'invoiceable_type' => $this->invoice_type,
                 'product_id'=> $line['product']['id'],
                 'quantity'=>$line['quantity'],
@@ -72,7 +80,7 @@ class Invoice
         }
      
         Invoice_line::upsert($data,['invoiceable_id']); 
-        return $purchase ;
+        return $invoice ;
     }
     
     public function validate(array $input)
@@ -88,7 +96,12 @@ class Invoice
             'date' => ['required', 'date'],
             'document_catagory_id' => ['required', 'numeric','exists:tentant.document_catagories,id'],
             'lines.*.product' => 'nullable|array|required_with:lines.*.price,lines.*.quantity' ,
-            'lines.*.quantity' => 'nullable|numeric|required_with:lines.*.price,lines.*.product|gt:0',
+            'lines.*.quantity' => ['nullable','numeric','required_with:lines.*.price,lines.*.product','gt:0',
+            //function(string $attribute, mixed $valu, Closure $fail,array $data){}
+            ],
+
+
+           // 'lines.*.quantity' => 'nullable|numeric|required_with:lines.*.price,lines.*.product|gt:0',
             'lines.*.price' => 'nullable|numeric|required_with:lines.*.quantity,lines.*.product|gt:0',
             'lines.*.cost_center' => 'nullable|array' ,
             'lines.*.currency_rate' => 'required' ,
@@ -101,6 +114,14 @@ class Invoice
 
         ],
         );
+
+        $validator->after(function ($validator)  {
+            dd($validator->getData()) ;
+            $products = Product::all()->random(10);
+            $product_count = app(Inventory::class)->CountProducts( $products,today() );
+        });
+
+
         
         if ($validator->fails()) {
              $this->validation_is_failed=true;

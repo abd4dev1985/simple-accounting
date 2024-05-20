@@ -123,35 +123,18 @@ class ProductController extends Controller
 
     public function ledgerBook( Request $request)
     {
-        $validator = Validator::make($request->all() ,[
-            'product'=>['nullable','array'],
-            'product.id'=>['required_with:product','numeric'],
-            'StartDate'=>['required','date' ],
-            'EndDate'=>['required','date'],
-            'winbox_id'=>'required',
-            ],$masge=[
+        $validator = Validator::make($request->all(),['winbox_id'=>'required',]);
+        if ($validator->fails()){
+            return back()->withErrors($validator)->withInput();
+        }
+        $inventory= app(Inventory::class);
+        $data= $inventory->validate( $request->all());
+        if (  $inventory->validation_is_failed) {  
+            return back()->withErrors($inventory->validator)->withInput();
+        }
 
-            ],
-        );
-        if ($validator->fails()) {
-             return back()->withErrors($validator)->withInput();
-        } 
-        $data = $validator->validated();
-
-        $product_invoices =Invoice::selectRaw('
-            SUM(IF(invoiceable_type="purchase", quantity*1,quantity*-1 ))  as in_stock , products.name, product_id ') 
-           ->join('products', 'invoices.product_id', '=', 'products.id')
-           ->where(function(Builder $query ) use($data){
-                if (array_key_exists("product",$data)) {
-                    $query->where('product_id',$data['product']['id']);
-                }
-           })
-           ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])
-            ->groupBy('product_id','products.name')
-            ->get();
-
-        return back()->with('inventory_ledger.'.$data['winbox_id'],$product_invoices);
-                           
+        $products_count = $inventory->Count($data);
+        return back()->with('inventory_ledger.'.$request['winbox_id'],$products_count);                 
     }
 
 

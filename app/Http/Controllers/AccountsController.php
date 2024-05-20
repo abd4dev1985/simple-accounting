@@ -134,14 +134,10 @@ class AccountsController extends Controller
         $data = $validator->validated();
         $id = (array_key_exists("account",$data))? $data['account']['id']:null;
 
-        $balances  =Account::balances($id,$data['StartDate'],$data['EndDate']);
-        
-       
-            $accounts=Account::Descendants_accounts($id,$balances);
-            return back()->with('tial_balance.'.$data['winbox_id'],$accounts);
-
-            
-                                  
+        $accounts_with_balances  =Account::balances($id,$data['StartDate'],$data['EndDate']);
+        // $accounts=Account::Descendants_accounts($id,$balances);
+         return back()->with('tial_balance.'.$data['winbox_id'],$accounts_with_balances);
+                           
     }
     /**
      * Show the form for editing the specified resource.

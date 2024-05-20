@@ -12,6 +12,8 @@ use Laravel\Jetstream\Jetstream;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
+
 use Illuminate\Support\Facades\Artisan;
 
 class CreateDatabase 
@@ -30,6 +32,7 @@ class CreateDatabase
 
         $Validated=Validator::make($input, [
             'name' => ['required', 'string', 'max:255', 'unique:teams'],
+            'StartPeriod' =>['required'],
         ])->validateWithBag('createTeam');
 
        // $Validated =  $Validator->safe()->all();
@@ -52,6 +55,8 @@ class CreateDatabase
             die("DB ERROR: " . $e->getMessage());
         }
         config(['database.connections.tentant.database'=>$db,]) ;
+        Cache::store('tentant')->put('StartPeriod',$Validated['StartPeriod'] );
+
        
     }
     

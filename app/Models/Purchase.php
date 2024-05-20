@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Actions\Inventory\Inventory;
+use Illuminate\Support\Facades\Cache;
+use function Illuminate\Events\queueable;
+
+
 
 class Purchase extends Model
 {
@@ -42,6 +47,18 @@ class Purchase extends Model
     public function document(): BelongsTo
     {
         return $this->belongsTo(Document::class);
+    }
+
+    /**
+     * The "booted" method of the model.
+     */
+    protected static function booted(): void
+    {
+        static::created( queueable (function (Purchase $purchase) {
+            $inventory = app(Inventory::class);
+            $data =['StartDate'=>Cache::store('tentant')->get('StartPeriod'),'EndDate'=>today()];
+            Cache::store('tentant')->put('Inventory_Count',$inventory->count($data))     ;   
+        }));
     }
 
 

@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
 use App\Rules\CompositeUnique;
+use Illuminate\Support\Facades\Cache;
+
+
 
 class Inventory 
 {
@@ -90,7 +93,51 @@ class Inventory
         
         $validated_data = $validator->validated();
         return  $validated_data;
-    
+    }
+
+    /**
+     * count ending inventory all product or specific product
+     *
+     */
+    public function Count(array $input )
+    {
+        $data = $input;
+        $products =Invoice::selectRaw('
+            SUM(IF(invoiceable_type="purchase", quantity*1,quantity*-1 ))  as in_stock , products.name, product_id ') 
+           ->join('products', 'invoices.product_id', '=', 'products.id')
+           ->where(function(Builder $query ) use($data){
+                if (array_key_exists("product",$data)) {
+                    $query->where('product_id',$data['product']['id']);
+                }
+           })
+           ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']])
+            ->groupBy('product_id','products.name')
+            ->get();
+        return   $products ;
+                         
+    }
+
+    /**
+     * count ending inventory for group of products
+     *
+     */
+    public function CountProducts( $products,$date )
+    {
+        //$array = collect($products)->map(fn($product)=>$product->id);
+        $array = collect($products)->map(function($product){
+            return $product->id ;
+        });
+        $counted_products =Invoice::selectRaw('
+            SUM(IF(invoiceable_type="purchase", quantity*1,quantity*-1 ))  as in_stock , products.name, product_id ') 
+           ->join('products', 'invoices.product_id', '=', 'products.id')
+           ->where(function(Builder $query ) use($array,$date){
+                $query->whereIn('product_id',$array);
+           })
+           ->whereBetween('date', [ 'StartDate'=>Cache::store('tentant')->get('StartPeriod') , $date])
+            ->groupBy('product_id','products.name')
+            ->get();
+        return   $counted_products ;
+                         
     }
 
 

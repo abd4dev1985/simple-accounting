@@ -10,8 +10,7 @@ use SebastianBergmann\Type\NullType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause ;
 use Illuminate\Support\Facades\DB;
-
-
+use SebastianBergmann\Type\FalseType;
 
 class Account extends Model
 {
@@ -85,9 +84,9 @@ class Account extends Model
        })
        ->whereBetween('date', [ $start_date,$end_date ])
         ->groupBy('account_id','accounts.name','father_account_id');
-        return $balances ;
-       // ->get();
-        
+         return self:: Descendants_accounts( $id,$balances ) ;
+       // return $balances;
+
     }
 
 
@@ -134,16 +133,21 @@ class Account extends Model
         }else{
              return  $ids  ;
         }
-       
+    
     }
 
     public static function Get_Children($account,$groupedaAcounts){
-        if ($groupedaAcounts->has($account->id)) {
-            $account['children'] = $groupedaAcounts[$account->id];
+        if ($groupedaAcounts->has($account->id)) {   
+            $account['balance'] =0 ;    
+            $account['children'] = $groupedaAcounts[$account->id]; 
             foreach ($account['children'] as $child) {
-                $GLOBALS['ids'][]=$child->id ;
+               // $GLOBALS['ids'][]=$child->id ;
                 self::Get_Children($child,$groupedaAcounts);
-            }
+            } 
+            $account['balance'] =  $account['children']->reduce(function( $carry, $child){
+                $child['balance'] = ($child['balance'])? $child['balance']:0 ;
+                return $carry+$child['balance'] ;
+            });
         }
 
         return $account;

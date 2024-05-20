@@ -10,9 +10,6 @@ import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
 import MoblieInvoiceTable from '@/Pages/MoblieInvoiceTable.vue';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-
 
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
@@ -21,11 +18,10 @@ import ccc from '@/Components/ccc.vue';
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
 import Invoice from '../InvoiceLines.vue';
-import {Create_Invoice_Line,Create_Entry_Line} from '../EntryInvoiceLines.vue';
 
 import { useWinBox } from 'vue-winbox'
 
-// console.log(Setup_Lines)
+//console.log(Setup_Lines)
 const toast = useToast();
 let screenWidth=ref(0);
 screenWidth.value= document.getElementById("app").offsetWidth
@@ -35,16 +31,6 @@ let Device_is_Mobile = ref(screenWidth.value <=800?true:false )
 const createWindow = useWinBox()
 
 let severity_style= ref('');
-
-onMounted(() => {
-    if (window !== undefined) {
-        window.addEventListener('resize', ()=>{
-        screenWidth.value= document.getElementById("app").offsetWidth
-        Device_is_Mobile.value = screenWidth.value <=800?true:false 
-
-        })
-    }
-})
 
 let props =defineProps({
     entry_lines:{ type: Array , default:[] }   ,
@@ -69,6 +55,7 @@ let props =defineProps({
     pervious_document_url :{  },
     next_document_url :{  },
 })
+
 function get_standard_object(){
   let standard_object ={}
     props.customfields.forEach(field => {
@@ -85,10 +72,10 @@ const currencies= (page.props.currencies)? page.props.currencies:[];
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
 let document_date = ref( (props.document)? props.document.date : new Date() )
 
+
 searchStore.available_currencies.value = currencies
 
 let form_have_been_adjusted = ref(false);
-
 let DeleteModal = ref(false)
 
 let default_account=ref(props.default_account)
@@ -106,55 +93,65 @@ function select_currency(){
   return { id:currencies[0].id , name:currencies[0].name }
 }
 
+
 let Invoice_Currency =ref( select_currency() )
 let Invoice_Currency_Rate =ref((props.document)?  props.Invoice_Currency_Rate  :1  )
 
-let Copy_Invoice_Lines = props.invoice_lines.map((obj) =>{ 
-  obj.customfields = JSON.parse(obj.customfields)
-  return {...obj} 
-});
-let Invoice_Lines = ref ( );
- Invoice_Lines.value = Copy_Invoice_Lines ;
 
-let Etry_Lines=ref( (props.entry_lines)? props.entry_lines :[] )
-let rows_count = 30 + Invoice_Lines.value.length;
+
+let Invoice_Lines = ref ( )  ;
+let Etry_Lines=ref( )
+let rows_count = 30 + props.invoice_lines.length;
+
+let Setup_Lines = function(Invoice_Lines,Etry_Lines,Cash_Account,Count_oF_Lines,currency,customfields){
+   let Custom_fields = get_standard_object(customfields)
+    if ( !Etry_Lines[0]) {
+        Etry_Lines[0]={
+            debit_amount:null,credit_amount:null,account:Cash_Account,description:null,
+            currency:currency,currency_rate:1,cost_center:null , customfields: Custom_fields,
+        }
+    }
+    for (let index = 0; index < Count_oF_Lines; index++) {
+        if ( !Invoice_Lines[index]) {
+            Invoice_Lines[index]={
+                quantity:null,price:null,product:null,ammount:null,description:null,currency:currency,
+                currency_rate:1, cost_center:null , customfields: Custom_fields,
+            }
+        }
+        if (!Etry_Lines[index] && index !=0 ) {
+            Etry_Lines[index]={
+                debit_amount:null,credit_amount:null,account:null,description:null,
+                currency:currency,currency_rate:1,cost_center:null , customfields:Custom_fields,
+            }  
+        }
+    }
+
+    let invoice= { Invoice_Lines:Invoice_Lines,Etry_Lines:Etry_Lines};
+    return invoice ;
+  }
+
+
+let my_invoice = Setup_Lines(props.invoice_lines,props.entry_lines,props.cash_account,rows_count,Invoice_Currency,props.customfields)
+Invoice_Lines.value = my_invoice.Invoice_Lines
+Etry_Lines.value = my_invoice.Etry_Lines
+console.log('my_invoice')
+console.log(my_invoice)
+
+
+onMounted(() => {
+  if (window !== undefined) {
+      window.addEventListener('resize', ()=>{
+      screenWidth.value= document.getElementById("app").offsetWidth
+      Device_is_Mobile.value = screenWidth.value <=800?true:false 
+      })
+  }
+    
+})
+
+
 
 // create array from the lines of receipt (form)
-if ( !Etry_Lines.value[0]) {
-  Etry_Lines.value[0]={
-    debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
-    currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-  }
-}
-for (let index = 0; index < rows_count; index++) {
-  if ( !Invoice_Lines.value[index]) {
-    Invoice_Lines.value[index]={
-      quantity:null,price:null,product:null,ammount:null,description:null,currency:Invoice_Currency.value,
-      currency_rate:1, cost_center:null , customfields: get_standard_object(),
-    }
-  }
-
-  if (!Etry_Lines.value[index] && index !=0 ) {
-    Etry_Lines.value[index]={
-      debit_amount:null,credit_amount:null,account:null,description:null,
-      currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-    }  
-  }
-}
-Etry_Lines.value.push(Etry_Lines.value[Etry_Lines.value.length-1])
-
-// add more lines(products) to invoice  
-function Add_Lines(){
-  Invoice_Lines.value.push({
-    quantity:null,price:null,product:null,ammount:null,description:null,currency:Invoice_Currency.value,
-    currency_rate:1, cost_center:null , customfields: get_standard_object(),
-  })
-  Etry_Lines.value.push({
-    debit_amount:null,credit_amount:null,account:null,description:null,
-    currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-  })
-}
-
+let lines=[]
 
 watch([PaymentMethod,Client_Or_Vendor_Account],([NewPaymentMethod,New_Client_Or_Vendor_Account])=>{
   if (NewPaymentMethod.name=='cash') {
@@ -178,6 +175,7 @@ watch([Invoice_Currency,Invoice_Currency_Rate],([New_Invoice_Currency,New_Invoic
  Invoice_Currency.value=select_currency()
 //debugger;
 
+let form = ref(lines)
 
 const rows = ref([])
 const scrollable_table = ref()
@@ -185,7 +183,7 @@ const scrollable_table = ref()
 let column_index=0
 
 const tableHeader=ref()
-// calculate invoice total ammount , also calculate total credi or debit ammount for entry
+
 const Totals_Ammount =computed(()=>{
   let total = 0
   Invoice_Lines.value.forEach(line => {
@@ -198,11 +196,12 @@ const Totals_Ammount =computed(()=>{
     Etry_Lines.value[0].credit_amount=total
   }
   if (props.invoice_type=='sale') {
-    Etry_Lines.value[0].debit_amount = total
+    Etry_Lines.value[0].debit_amount=total
   }
 
   return total
 });
+
 
 let TableObject =computed(()=>{
   return {
@@ -238,7 +237,7 @@ function clear_form(){
   PaymentMethod.value={name:'cash'}
   Etry_Lines.value[0]={
     debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
-    currencey:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+    currencey:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
   }
   rows_count = 30 
   for(let index = 0; index < rows_count; index++) {
@@ -248,10 +247,12 @@ function clear_form(){
     }
     Etry_Lines.value[index]={
       debit_amount:null,credit_amount:null,account:null,description:null,
-      currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+      currency:null,currency_rate:1,cost_center:null , customfields: get_standard_object(),
     }  
   }
+
   document_number.value=(props.document)? props.document.number: props.new_document_number
+
 }
 
 function submit() {
@@ -274,6 +275,9 @@ function delete_document(){
   }
   )
 }
+
+
+
 
 function update_document() {
   router.put(props.update_url, {
@@ -301,7 +305,8 @@ function update_document() {
       severity_style.value ='bg-green-400 text-white'
       toast.add({ severity: 'success', summary: 'successfully updated', detail:'kkk' , life: 3000 });
     },  
-  }) 
+  })
+    
 }
 
 function create_document(){
@@ -337,8 +342,6 @@ function create_document(){
         },
   })
 }
-const dt = ref();
-const exportCSV = () => { dt.value.exportCSV()}
 
 </script>
 
@@ -498,13 +501,15 @@ const exportCSV = () => { dt.value.exportCSV()}
                <!-- invoice table for mobile   -->
                <div v-if="Device_is_Mobile" class="mx-3"  >
                   <h1>ITEMS</h1>
-                  <div v-for="(line,index) in Invoice_Lines"  :key="index" > 
-                      <MoblieInvoiceTable  v-model:line="Invoice_Lines[index]" @change="get_ammount(index)" :default_line="props.invoice_lines[index]"  >
+                  <div v-for="(line,index) in Invoice_Lines"  :key="index" >
+                      <MoblieInvoiceTable  v-model:line="Invoice_Lines[index]" @change="get_ammount(index)" >
+
 
                       </MoblieInvoiceTable>
                   </div>
-                  <MoblieInvoiceTable  v-model:line="Invoice_Lines[Invoice_Lines.length-1]" @New_Line_Added="Add_Lines()" @change="get_ammount(Invoice_Lines.length-1)" v-slot="slotProps">
-                    <div @click="slotProps.open_Product_Modal" class="font-semibold text-green-600 mt-4 ">  + Add Product</div>
+                  <MoblieInvoiceTable  v-model:line="Invoice_Lines[Invoice_Lines.length-2]"   v-slot="slotProps">
+                    <div @click="slotProps.open_Product_Modal" class="font-semibold text-green-600 ">  + Add Product</div>
+
                   </MoblieInvoiceTable>
                   
                </div>
@@ -598,9 +603,11 @@ const exportCSV = () => { dt.value.exportCSV()}
 
                                   <td class="whitespace-nowrap border border-gray-400">
 
+                                    
                                   </td>
                                 </tr>
                             </tbody>
+                            
                     </table>
                 </div>
                 
@@ -619,9 +626,7 @@ const exportCSV = () => { dt.value.exportCSV()}
                   New  
                 </Link>
 
-                <button @click="exportCSV($event)"  class="block mobile:col-span-2 min-w-fit p-2  font-semibold rounded-md bg-white text-gray-800 border-2 px-4 border-gray-600"   >
-                  Export
-                </button>
+                <button class="block mobile:col-span-2 min-w-fit p-2  font-semibold rounded-md bg-white text-gray-800 border-2 px-4 border-gray-600"   >Print</button>
 
                 <div class="col-span-5 tab:order-none order-first  font-bold text-right ">
                   <div class="tab:ml-[40%]  p-2 rounded-md bg-white text-sky-950 w-max ring-1 shadow-2xl " >
@@ -629,11 +634,9 @@ const exportCSV = () => { dt.value.exportCSV()}
                   </div>
                 </div>
 
+
               </div>
             </form>
-            <div>  {{Etry_Lines[0]  }}</div>
-            <div>  {{Etry_Lines[1]  }}</div>
-
             <Toast 
               :pt="{ 
                     root:{class: 'opacity-95'},
@@ -642,19 +645,6 @@ const exportCSV = () => { dt.value.exportCSV()}
                 }"
             />
         </div>
-        
-        <!-- export invoice excel --> 
-        <div class="hidden">
-          <DataTable :value="Invoice_Lines" ref="dt">
-            
-            <Column field="price" header="price" >
-            </Column>
-            <Column field="ammount" header="ammount" >
-            </Column>
-
-          </DataTable>
-        </div>
-
         <!-- delete modal --> 
         <ConfirmationModal :show="DeleteModal" @close="DeleteModal = false">
           <template #title>
@@ -679,4 +669,4 @@ const exportCSV = () => { dt.value.exportCSV()}
 
 
     </AppLayout>
-</template>
+</template>../InvoiceLines.js../InvoiceLines.vue

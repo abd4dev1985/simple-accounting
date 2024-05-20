@@ -20,13 +20,13 @@ import Button from 'primevue/button';
 
 
 let props =defineProps({
-  invoices:{   } ,
+  ProductCount:{   } ,
 
 })
 
 
 const dt = ref();
-const exportCSV = () => { dt.value.exportCSV()}
+const exportCSV = () => {  dt.value.exportCSV();};
 
 let severity_style= ref('');
 //define computed props
@@ -45,7 +45,7 @@ const filters = ref({
 
   
   <div class="card"  >
-      <DataTable :value="invoices" v-model:filters="filters"  filterDisplay="row" ref="dt"
+      <DataTable :value="ProductCount" v-model:filters="filters"  filterDisplay="row" ref="dt"
        :globalFilterFields="['name',]">
         <template #header>
           <div class="flex justify-between mobile:flex-col gap-2">
@@ -57,7 +57,6 @@ const filters = ref({
                  <span>Export</span> 
             </button>
           </div>
-     
            
 
         </template>

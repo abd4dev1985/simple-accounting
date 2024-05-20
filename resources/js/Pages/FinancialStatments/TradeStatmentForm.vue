@@ -7,12 +7,14 @@ import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../../searchStore.vue';
 import DateObject from '../../DateObject.vue';
-import DataTable from '@/pages/DataTable.vue';
-import InventoryLedger from '@/pages/Inventory/InventoryLedger.vue';
+
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import TradeStatment from '@/pages/FinancialStatments/TradeStatment.vue';
+import TrialBalance from '../TrialBalance.vue';
 
 
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
-import ccc from '@/Components/ccc.vue';
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
 import { useWinBox } from 'vue-winbox'
@@ -25,14 +27,14 @@ let props =defineProps({
 })
 const createWindow = useWinBox()
 let winbox ;
-let inventory_ledger =ref()
+let inventory_Valuation =ref()
 
 onMounted(() => {
   let width= (screen.width>1000)? "75%": "100%" ;
   let height= (screen.width>1000)? "90%": "100%" ;
   console.log(width)
   winbox=createWindow({
-     mount: inventory_ledger.value,
+     mount: inventory_Valuation.value,
      title:'Inventory Ledger ',
      index:40,
      class:'bg-sky-600',
@@ -48,8 +50,7 @@ let severity_style= ref('');
 //define computed props
 const page = usePage()
 
-const LedgerBookForm = useForm({
-  product: null,
+const Form = useForm({
   StartDate:page.props.year_start ,
   EndDate : new Date() ,
   Currency:page.props.currencies[0],
@@ -59,18 +60,17 @@ const currencies= (page.props.currencies)? page.props.currencies:[];
 
 function submit(){
   // winbox.close()
-    LedgerBookForm
+    Form
     .transform((data) => ({
-        product: data.product,
         StartDate: DateObject.ToString( data.StartDate )  ,
         EndDate: DateObject.ToString( data.EndDate )    ,
         Currency:data.Currency,
         winbox_id:winbox.id,
     }))
-    .post(route('products.ledgerBook'),{
+    .post(route('TradeStatment'),{
       onSuccess: () =>{
          // winbox.close()
-         FormResult.value=page.props.inventory_ledger[winbox.id]
+         FormResult.value=page.props.Trade_Statment[winbox.id]
          ShowForm.value=false
 
       }, 
@@ -87,35 +87,14 @@ function submit(){
 
 <template>
 <div  class="hidden" >
-  <div   class=" m-4" ref="inventory_ledger" >
+  <div   class=" m-4" ref="inventory_Valuation" >
               
-        <h4  class="m-2 text-2xl" >Inventory Ledger</h4>
+        <h4  class="m-2 text-2xl" >Trade Statment</h4>
         <form   v-if="ShowForm"    @submit.prevent="submit"   >
-            <!-- Default Account Input -->
-            <div class=" my-5">
-                <label class="block text-sm font-semibold text-left" for=""> Product</label>
-                <AutoComplete v-model="LedgerBookForm.product" :suggestions="searchStore.available_products.value"
-                    @complete="searchStore.search_product" optionLabel="name" forceSelection 
-                    :pt="{
-                        input: {
-                        class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
-                        placeholder:'All Products',
-                        },
-                    }">
-                    <template #empty>
-                        <div   class="font-semibold p-3 border-2 border-blue-500">
-                            <div class=""> Product <span class="text-blue-600">{{LedgerBookForm.product }}</span> dose not exist </div>
-                            <Link :href="searchStore.create_new_product_link.value" class="text-blue-600"> create new one</Link>
-                        </div>
-                    </template> 
-                </AutoComplete>
-            </div>
-            <div>{{  LedgerBookForm.errors}}</div>
-
             <!--start DATE INPUT   -->
             <div class="flex-initial ">
                   <label class="block text-sm font-semibold text-left" for="">Start Date </label>
-                  <Calendar v-model="LedgerBookForm.StartDate" showIcon  dateFormat="dd/mm/yy"
+                  <Calendar v-model="Form.StartDate" showIcon  dateFormat="dd/mm/yy"
                     :pt="{
                         root:{class:' dark:bg-gray-700'},
                         input: { 
@@ -131,7 +110,7 @@ function submit(){
             <!--END DATE INPUT   -->
             <div class="flex-initial ">
                   <label class="block text-sm font-semibold text-left" for="">End Date </label>
-                  <Calendar v-model="LedgerBookForm.EndDate" showIcon  dateFormat="dd/mm/yy"
+                  <Calendar v-model="Form.EndDate" showIcon  dateFormat="dd/mm/yy"
                     :pt="{
                         root:{class:' dark:bg-gray-700'},
                         input: { 
@@ -143,12 +122,12 @@ function submit(){
                     }"
                   />
             </div>
-            <!-- INVOICE CURRENCY INPUT  -->
+            <!-- valuation  CURRENCY INPUT  -->
             <div class=" ">
                   <label class="block text-sm font-semibold text-left " for="">
                     Currency
                   </label>
-                  <AutoComplete v-model="LedgerBookForm.Currency" :suggestions="searchStore.filterd_currencies.value"  
+                  <AutoComplete v-model="Form.Currency" :suggestions="searchStore.filterd_currencies.value"  
                     @complete="searchStore.search_currencey" optionLabel="name" forceSelection
                     :pt="{
                         input: {
@@ -164,14 +143,20 @@ function submit(){
                   </AutoComplete>
                 </div>
 
-
             <!-- submit -->
             <button type="submit" >ok</button>
         </form>
         <!-- result -->
-        <div v-if="FormResult"  >
-          <InventoryLedger :ProductCount="FormResult" />
+        {{ FormResult }}
+        <div v-if="FormResult" class="flex divide-x-2" >
+          <div v-for="account in FormResult " class="w-1/2"   >
+            <TradeStatment :accounts="account" >
+
+            </TradeStatment>
+          </div>
         </div>
+        
+
         
         <div  class="clear-both"></div>
         <Toast 

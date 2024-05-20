@@ -13,12 +13,16 @@ use App\Models\User;
 use App\Models\Invoice;
 use App\Models\EntryLines;
 use App\Models\Account;
-
+// use App\Actions\Inventory;
 
 use App\Actions\ImportExcelFile;
 
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\PurchaseController;
+use App\Http\Controllers\SaleController;
+use App\Http\Controllers\Financial_Statment_Controller;
+
+
 use App\Http\Controllers\AccountsController;
 use App\Http\Controllers\ProductController;
 use App\Actions\TreeAccounts;
@@ -60,7 +64,10 @@ Route::get('/', function () {
 });
 
 
-
+Route::get('/testaccount', function () {
+    $a=Account::find(1);
+    return Account::balances(1,'1/1/2024',today());
+ })->middleware('CurrentDatabase');
 
 
 
@@ -93,6 +100,17 @@ Route::controller(PurchaseController::class)->group(function () {
     Route::post('/purchase/document_catagories/{document_catagory}', 'store')->name('purchase.store');
 });
 
+Route::controller(SaleController::class)->group(function () {
+    Route::get('/sale/{document_catagory:name}/documents/{document:number}', 'show')->name('sale.show');
+    Route::get('/next_sale/{document_catagory:name}/documents/{document:number}', 'next')->name('sale.next');
+    Route::get('/pervious_sale/{document_catagory:name}/documents/{document:number}', 'pervious')->name('sale.pervious');
+    Route::put('/sale/{document_catagory:name}/documents/{document:number}', 'update')->name('sale.update');
+    Route::delete('/sale/{document_catagory:name}/documents/{document:number}', 'destroy')->name('sale.delete');
+    Route::get('/sale/document_catagories/{document_catagory:name}/documents', 'index')->name('sale.index');
+    Route::get('/create_sale/{document_catagory:name}/documents', 'create')->name('sale.create');
+    Route::post('/sale/document_catagories/{document_catagory}', 'store')->name('sale.store');
+});
+
 Route::controller(AccountsController::class)->group(function () {
     //Route::get('/account/ledgerBookForm/{account?}','ledgerBook_form')->name('accounts.ledgerBookForm');
     Route::post('/account/ledgerBook','ledgerBook')->name('accounts.ledgerBook');
@@ -100,6 +118,13 @@ Route::controller(AccountsController::class)->group(function () {
 
     Route::delete('/account/{account}/', 'destroy')->name('account.delete');
 });
+// Financial_Statment_Controller
+Route::controller(Financial_Statment_Controller::class)->group(function () {
+    Route::post('/FinancialStatment/TradeStatment','TradeStatment')->name('TradeStatment');
+});
+
+
+
 
 Route::post('/products/ledgerBook', [ProductController::class, 'ledgerBook'])->name('products.ledgerBook');
 Route::post('/products/InventoryValuation', [ProductController::class, 'InventoryValuation'])->name('InventoryValuation');
@@ -108,8 +133,8 @@ Route::post('/products/InventoryValuation', [ProductController::class, 'Inventor
 Route::resource('products', ProductController::class);
 
 Route::get('/testcache', function () {
-    Cache::store('tentant')->put('last general_entry', Document::find(40));
-   return Cache::store('tentant')->get('last general entry')  ;
+   // Cache::store('tentant')->put('StartPeriod','1/1/2024' );
+   return Cache::store('tentant')->get('Inventory_Count')  ;
   
 })->middleware('CurrentDatabase');
 
@@ -174,6 +199,8 @@ Route::controller(SearchController::class)->group(function () {
     Route::post('/search/account', 'search_account');
     Route::post('/search/product', 'search_product');
     Route::post('/search/cost_center', 'search_cost_center');
+    Route::post('/search/CustomeField', 'search_custom_fieled');
+
 });
 
 
@@ -184,9 +211,10 @@ Route::resource('IncomePaymentReceipts', IncomePaymentReceiptController::class)-
 
 Route::get('/assignRole', function () {
     $user=Auth::user();
-   // $user->assignRole('subscriber');
+   $user->assignRole('admin');
+
     //$user->currentTeam();
-    return  $user  ;
+    return  [$user,$user->getAllPermissions()  ]  ;
 });
 
 Route::get('/migrate_force', function (Request $request) {

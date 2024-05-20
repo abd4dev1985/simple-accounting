@@ -5,6 +5,8 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import LedgerBookForm from '@/pages/LedgerAccount/LedgerBookForm.vue';
 import InventoryLedgerForm from '@/pages/Inventory/InventoryLedgerForm.vue';
 import InventoryValuationForm from '@/pages/Inventory/InventoryValuationForm.vue';
+import TradeStatmentForm from '@/pages/FinancialStatments/TradeStatmentForm.vue';
+
 
 import TrialBalanceForm from '@/pages/TrialBalanceForm.vue';
 
@@ -42,6 +44,8 @@ let CostCenter_Ledgers = ref([])
 let Account_LedgerBooks_Index= ref(0)
 let Inventory_Ledger_Index= ref(0)
 let Inventory_Valuation_Index= ref(0)
+let Trade_Statment_Index= ref(0)
+
 
 let TrialBalanceForms_Index= ref(0)
 
@@ -66,6 +70,11 @@ let Open_Inventory_Ledger=()=>{
 
 let Open_TrialBalance_Form=()=>{
     TrialBalanceForms_Index.value++
+    closeSidebar();
+}
+
+let Open_Trade_Statment=()=>{
+    Trade_Statment_Index.value++
     closeSidebar();
 }
 
@@ -157,6 +166,9 @@ const logout = () => {
         </div>
         <div v-for="n in TrialBalanceForms_Index" :key="n">
             <TrialBalanceForm :index="n"   />
+        </div>
+        <div v-for="n in Trade_Statment_Index" :key="n">
+            <TradeStatmentForm :index="n"   />
         </div>
         
 
@@ -420,6 +432,7 @@ const logout = () => {
                       @Open_Costcenter_Ledger="Open_Costcenter_Ledger"
                       @Open_TrialBalance_Form="Open_TrialBalance_Form" 
                       @Open_Inventory_Valuation="Open_Inventory_Valuation" 
+                      @Open_Trade_Statment="Open_Trade_Statment"
 
                       @Open_Inventory_Ledger="Open_Inventory_Ledger" />
                 </div>

@@ -7,6 +7,8 @@ use Inertia\Middleware;
 use App\Models\Currency;
 use App\Actions\DatabaseManager;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cache;
+
 
 
 
@@ -55,12 +57,13 @@ class HandleInertiaRequests extends Middleware
         
         return array_merge(parent::share($request), [
             'currencies' => ($request->user())? Currency::all():null,
-            'year_start'=> '1/1/2024',
+            'year_start'=> Cache::store('tentant')->get('StartPeriod'),
             'inventory_ledger' => $request->session()->get('inventory_ledger'),
             'inventory_Valuation' => $request->session()->get('inventory_Valuation'),
             'tial_balance' => $request->session()->get('tial_balance'),
             'Account_Ledger_Book' => $request->session()->get('Account_Ledger_Book'), 
             'default_currency'=> ($request->user())? Currency::where('id',1)->first():null ,
+            'Trade_Statment'=> $request->session()->get('Trade_Statment')
         ]);
     }
 }

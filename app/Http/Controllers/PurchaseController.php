@@ -16,6 +16,7 @@ use App\Models\Account;
 use App\Models\CustomField;
 use App\Models\EntrLines;
 use App\Models\Entry;
+use Illuminate\Support\Facades\DB;
 
 
 class PurchaseController extends Controller
@@ -70,36 +71,40 @@ class PurchaseController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request )
     {
-
-        $request['operation']='create';
-        $Invoice_Action= app(Invoice::class,['invoice_type' => 'purchase']);
-        $invoice_data =  $Invoice_Action->validate($request->all());
-        if (  $Invoice_Action->validation_is_failed) {  
-            return back()->withErrors($Invoice_Action->validator)->withInput();
-        }
-
-        $Accounting_Enrty_Action = app(AccountingEnrty::class);
-        $entry_data =  $Accounting_Enrty_Action->validate($request->all());
-        if (  $Accounting_Enrty_Action->validation_is_failed) {  
-            return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
-        }
-        //dd($invoice_data);
-        $entry =  $Accounting_Enrty_Action->create( $entry_data);
-
-        $document = Document::create([ 
-            'number'=> $entry_data['document_number'] ,
-            'document_catagory_id' => $document_catagory->id ,
-            'entry_id'=> $entry->id,
-            'date'=>$entry_data['date'],
-        ]);
-        
-        $purchase = $Invoice_Action->create( $document,$invoice_data);
-
-        $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
-        if ( $document->number > $last_document?->number) { 
-            Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
-        }
-        return back()->with('success','ok');
+        DB::transaction(function () use($document_catagory,$request ) {
+            $request['operation']='create';
+            $Invoice_Action= app(Invoice::class,['invoice_type' => 'purchase']);
+            $invoice_data =  $Invoice_Action->validate($request->all());
+            if (  $Invoice_Action->validation_is_failed) {  
+                return back()->withErrors($Invoice_Action->validator)->withInput();
+            }
+    
+            $Accounting_Enrty_Action = app(AccountingEnrty::class);
+            $entry_data =  $Accounting_Enrty_Action->validate($request->all());
+            if (  $Accounting_Enrty_Action->validation_is_failed) {  
+                return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
+            }
+            
+    
+            // create Accounting Enrty
+            $entry =  $Accounting_Enrty_Action->create( $entry_data);
+    
+            $document = Document::create([ 
+                'number'=> $entry_data['document_number'] ,
+                'document_catagory_id' => $document_catagory->id ,
+                'entry_id'=> $entry->id,
+                'date'=>$entry_data['date'],
+            ]);
+            // create purchase invoice
+            $purchase = $Invoice_Action->create( $document,$invoice_data);
+    
+            $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
+            if ( $document->number > $last_document?->number) { 
+                Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
+            }
+            return back()->with('success','ok');
+    
+        });
     }
 
     public function next(Document_catagory $document_catagory, Document $document)
@@ -158,8 +163,8 @@ class PurchaseController extends Controller
             'delete_url'=>route('purchase.delete',['document_catagory'=>$document_catagory->name,'document'=>$document->number,]),
             'update_url'=>route('purchase.update',['document_catagory'=> $document_catagory->name,'document'=>$document->number ]),
             'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
-            'cash_account'=>Account::find(101),
-            'default_account'=>Account::find(100),
+            'cash_account'=>Account::find(12),
+            'default_account'=>Account::find(18),
             'pervious_document_url' => !($last_document_number) ? null: route('purchase.pervious',[
                 'document_catagory'=>$document_catagory->name,
                 'document'=>$document->number,

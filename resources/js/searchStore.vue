@@ -9,6 +9,8 @@ const page = usePage();
 const available_accounts = ref([]);
 const available_products= ref([]);
 const available_cost_centers = ref([]);
+const available_custom_fields = ref([]);
+
 
 const available_currencies = ref([]);
 const filterd_currencies = ref([]);
@@ -17,6 +19,8 @@ const filterd_currencies = ref([]);
 let create_new_account_link=ref('');
 let create_new_currencey_link=ref('');
 let create_new_costcenter_link=ref('');
+let create_new_CustomField_link=ref('');
+
 let create_new_product_link = ref('');
 
 const search_account =(event)=>{
@@ -77,6 +81,20 @@ const search_cost_center =(event)=>{
     });
 
 }
+// available_custom_fields
+const search_custom_fieled =(event)=>{
+    axios.post('/search/CustomeField',{searchForCustomfield:event.query})
+    .then(function (response) {
+        available_custom_fields.value=response.data  
+        if (available_custom_fields.value.length==0) {
+            create_new_CustomField_link.value = '/CustomeFields/create?new_CustomeField_name='+event.query
+        }
+    })
+    .catch(function (error) {
+        console.log(error);
+    });
+
+}
 
 
 
@@ -117,8 +135,10 @@ let searchStore ={
     search_product,
     create_new_product_link,
 
+    available_custom_fields,
+    search_custom_fieled,
+    create_new_CustomField_link,
     
-
     reset_search,
 
     available_currencies,
