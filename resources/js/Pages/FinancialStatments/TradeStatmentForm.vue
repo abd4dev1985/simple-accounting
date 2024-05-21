@@ -35,7 +35,7 @@ onMounted(() => {
   console.log(width)
   winbox=createWindow({
      mount: inventory_Valuation.value,
-     title:'Inventory Ledger ',
+     title:'Trade Statment ',
      index:40,
      class:'bg-sky-600',
      width: width , height: height ,
@@ -147,13 +147,10 @@ function submit(){
             <button type="submit" >ok</button>
         </form>
         <!-- result -->
-        {{ FormResult }}
         <div v-if="FormResult" class="flex divide-x-2" >
-          <div v-for="account in FormResult " class="w-1/2"   >
-            <TradeStatment :accounts="account" >
+            <TradeStatment :accounts="FormResult" >
 
             </TradeStatment>
-          </div>
         </div>
         
 

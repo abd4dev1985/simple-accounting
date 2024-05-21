@@ -39,7 +39,11 @@ class Financial_Statment_Controller extends Controller
          $accounts = $accounts->map(function($account) use($data){
             return Account::balances($account->id,$data['StartDate'],$data['EndDate']);
          });
-         return back()->with('Trade_Statment.'.$data['winbox_id'],$accounts);
+         $Net_Purchases = Account::balances(5,$data['StartDate'],$data['EndDate']);
+         $Net_Sales = Account::balances(6,$data['StartDate'],$data['EndDate']);
+         $Trade_Statment = ['Net_Purchases'=>$Net_Purchases,'Net_Sales'=>$Net_Sales];
+         // return $Trade_Statment ;
+         return back()->with('Trade_Statment.'.$data['winbox_id'],$Trade_Statment);
  
                             
     }

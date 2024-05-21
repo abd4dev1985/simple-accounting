@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { onMounted } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3';
-import LedgerBookForm from '@/pages/LedgerAccount/LedgerBookForm.vue';
+import LedgerBookForm from '@/pages/Account/LedgerBookForm.vue';
 import InventoryLedgerForm from '@/pages/Inventory/InventoryLedgerForm.vue';
 import InventoryValuationForm from '@/pages/Inventory/InventoryValuationForm.vue';
 import TradeStatmentForm from '@/pages/FinancialStatments/TradeStatmentForm.vue';

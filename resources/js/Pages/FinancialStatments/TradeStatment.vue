@@ -111,10 +111,9 @@ function get_accounts_nodes(accounts){
 
 let accounts_nodes =ref()
 onMounted(() => {
-    accounts_nodes.value=get_accounts_nodes(props.accounts)
+    accounts_nodes.value=get_accounts_nodes(props.accounts.Net_Purchases)
 });
 
-let nodes= get_accounts_nodes(props.accounts)
 
 
 
@@ -133,7 +132,10 @@ let nodes= get_accounts_nodes(props.accounts)
         </div>
     </div>
     <Button class="hidden" @click="toggleApplications" label="Toggle Applications" />
-    <TreeTable v-model:expandedKeys="expandedKeys" showGridlines:true   :value="accounts_nodes">
+    <TreeTable v-model:expandedKeys="expandedKeys" showGridlines:true   :value="accounts_nodes"
+      :pt="{
+          header:{class:  'bg-black'}
+    }">
         <Column field="name" header="Name" expander></Column>
         <Column field="balance" header="Balance"></Column>
     </TreeTable>

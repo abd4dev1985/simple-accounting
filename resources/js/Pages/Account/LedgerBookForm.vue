@@ -7,7 +7,7 @@ import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../../searchStore.vue';
 import DateObject from '@/DateObject.vue';
-import LedgerBook from '@/pages/LedgerAccount/LedgerBook.vue';
+import LedgerBook from '@/pages/Account/LedgerBook.vue';
 
 import { useWinBox } from 'vue-winbox'
 
