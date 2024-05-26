@@ -73,19 +73,33 @@ class Account extends Model
      */
     public static function balances($id,$start_date,$end_date )
     {
-        $balances =EntryLines::selectRaw('
-        accounts.name,SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance , account_id ,father_account_id') 
-       ->join('accounts', 'account_entry.account_id', '=', 'accounts.id')
+        if ( !self::find($id) ) {
+            return null;
+        }
+
+        $accounts_with_balances =EntryLines::selectRaw('
+        accounts.name,SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance ,
+        account_id ,father_account_id ,accounts.has_sons_accounts') 
+        ->join('accounts', 'account_entry.account_id', '=', 'accounts.id')
         ->where(function(Builder $query ) use($id){
            if ( isset($id) ) {
                 $ID_list =self::Get_Children_ids($id) ;
                 $query->whereIn('account_id',$ID_list);
             }
-       })
-       ->whereBetween('date', [ $start_date,$end_date ])
-        ->groupBy('account_id','accounts.name','father_account_id');
-         return self:: Descendants_accounts( $id,$balances ) ;
-       // return $balances;
+        })
+        ->whereBetween('date', [ $start_date,$end_date ])
+        ->groupBy('account_id','accounts.name','accounts.has_sons_accounts','father_account_id');
+        if ( $accounts_with_balances->get()->count()==0 ) {
+            $account =self::find($id);
+            $account->balance=0;
+            return $account;
+        }
+
+        if ( !self::find($id)?->has_sons_accounts ) {
+          return $accounts_with_balances->get();
+        }
+        
+        return self:: Descendants_accounts( $id,$accounts_with_balances ) ;
 
     }
 
@@ -136,13 +150,15 @@ class Account extends Model
     
     }
 
-    public static function Get_Children($account,$groupedaAcounts){
+    public static function Get_Children($account,$groupedaAcounts,$level=0){
+        $account['level'] = $level ; 
         if ($groupedaAcounts->has($account->id)) {   
             $account['balance'] =0 ;    
+            $level++;
             $account['children'] = $groupedaAcounts[$account->id]; 
             foreach ($account['children'] as $child) {
                // $GLOBALS['ids'][]=$child->id ;
-                self::Get_Children($child,$groupedaAcounts);
+                self::Get_Children($child,$groupedaAcounts,$level);
             } 
             $account['balance'] =  $account['children']->reduce(function( $carry, $child){
                 $child['balance'] = ($child['balance'])? $child['balance']:0 ;
@@ -155,6 +171,7 @@ class Account extends Model
     
     public static function Descendants_accounts( $id,$balances=null)
     {
+        //dd($balances->get());
         $accounts_with_balances = self::selectRaw('id,balances.balance,accounts.name,accounts.father_account_id')
         ->leftJoinSub($balances, 'balances', function (JoinClause $join) {
             $join->on('accounts.id', '=', 'balances.account_id');

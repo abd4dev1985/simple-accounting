@@ -147,7 +147,7 @@ function submit(){
             <button type="submit" >ok</button>
         </form>
         <!-- result -->
-        <div v-if="FormResult" class="flex divide-x-2" >
+        <div v-if="FormResult" class="" >
             <TradeStatment :accounts="FormResult" >
 
             </TradeStatment>

@@ -102,20 +102,14 @@ function openSidebar(){
      if (screenWidth.value <=980 ) {
         showSidebar.value=true
         shadowBackGround.value=true
-        console.log("small screen")
-        console.log(shadowBackGround.value)
     }else{
         showSidebar.value=true
-        console.log("big screen")
-        console.log(shadowBackGround.value)
     }
 }
 function closeSidebar(){
     if (screenWidth.value <980 ) {
         showSidebar.value=false
         shadowBackGround.value=false
-        console.log(screenWidth.value)
-        console.log(shadowBackGround.value)
     }
 }
 function change_theme(){

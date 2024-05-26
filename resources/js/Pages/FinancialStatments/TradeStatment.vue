@@ -17,6 +17,7 @@ import { FilterMatchMode } from 'primevue/api';
 import Button from 'primevue/button';
 import TreeTable from 'primevue/treetable';
 import Tree from 'primevue/tree';
+import AccountTree from '@/pages/Account/AccountTree.vue';
 
 import Column from 'primevue/column';
 
@@ -48,11 +49,6 @@ let severity_style= ref('');
 const page = usePage()
 const currencies= (page.props.currencies)? page.props.currencies:[];
 
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-   
-});
 
 const formatter =Intl.NumberFormat('en')
 function format_number( value ){
@@ -73,74 +69,30 @@ function unformat_number( value ){
 }
 
 
-function get_account_balance (account){
-    if (account.children) {
-        let  total_balances = 0
-        account.children.forEach(child => {
-           // console.log(child.name)
-            total_balances =  total_balances + get_account_balance(child)
-        })
-        return total_balances
-
-    }else{
-        return (account.balance)? Number(account.balance):Number(0)
-    }
-
-}
-
-function get_accounts_nodes(accounts){
-    console.log('accounts')
-    console.log(accounts)
-
-    let node=  accounts.map(function(account){
-        let obj={
-            key: account.id,
-            data:{ 
-                    id:account.id ,
-                    name:account.name ,
-                    balance:format_number( get_account_balance(account) ),  
-                },
-            children:(account.children)? get_accounts_nodes(account.children) :null 
-        }
-        return obj
-    });
-    
-    return node
-}
-
-
-let accounts_nodes =ref()
-onMounted(() => {
-    accounts_nodes.value=get_accounts_nodes(props.accounts.Net_Purchases)
-});
-
-
-
-
 </script>
 
 <template>
-  
-    <div class="hidden"  v-for="(account, index) in accounts"  >  
-        <div  class="flex justify-start"  >
-            <div class="m-3">{{account.id}}</div>
-            <div  class="m-3">{{account.name}}</div>
-        </div>
-        <div v-if="account.children" v-for="(child, index) in account.children"  class="flex justify-start"  >
-            <div class="m-3">{{child.id}}</div>
-            <div  class="m-3">{{child.name}}</div>
-        </div>
-    </div>
-    <Button class="hidden" @click="toggleApplications" label="Toggle Applications" />
-    <TreeTable v-model:expandedKeys="expandedKeys" showGridlines:true   :value="accounts_nodes"
-      :pt="{
-          header:{class:  'bg-black'}
-    }">
-        <Column field="name" header="Name" expander></Column>
-        <Column field="balance" header="Balance"></Column>
-    </TreeTable>
 
-  
+    <div class="space-y-8" >
+      <div>
+          <AccountTree :account="accounts.Beginning_Inventory"  >
+          </AccountTree>
+      </div>
+
+      <div>
+          <AccountTree :account="accounts.Net_Purchases"  >
+          </AccountTree>
+      </div>
+      <div>
+          <AccountTree :account="accounts.Net_Sales"  >
+          </AccountTree>
+      </div>
+      <div>
+        <h1>Ending Iventory Cost</h1>
+        <div> {{ accounts.Ending_Iventory_cost }} </div>
+      </div>
+        
+    </div>
 
 
 </template>

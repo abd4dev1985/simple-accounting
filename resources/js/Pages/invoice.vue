@@ -113,11 +113,19 @@ let Copy_Invoice_Lines = props.invoice_lines.map((obj) =>{
   obj.customfields = JSON.parse(obj.customfields)
   return {...obj} 
 });
-let Invoice_Lines = ref ( );
- Invoice_Lines.value = Copy_Invoice_Lines ;
+let Copy_Entry_Lines = props.entry_lines.map((obj) =>{ 
+  obj.customfields = JSON.parse(obj.customfields)
+  return {...obj} 
+});
 
-let Etry_Lines=ref( (props.entry_lines)? props.entry_lines :[] )
-let rows_count = 30 + Invoice_Lines.value.length;
+let Invoice_Lines = ref ( );
+Invoice_Lines.value = Copy_Invoice_Lines ;
+
+let Etry_Lines = ref ( );
+ Etry_Lines.value = Copy_Entry_Lines
+
+
+let rows_count = 3 + Invoice_Lines.value.length;
 
 // create array from the lines of receipt (form)
 if ( !Etry_Lines.value[0]) {
@@ -141,7 +149,10 @@ for (let index = 0; index < rows_count; index++) {
     }  
   }
 }
-Etry_Lines.value.push(Etry_Lines.value[Etry_Lines.value.length-1])
+Etry_Lines.value.push({
+  debit_amount:null,credit_amount:null,account:null,description:null,
+  currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+})
 
 // add more lines(products) to invoice  
 function Add_Lines(){
@@ -498,12 +509,15 @@ const exportCSV = () => { dt.value.exportCSV()}
                <!-- invoice table for mobile   -->
                <div v-if="Device_is_Mobile" class="mx-3"  >
                   <h1>ITEMS</h1>
-                  <div v-for="(line,index) in Invoice_Lines"  :key="index" > 
+                  <div v-for="(line,index) in Invoice_Lines"  :key="index" >
+                    <div v-if="index !=Invoice_Lines.length-1 ">
                       <MoblieInvoiceTable  v-model:line="Invoice_Lines[index]" @change="get_ammount(index)" :default_line="props.invoice_lines[index]"  >
-
                       </MoblieInvoiceTable>
+                    </div>
+                     
                   </div>
-                  <MoblieInvoiceTable  v-model:line="Invoice_Lines[Invoice_Lines.length-1]" @New_Line_Added="Add_Lines()" @change="get_ammount(Invoice_Lines.length-1)" v-slot="slotProps">
+                  <MoblieInvoiceTable  v-model:line="Invoice_Lines[Invoice_Lines.length-1]" @change="get_ammount(Invoice_Lines.length-1)"
+                   @New_Line_Added="Add_Lines()"  v-slot="slotProps">
                     <div @click="slotProps.open_Product_Modal" class="font-semibold text-green-600 mt-4 ">  + Add Product</div>
                   </MoblieInvoiceTable>
                   
@@ -631,8 +645,12 @@ const exportCSV = () => { dt.value.exportCSV()}
 
               </div>
             </form>
-            <div>  {{Etry_Lines[0]  }}</div>
-            <div>  {{Etry_Lines[1]  }}</div>
+            <div class="my-4 bg-red-300"  v-for="(line,index) in Invoice_Lines" :key="index"    >
+                {{line  }}
+            </div>
+            <div class="my-4 bg-sky-400"  v-for="(line,index) in Etry_Lines" :key="index"    >
+                {{line  }}
+            </div>
 
             <Toast 
               :pt="{ 

@@ -57,7 +57,7 @@ class HandleInertiaRequests extends Middleware
         
         return array_merge(parent::share($request), [
             'currencies' => ($request->user())? Currency::all():null,
-            'year_start'=> Cache::store('tentant')->get('StartPeriod'),
+            'year_start'=>($request->user())? Cache::store('tentant')->get('StartPeriod'):null,
             'inventory_ledger' => $request->session()->get('inventory_ledger'),
             'inventory_Valuation' => $request->session()->get('inventory_Valuation'),
             'tial_balance' => $request->session()->get('tial_balance'),

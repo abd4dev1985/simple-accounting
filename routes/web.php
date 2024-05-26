@@ -66,7 +66,7 @@ Route::get('/', function () {
 
 Route::get('/testaccount', function () {
     $a=Account::find(1);
-    return Account::balances(1,'1/1/2024',today());
+    return Account::balances(15,'01/01/2024',today());
  })->middleware('CurrentDatabase');
 
 
@@ -133,8 +133,10 @@ Route::post('/products/InventoryValuation', [ProductController::class, 'Inventor
 Route::resource('products', ProductController::class);
 
 Route::get('/testcache', function () {
-   // Cache::store('tentant')->put('StartPeriod','1/1/2024' );
-   return Cache::store('tentant')->get('Inventory_Count')  ;
+    //Cache::store('tentant')->put('testcach','ttttt' );
+  //  return Cache::store('tentant')->get('testcach')  ;
+    return Account::all();
+  // return Cache::store('tentant')->get('last general_entry')  ;
   
 })->middleware('CurrentDatabase');
 

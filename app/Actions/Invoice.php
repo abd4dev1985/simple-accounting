@@ -116,7 +116,6 @@ class Invoice
         );
 
         $validator->after(function ($validator)  {
-            dd($validator->getData()) ;
             $products = Product::all()->random(10);
             $product_count = app(Inventory::class)->CountProducts( $products,today() );
         });
