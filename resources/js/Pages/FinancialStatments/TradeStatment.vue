@@ -34,6 +34,21 @@ const toggleApplications = () => {
 
     expandedKeys.value = _expandedKeys;
 }
+// format number and make more readable for human by addind comma  
+function Format(value){
+    let formatter =Intl.NumberFormat('en')
+    if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
+        return formatter.format(value)
+    }else{  
+        return 0 
+    }
+}
+
+let Cost_Of_Sold_Inventory = computed(()=>{
+  return  Number(props.accounts.Beginning_Inventory.balance) +
+          Number(props.accounts.Net_Purchases.balance) -
+          Number(props.accounts.Ending_Iventory_cost) 
+})
 
 
 
@@ -74,23 +89,39 @@ function unformat_number( value ){
 <template>
 
     <div class="space-y-8" >
-      <div>
-          <AccountTree :account="accounts.Beginning_Inventory"  >
-          </AccountTree>
+      
+      <div class="flex justify-start space-x-4 w-full" >
+        <span  class="w-1/2 text-xl">
+          {{ accounts.Beginning_Inventory.name }}
+        </span>
+        <span class="w-1/2 text-xl"  >
+          {{ Format(accounts.Beginning_Inventory.balance) }}
+        </span> 
       </div>
-
+     
       <div>
           <AccountTree :account="accounts.Net_Purchases"  >
           </AccountTree>
       </div>
+
+      <div class="flex justify-start space-x-4 w-full" >
+        <span  class="w-1/2 text-xl">
+          Ending Iventory Cost
+        </span>
+        <span class="w-1/2 text-xl"  >
+          {{ Format(accounts.Ending_Iventory_cost) }}
+        </span> 
+      </div>
+
       <div>
           <AccountTree :account="accounts.Net_Sales"  >
           </AccountTree>
       </div>
-      <div>
-        <h1>Ending Iventory Cost</h1>
-        <div> {{ accounts.Ending_Iventory_cost }} </div>
-      </div>
+
+      <div>{{ Format(Cost_Of_Sold_Inventory) }}</div>
+
+      
+
         
     </div>
 

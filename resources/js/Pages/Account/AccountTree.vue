@@ -62,10 +62,12 @@ const filters = ref({
 </script>
 
 <template>
-    <div class="flex justify-start space-x-4 w-full " :style="{marginLeft:account.level*1 +'rem'}" >
-       <span  class="w-1/2"> {{ account.name }}  </span>
-        <span class="w-1/2 bg-red-400" :class="{'text-right':account.level==0}" >
-              {{ Format(account.balance) }}
+    <div class="flex justify-start space-x-4 w-full"  >
+        <span class="w-1/2":class="{'text-xl':account.level==0}":style="{'padding-left':account.level*1.5 +'rem'}" >
+            {{ account.name }}
+        </span>
+        <span class="w-1/2" :class="{'text-xl':account.level==0}" >
+                {{ Format(account.balance) }}
         </span> 
     </div>
     <div v-if="account.children" class="py-1" ></div>
