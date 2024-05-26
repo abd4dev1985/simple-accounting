@@ -153,7 +153,6 @@ class PurchaseController extends Controller
         }) ;
         $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
         $invoice = $purchase ->products->first(); 
-        //dd( $invoice->pivot);
         return Inertia::render('Invoice', [
             'document_catagory'=> $document_catagory ,'document' => $document ,
             'invoice_type'=>'purchase','operation'=>'update','columns_count'=>8,

@@ -95,10 +95,10 @@ function force_number(event){
         <div class="text-sm" >
             unit {{ line.quantity }} * {{line.price}}  each = &nbsp; &nbsp;&nbsp; {{ format_number(line.ammount) }}
         </div>
-        <div v-for="(field, key) in Chosen_Custom_fields" class="flex gap-6  my-5">
-            <div v-if="line.customfields[field?.name] ">
-                <span>  {{ field?.name }} : </span>
-                <span> {{ line.customfields[field?.name] }} </span>
+        <div v-for="(field, name) in line.customfields" class="flex gap-6  my-5">
+            <div v-if="field">
+                <span> {{ name }} : </span>
+                <span> {{ field}} </span>
             </div>
 
         </div>

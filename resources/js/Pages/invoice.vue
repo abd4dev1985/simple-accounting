@@ -109,23 +109,24 @@ function select_currency(){
 let Invoice_Currency =ref( select_currency() )
 let Invoice_Currency_Rate =ref((props.document)?  props.Invoice_Currency_Rate  :1  )
 
+// create copy of invoce lines props
 let Copy_Invoice_Lines = props.invoice_lines.map((obj) =>{ 
   obj.customfields = JSON.parse(obj.customfields)
   return {...obj} 
 });
+let Invoice_Lines = ref ( );
+Invoice_Lines.value = Copy_Invoice_Lines ;
+
+// create copy of invoce lines props
 let Copy_Entry_Lines = props.entry_lines.map((obj) =>{ 
   obj.customfields = JSON.parse(obj.customfields)
   return {...obj} 
 });
-
-let Invoice_Lines = ref ( );
-Invoice_Lines.value = Copy_Invoice_Lines ;
-
 let Etry_Lines = ref ( );
- Etry_Lines.value = Copy_Entry_Lines
+Etry_Lines.value = Copy_Entry_Lines ;
 
 
-let rows_count = 3 + Invoice_Lines.value.length;
+let rows_count = 15 + Invoice_Lines.value.length;
 
 // create array from the lines of receipt (form)
 if ( !Etry_Lines.value[0]) {
@@ -152,6 +153,7 @@ for (let index = 0; index < rows_count; index++) {
 Etry_Lines.value.push({
   debit_amount:null,credit_amount:null,account:null,description:null,
   currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
+
 })
 
 // add more lines(products) to invoice  
@@ -232,6 +234,8 @@ if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
 }
 
 function get_ammount(index){
+
+
   Invoice_Lines.value[index].ammount=Invoice_Lines.value[index].price*Invoice_Lines.value[index].quantity
   if (props.invoice_type=='purchase' && !isNaN(Invoice_Lines.value[index].ammount)  ) {
     Etry_Lines.value[index+1].debit_amount=Invoice_Lines.value[index].ammount 
@@ -376,26 +380,45 @@ const exportCSV = () => { dt.value.exportCSV()}
             </div>
           </h1>
           <!-- header inputs like enrtry no,payment method,date and Currency  -->
-          <div class="flex flex-wrap gap-y-5 gap-x-5 tab:gap-x-8     tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
+          <div class="flex mobile:flex-col flex-wrap mobile:gap-y-1 gap-y-5 gap-x-5 tab:gap-x-8     tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
             <!-- INPUT DOCUMENT NUMBER -->
             <div class="flex-initial  w-max">
               <div class="text-center relative">
-                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no">Entry #</label>
-                <input v-model="document_number" id="document_no" form="myform" class="block border text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
+                <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no">Invoice Number </label>
+                <input v-model="document_number" id="document_no" form="myform" class="block border text-center rounded-md w-14 h-8 text-gray-700 " >
                 <!-- 
                 <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
                 -->
               </div>
             </div>
+               <!-- DATE INPUT   -->
+              <div class="flex-initial ">
+                <label class="block text-sm font-semibold text-left" for="">Date </label>
+                <Calendar v-model="document_date" showIcon  dateFormat="dd/mm/yy"
+                  :pt="{
+                      root:{class:' w-full dark:bg-gray-700'},
+                      input: { 
+                        class: 'bg-white text-center h-8  w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                        form:'myform',
+                      },
+                      dropdownButton: {
+                        root: { class: 'h-8 bg-sky-800' }
+                      }
+                  }"
+                />
+              </div>
+
+
+
 
              <!-- payment method Input   -->
              <div class="flex-initial ">
-              <label class="block text-xs py-0.5 font-semibold text-left" for="">payment method</label>
+              <label class=" block  text-sm py-0.5 font-semibold text-left" for="">payment method</label>
               <Dropdown v-model="PaymentMethod" :options="AvailablePaymentMethod"
                  optionLabel="name"  
                 :pt="{
                     root:{
-                      class:'h-8 dark:bg-gray-700 dark:text-gray-200  ',
+                      class:'h-8 dark:bg-gray-700 mobile:w-full dark:text-gray-200  ',
                     },
                     input: {
                       class: ' p-0 text-center w-14  dark:text-gray-200  ',
@@ -410,16 +433,21 @@ const exportCSV = () => { dt.value.exportCSV()}
             
 
              <!-- client or vendor Account Input   -->
-             <div class="flex-initial ">
-              <label class="block text-sm font-semibold text-left" for="">
-                Vendor Account 
+             <div v-show="PaymentMethod.name !='cash' || !Device_is_Mobile" class=" ">
+              <label  class="block text-sm font-semibold text-left"  for="">
+                <span v-if="invoice_type=='purchase'"  >Vendor</span>
+                <span v-if="invoice_type=='sale'"  >Customer</span>
+                Account 
               </label>
               <AutoComplete v-model="Client_Or_Vendor_Account" :suggestions="searchStore.available_accounts.value"
                 :class="{'p-invalid':errors.Client_Or_Vendor_Account}" @complete="searchStore.search_account"
                 optionLabel="name" forceSelection :disabled="PaymentMethod.name=='cash'"
                 :pt="{
+                    root:{
+                        class:'h-8 dark:bg-gray-700 mobile:w-full dark:text-gray-200  ',
+                    },
                     input: {
-                      class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                      class: 'bg-white h-8 w-44 mobile:w-full py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                       form : 'myform' ,
                     },
                   }">
@@ -432,13 +460,16 @@ const exportCSV = () => { dt.value.exportCSV()}
               </AutoComplete>
             </div>
             <!-- Default Account Input   -->
-            <div class="flex-initial ">
+            <div class="mobile:hidden ">
               <label class="block text-sm font-semibold text-left" for="">Default Account</label>
               <AutoComplete v-model="default_account" :suggestions="searchStore.available_accounts.value"
                 @complete="searchStore.search_account" optionLabel="name" forceSelection 
                 :pt="{
+                    root:{
+                        class:'h-8 dark:bg-gray-700 mobile:w-full  dark:text-gray-200  ',
+                    },
                     input: {
-                      class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                      class: 'bg-white h-8  mobile:w-full py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                       form : 'myform' ,
                     },
                   }">
@@ -451,35 +482,39 @@ const exportCSV = () => { dt.value.exportCSV()}
               </AutoComplete>
             </div>
 
-           
-            
              <!-- INVOICE CURRENCY INPUT  -->
-             <div class="flex-initial W- ">
-              <label class="block text-sm font-semibold text-left " for="">
-                 Currency
-              </label>
-              <AutoComplete v-model="Invoice_Currency" :suggestions="searchStore.filterd_currencies.value"  
-                @complete="searchStore.search_currencey" optionLabel="name" forceSelection
-                @item-select="Invoice_Currency_Rate  =Invoice_Currency.default_rate"
-                :pt="{
-                  //  root:{
-                    //  class:(errors.Client_Or_Vendor_Account)?'border-2 border-red-400':null,
-                    //},
-                    input: {
-                      class: 'bg-white h-8 w-24 py-2 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
-                      form : 'myform' ,
-                    },
-                  }">
-                  <template #empty>
-                      <div   class="font-semibold p-3 border-2 border-blue-500">
-                          <div class=""> currency <span class="text-blue-600">{{Invoice_Currency }}</span> dose not exist </div>
-                          <Link :href="searchStore.create_new_currencey_link.value" class="text-blue-600"> create new one</Link>
-                      </div>
-                  </template> 
-              </AutoComplete>
+            <div class=" mobile:flex justify-around ">
+              <div>
+                <label class="block self-start text-sm font-semibold text-left " for="">
+                  Currency
+                </label>
+                <AutoComplete v-model="Invoice_Currency" :suggestions="searchStore.filterd_currencies.value"  
+                  @complete="searchStore.search_currencey" optionLabel="name" forceSelection
+                  @item-select="Invoice_Currency_Rate  =Invoice_Currency.default_rate"
+                  :pt="{
+                      input: {
+                        class: 'bg-white h-8 w-24 py-2 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                        form : 'myform' ,
+                      },
+                    }">
+                    <template #empty>
+                        <div   class="font-semibold p-3 border-2 border-blue-500">
+                            <div class=""> currency <span class="text-blue-600">{{Invoice_Currency }}</span> dose not exist </div>
+                            <Link :href="searchStore.create_new_currencey_link.value" class="text-blue-600"> create new one</Link>
+                        </div>
+                    </template> 
+                </AutoComplete>
+              </div>
+              <!-- INVOICE CURRENCY RATE INPUT for mobile  -->
+              <div class="tab:hidden">
+                <div class="text-center relative">
+                  <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no"> Currency Rate </label>
+                  <input v-model="Invoice_Currency_Rate" id="document_no" form="myform" class="block border text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
+                </div>
+              </div>
             </div>
-            <!-- INVOICE CURRENCY RATE INPUT   -->
-            <div class="flex-initial  w-max">
+            <!-- INVOICE CURRENCY RATE INPUT for pc   -->
+            <div class="mobile:hidden flex-initial  w-max">
               <div class="text-center relative">
                 <label class="block font-semibold text-left text-sm dark:text-gray-200 text-black " for="document_no"> Currency Rate </label>
                 <input v-model="Invoice_Currency_Rate" id="document_no" form="myform" class="block border text-center mx-auto rounded-md w-14 h-8 text-gray-700 " >
@@ -487,37 +522,17 @@ const exportCSV = () => { dt.value.exportCSV()}
             </div>
 
 
-            <!-- DATE INPUT   -->
-            <div class="flex-initial ">
-              <label class="block text-sm font-semibold text-left" for="">Date </label>
-              <Calendar v-model="document_date" showIcon  dateFormat="dd/mm/yy"
-                :pt="{
-                    root:{class:' dark:bg-gray-700'},
-                    input: { 
-                      class: 'bg-white text-center h-8 w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
-                      form:'myform',
-                    },
-                    dropdownButton: {
-                      root: { class: 'h-8' }
-                    }
-                }"
-              />
-            </div>
-
           </div>
             <form class="sm:-mx-1 lg:-mx-2 h-screen flex flex-col " id="myform" @submit.prevent="submit">
                <!-- invoice table for mobile   -->
                <div v-if="Device_is_Mobile" class="mx-3"  >
                   <h1>ITEMS</h1>
-                  <div v-for="(line,index) in Invoice_Lines"  :key="index" >
-                    <div v-if="index !=Invoice_Lines.length-1 ">
+                  <div v-for="(line,index) in Invoice_Lines"  :key="index" > 
                       <MoblieInvoiceTable  v-model:line="Invoice_Lines[index]" @change="get_ammount(index)" :default_line="props.invoice_lines[index]"  >
+
                       </MoblieInvoiceTable>
-                    </div>
-                     
                   </div>
-                  <MoblieInvoiceTable  v-model:line="Invoice_Lines[Invoice_Lines.length-1]" @change="get_ammount(Invoice_Lines.length-1)"
-                   @New_Line_Added="Add_Lines()"  v-slot="slotProps">
+                  <MoblieInvoiceTable  v-model:line="Invoice_Lines[Invoice_Lines.length-1]" @New_Line_Added="Add_Lines()" @change="get_ammount(Invoice_Lines.length-1)" v-slot="slotProps">
                     <div @click="slotProps.open_Product_Modal" class="font-semibold text-green-600 mt-4 ">  + Add Product</div>
                   </MoblieInvoiceTable>
                   
@@ -645,12 +660,6 @@ const exportCSV = () => { dt.value.exportCSV()}
 
               </div>
             </form>
-            <div class="my-4 bg-red-300"  v-for="(line,index) in Invoice_Lines" :key="index"    >
-                {{line  }}
-            </div>
-            <div class="my-4 bg-sky-400"  v-for="(line,index) in Etry_Lines" :key="index"    >
-                {{line  }}
-            </div>
 
             <Toast 
               :pt="{ 
