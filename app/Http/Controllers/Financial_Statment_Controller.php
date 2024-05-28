@@ -42,7 +42,6 @@ class Financial_Statment_Controller extends Controller
          $EndDate = $data['EndDate'];
          $Trade_Statment =app(FinancialStatment::class)->TradeStatment($StartDate,$EndDate);
         //dd([app(FinancialStatment::class)->NetTradeStatment($StartDate,$EndDate),$Trade_Statment]) ;
-
         return back()->with('Trade_Statment.'.$data['winbox_id'],$Trade_Statment);
                     
     }

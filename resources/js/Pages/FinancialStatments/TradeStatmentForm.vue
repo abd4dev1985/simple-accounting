@@ -89,7 +89,7 @@ function submit(){
 <div  class="hidden" >
   <div   class=" m-4" ref="inventory_Valuation" >
               
-        <h4  class="m-2 text-2xl" >Trade Statment</h4>
+        <h4  class="my-5 text-2xl" >Trade Statment</h4>
         <form   v-if="ShowForm"    @submit.prevent="submit"   >
             <!--start DATE INPUT   -->
             <div class="flex-initial ">
@@ -106,7 +106,7 @@ function submit(){
                     }"
                   />
             </div>
-
+          
             <!--END DATE INPUT   -->
             <div class="flex-initial ">
                   <label class="block text-sm font-semibold text-left" for="">End Date </label>
@@ -148,6 +148,13 @@ function submit(){
         </form>
         <!-- result -->
         <div v-if="FormResult" class="" >
+            <div class="text-gray-900 flex flex-wrap justify-start gap-6  text-sm">
+              <span class=""> From :  {{ Form.StartDate }}  </span>
+              <span class=""> Untill : {{  DateObject.ToString( Form.EndDate ) }} </span>
+              <span class=""> Currency : {{ Form.Currency.name }} </span>
+
+            </div>
+
             <TradeStatment :accounts="FormResult" >
 
             </TradeStatment>

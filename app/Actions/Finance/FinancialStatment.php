@@ -39,6 +39,8 @@ class FinancialStatment
             'Beginning_Inventory' => $Beginning_Inventory,
             'Cost_Of_Goods_Sold' =>$Cost_Of_Goods_Sold,
             'Net_Trade_Statment' => $Net_Trade_Statment,
+            'StartDate'=>$StartDate,
+            'EndDate'=>$EndDate,
         ];
         return $Trade_Statment;
                     
@@ -56,11 +58,6 @@ class FinancialStatment
         $Income_Statment['NetIncome']= $Income_Statment['Net_Trade_Statment']+ abs($Revenues->balance ) -$Expenses->balance  ;
 
         return $Income_Statment;
-
-
-
-
-
 
     }
 

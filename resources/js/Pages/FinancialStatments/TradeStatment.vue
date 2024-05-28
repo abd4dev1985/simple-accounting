@@ -92,22 +92,29 @@ function unformat_number( value ){
 <template>
   
 
-    <div class=" mt-2 " >
-      <div class="flex justify-start space-x-4 w-full my-3 even:bg-gray-200 " >
+    <div class=" mt-5 " >
+
+
+      <div class="flex justify-start space-x-4 w-full my-5 even:bg-gray-200 " >
         <span  class="inline-block w-1/2 text-xl ">  Name </span>
         <span class=" inline-block w-1/2 text-xl">  Ammount   </span> 
       </div>
-      
+
+      <div class="even:bg-gray-200">
+          <AccountTree :account="accounts.Net_Sales"  >
+          </AccountTree>
+      </div>
+
+      <div class="h-7 w-full even:bg-gray-200"></div>
+
       <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
         <span  class="w-1/2 text-lg border">{{ accounts.Beginning_Inventory.name }}</span>
         <span class="w-1/2 text-lg border">{{ Format(accounts.Beginning_Inventory.balance) }}</span> 
       </div> 
 
-      
-
-      
       <div class="even:bg-gray-200 border-b-2  ">
-        <AccountTree :account="accounts.Net_Purchases"  >
+        <AccountTree :account="accounts.Net_Purchases" >
+          <div class="w-1/2 tab:w-1/4 ml-[50%] border-b-2 border-black"> </div>
         </AccountTree>
       </div>
 
@@ -115,26 +122,26 @@ function unformat_number( value ){
         <span  class="w-1/2 text-lg"> Total Avilable Goods for Sale</span>
         <span class="w-1/2 text-lg">{{ Format(Total_Avilable_Goods_for_Sale) }}</span> 
       </div>
-
-      <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
-        <span  class="w-1/2 text-lg"> Ending Iventory Cost</span>
-        <span class="w-1/2 text-lg">{{ Format(accounts.Ending_Iventory_cost) }}</span> 
+      <div class="h-6 w-full even:bg-gray-200 "> </div>
+      <div class="flex justify-start space-x-2 w-full even:bg-gray-200" >
+        <span  class="w-1/2 text-lg"> - Ending Iventory Cost</span>
+        <span class="w-1/2 tab:w-1/4  text-lg border-b-2 border-black">{{ Format(accounts.Ending_Iventory_cost) }}</span> 
       </div>
 
       <div class="flex justify-start space-x-4 w-full even:bg-gray-200 " >
         <span  class="w-1/2 text-lg">Cost Of Sold Inventory</span>
-        <span class="w-1/2 text-lg">{{ Format(Cost_Of_Sold_Inventory) }}</span> 
+        <span class="w-1/2 tab:w-1/4 text-lg border-b-2 border-black">{{ Format(Cost_Of_Sold_Inventory) }}</span> 
       </div>
 
 
-      <div>
-          <AccountTree :account="accounts.Net_Sales"  >
-          </AccountTree>
+     
+
+      <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
+        <span  class="w-1/2 text-lg"> Net Trade </span>
+        <span class="w-1/2 text-lg">{{ Format(Net_trade_STATMENT) }}</span> 
       </div>
 
 
-
-      <div>Net_trade_STATMENT  {{ Format(Net_trade_STATMENT) }}</div>
 
 
         
