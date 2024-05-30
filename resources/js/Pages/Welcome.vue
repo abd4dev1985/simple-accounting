@@ -12,29 +12,27 @@ defineProps({
 <template>
     <Head title="Welcome" />
     
+    
     <div class="relative tab:flex tab:justify-center tab:items-center min-h-screen  dark:bg-gray-900 selection:bg-red-500 selection:text-white">
-        <div v-if="canLogin" class="flex items-center   tab:fixed tab:top-0 tab:right-0  p-3 text-right  z-10">
-            <svg class="tab:hidden" width="55" height="50" xmlns="http://www.w3.org/2000/svg">
+        <div v-if="canLogin" class="flex items-center tab:fixed tab:top-0 tab:right-0   text-right  p-2   z-10">
+            <svg class="hidden" width="55" height="50" xmlns="http://www.w3.org/2000/svg">
                 <rect width="30%" height="100%" fill="white"/>
                 <g class="fill-sky-700">
                     <rect class="" x="5" y="10" width="5" height="30"/><rect class="icon" x="20" y="20" width="5" height="20"/><rect class="icon" x="35" y="15" width="5" height="25"/><rect class="icon" x="50" y="5" width="5" height="35"/>
                 </g>
             </svg>
-            <div class=" tab:hidden inline-block w-56 text-left text-4xl text-sky-800 font-semibold ">Albaseet </div>
+            <div class="tab:hidden w-3/4 text-left text-2xl text-sky-800 font-semibold ">Albaseet </div>
 
+            <Link v-if="$page.props.auth.user" :href="route('dashboard')" class="font-semibold tab:text-gray-100 hover:text-gray-200 dark:text-gray-400 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</Link>
 
-
-
-
-
+            <div v-else class="flex flex-col tab:flex-row group relative tab:gap-x-4">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6 tab:hidden stroke-sky-900">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+                </svg>
+                <Link :href="route('login')" class="tab:relative absolute group-hover:block  font-semibold tab:text-gray-100 hover:text-gray-300 dark:text-gray-400 dark:hover:text-white text-left focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</Link>
+                <Link v-if="canRegister" :href="route('register')" class="tab:relative absolute  group-hover:block  font-semibold tab:text-gray-100 text-gray-800 hover:text-gray-300 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Register</Link>
+            </div>
             
-            <Link v-if="$page.props.auth.user" :href="route('dashboard')" class=" font-semibold tab:text-gray-100 hover:text-gray-200 dark:text-gray-400 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</Link>
-
-            <template v-else>
-                <Link :href="route('login')" class=" mobile:hidden font-semibold tab:text-gray-100 hover:text-gray-300 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</Link>
-
-                <Link v-if="canRegister" :href="route('register')" class="   ml-4 font-semibold tab:text-gray-100 text-gray-800 hover:text-gray-300 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Register</Link>
-            </template>
         </div>
         <div class="max-w-7xl mx-auto p-6 lg:p-8 bg-gradient-to-b  from-sky-700 to-sky-100">
             <h1 class=" tab:text-left text-center text-4xl text-white font-semibold">
@@ -142,6 +140,7 @@ defineProps({
             </div>
         </div>
     </div>
+    
 </template>
 
 <style>
