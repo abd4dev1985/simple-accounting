@@ -18,10 +18,10 @@ class FinancialStatment
     
      public function TradeStatment($StartDate,$EndDate)
     {
-     
-        $Net_Purchases = Account::balances(5 ,$StartDate ,$EndDate )[0];
-        $Net_Sales = Account::balances(6,$StartDate,$EndDate)[0];
-        $Beginning_Inventory = Account::balances(15,$StartDate,$EndDate)[0];
+        $balances =Account::balancesOf([5,6,15,],$StartDate,$EndDate);
+        $Net_Purchases = $balances[5];
+        $Net_Sales = $balances[6];
+        $Beginning_Inventory =  $balances[15];
 
         $End_Inventory_Valuation = app(Inventory::class)
         ->Valuate(['StartDate'=>$StartDate ,'EndDate'=>$EndDate]);
@@ -29,6 +29,7 @@ class FinancialStatment
         $Ending_Iventory_cost = $End_Inventory_Valuation->reduce(function($carry,$product){
             return $carry + $product->ending_inventory_cost;
         });
+
         $Cost_Of_Goods_Sold =  $Beginning_Inventory->balance + $Net_Purchases->balance - $Ending_Iventory_cost; 
         $Net_Trade_Statment  = abs ($Net_Sales->balance ) -  $Cost_Of_Goods_Sold ;
 
@@ -46,18 +47,93 @@ class FinancialStatment
                     
     }
     
-  
-
     public function IncomeStatment( $StartDate,$EndDate)
     {
-        $Revenues  = Account::balances(4 ,$StartDate ,$EndDate )[0];
-        $Expenses  = Account::balances(3 ,$StartDate ,$EndDate )[0];
-        $Income_Statment = $this->TradeStatment($StartDate,$EndDate);
-        $Income_Statment['Revenues']= $Revenues ;
-        $Income_Statment['Expenses']= $Expenses ;
-        $Income_Statment['NetIncome']= $Income_Statment['Net_Trade_Statment']+ abs($Revenues->balance ) -$Expenses->balance  ;
+        $balances =Account::balancesOf([5,6,15,4,3],$StartDate,$EndDate);
+        $Net_Purchases = $balances[5];
+        $Net_Sales = $balances[6];
+        $Beginning_Inventory =  $balances[15];
+        $Revenues =  $balances[4];
+        $Expenses =  $balances[3];
+
+        $End_Inventory_Valuation = app(Inventory::class)
+        ->Valuate(['StartDate'=>$StartDate ,'EndDate'=>$EndDate]);
+        // get total cost of ending inventory
+        $Ending_Iventory_cost = $End_Inventory_Valuation->reduce(function($carry,$product){
+            return $carry + $product->ending_inventory_cost;
+        });
+
+        $Cost_Of_Goods_Sold =  $Beginning_Inventory->balance + $Net_Purchases->balance - $Ending_Iventory_cost; 
+        $Gross_profit  = abs ($Net_Sales->balance ) - $Cost_Of_Goods_Sold ;
+        $Net_Profit =   $Gross_profit + abs($Revenues->balance)-  $Expenses->balance;
+
+        $Income_Statment = [
+            'Net_Purchases'=>   $Net_Purchases,
+            'Net_Sales'=>   $Net_Sales,
+            'Ending_Iventory_cost'=>  $Ending_Iventory_cost,
+            'Beginning_Inventory' => $Beginning_Inventory,
+            'Cost_Of_Goods_Sold' =>$Cost_Of_Goods_Sold,
+            'Gross_profit' => $Gross_profit,
+            'Revenues'=>$Revenues,
+            'Expenses' => $Expenses ,
+            'Net_Profit'=> $Net_Profit,
+            'StartDate'=>$StartDate,
+            'EndDate'=>$EndDate,
+        ];
+
 
         return $Income_Statment;
+
+    }
+
+    public function BalanceSheet($StartDate,$EndDate)
+    {
+        $Income_Statment = $this->IncomeStatment($StartDate,$EndDate);
+        $Beginning_Inventory =   $Income_Statment['Beginning_Inventory'] ;
+        $Ending_Iventory_cost = $Income_Statment['Ending_Iventory_cost'];
+        $Net_Profit = $Income_Statment['Net_Profit'];
+        $balances =Account::balancesOf([1,2],$StartDate,$EndDate);
+        $Assets =   $balances[1];
+        // in BalanceSheet statments ,
+        // the balance of stock need to be adjudted to Ending Iventory cost
+        // which also adjudte Assets balance
+        $adjudte_Assets = $this->Update_Balance($Assets,$Beginning_Inventory,$Ending_Iventory_cost); 
+        $Liabilities = $balances[2];
+
+        $Balance_Sheet = [
+            'Net_Profit'=> $Net_Profit,
+            'StartDate'=>$StartDate,
+            'EndDate'=>$EndDate,
+            'Assets'=>$adjudte_Assets,
+            'Liabilities'=>$Liabilities,
+        ];
+
+        return $Balance_Sheet;
+
+    }
+
+
+
+
+    public function Update_Balance($GrandParent,$child,$new_balance)
+    {
+        if ($GrandParent->children) {
+            $GrandParent->balance =0 ;
+            foreach ($GrandParent->children as $account) {
+                if ($account->id==$child->id ) {
+                    $account->balance=$new_balance;
+                }
+                $this->Update_Balance($account,$child,$new_balance);
+            }
+            $GrandParent->balance =  $GrandParent->children?->reduce(function( $carry, $child){
+                $child->balance = ($child->balance)? $child->balance:0 ;
+                return $carry+$child->balance ;
+            });
+            
+
+        }
+        return $GrandParent ;
+       
 
     }
 

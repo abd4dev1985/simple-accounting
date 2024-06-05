@@ -14,23 +14,29 @@ defineProps({
     
     
     <div class="relative tab:flex tab:justify-center tab:items-center min-h-screen  dark:bg-gray-900 selection:bg-red-500 selection:text-white">
-        <div v-if="canLogin" class="flex items-center tab:fixed tab:top-0 tab:right-0   text-right  p-2   z-10">
+        <div v-if="canLogin" class="flex items-center tab:fixed tab:top-5 tab:right-0   text-right  p-2 ">
             <svg class="hidden" width="55" height="50" xmlns="http://www.w3.org/2000/svg">
                 <rect width="30%" height="100%" fill="white"/>
                 <g class="fill-sky-700">
                     <rect class="" x="5" y="10" width="5" height="30"/><rect class="icon" x="20" y="20" width="5" height="20"/><rect class="icon" x="35" y="15" width="5" height="25"/><rect class="icon" x="50" y="5" width="5" height="35"/>
                 </g>
             </svg>
-            <div class="tab:hidden w-3/4 text-left text-2xl text-sky-800 font-semibold ">Albaseet </div>
+            <div class="tab:hidden w-10/12 text-left text-2xl text-sky-800 font-semibold ">Albaseet </div>
 
             <Link v-if="$page.props.auth.user" :href="route('dashboard')" class="font-semibold tab:text-gray-100 hover:text-gray-200 dark:text-gray-400 focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Dashboard</Link>
 
-            <div v-else class="flex flex-col tab:flex-row group relative tab:gap-x-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6 tab:hidden stroke-sky-900">
+            <div v-else class="tab:flex-row group relative tab:gap-x-4 " tabindex="1">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="inline w-6 h-6 tab:hidden stroke-sky-900">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
                 </svg>
-                <Link :href="route('login')" class="tab:relative absolute group-hover:block  font-semibold tab:text-gray-100 hover:text-gray-300 dark:text-gray-400 dark:hover:text-white text-left focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</Link>
-                <Link v-if="canRegister" :href="route('register')" class="tab:relative absolute  group-hover:block  font-semibold tab:text-gray-100 text-gray-800 hover:text-gray-300 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Register</Link>
+                <svg  data-slot="icon" class="inline tab:hidden h-3 w-4 mt-1  rotate-90 mr-1 fill-sky-700" aria-hidden="true" fill="" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <div class="absolute hidden group-focus:block tab:group-focus:flex group-hover:block tab:group-hover:flex 
+                 tab:flex gap-x-4 tab:relative bg-gray-50 tab:bg-inherit text-sky-800">
+                    <Link :href="route('login')" class="block p-2 font-semibold tab:text-gray-100  hover:text-gray-300 dark:text-gray-400 text-left dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Log in</Link>
+                    <Link v-if="canRegister" :href="route('register')" class=" block p-2 font-semibold tab:text-gray-100 hover:text-gray-300 dark:text-gray-400 dark:hover:text-white focus:outline focus:outline-2 focus:rounded-sm focus:outline-red-500">Register</Link>
+                </div>
             </div>
             
         </div>
@@ -52,10 +58,10 @@ defineProps({
                                 </svg>
                             </div>
 
-                            <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Documentation</h2>
+                            <h2 class="mt-6 text-xl font-semibold text-gray-900 dark:text-white">Access any time</h2>
 
                             <p class="mt-4 text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                                Laravel has wonderful documentation covering every aspect of the framework. Whether you are a newcomer or have prior experience with Laravel, we recommend reading our documentation from beginning to end.
+                              wherever you are , you can track your project online from any device , custom and elegant interface for mobile and desktop
                             </p>
                         </div>
 

@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cache;
+use App\Actions\Finance\FinancialStatment;
 
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -65,8 +66,12 @@ Route::get('/', function () {
 
 
 Route::get('/testaccount', function () {
-    $a=Account::find(1);
-    return Account::balances(15,'01/01/2024',today());
+    // $a=Account::find(1);
+    // return Account::balances(1,'01/01/2024',today());
+    $BalanceSheet= Account::balancesOf([1,15],'01/01/2024',today());
+   // $BalanceSheet = app(FinancialStatment::class)->BalanceSheet('01/01/2024',today());
+   return $BalanceSheet ;
+
  })->middleware('CurrentDatabase');
 
 
@@ -121,6 +126,10 @@ Route::controller(AccountsController::class)->group(function () {
 // Financial_Statment_Controller
 Route::controller(Financial_Statment_Controller::class)->group(function () {
     Route::post('/FinancialStatment/TradeStatment','TradeStatment')->name('TradeStatment');
+    Route::post('/FinancialStatment/IncomeStatment','IncomeStatment')->name('IncomeStatment');
+    Route::post('/FinancialStatment/BalanceSheet','BalanceSheet')->name('BalanceSheet');
+
+
 });
 
 

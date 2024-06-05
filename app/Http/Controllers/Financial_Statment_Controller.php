@@ -47,6 +47,7 @@ class Financial_Statment_Controller extends Controller
     }
 
     public function IncomeStatment( Request $request){
+       
         $validator = Validator::make($request->all() ,[
             'StartDate'=>'required','date' ,
             'EndDate'=>'required','date',
@@ -61,38 +62,36 @@ class Financial_Statment_Controller extends Controller
         $data = $validator->validated();
         $StartDate = $data['StartDate'];
         $EndDate = $data['EndDate'];
-
-        $Net_Purchases = Account::balances(5 ,$StartDate ,$EndDate )[0];
-        $Revenues  = Account::balances(4 ,$StartDate ,$EndDate )[0];
-        $Expenses  = Account::balances(3 ,$StartDate ,$EndDate )[0];
-
-        $Net_Sales = Account::balances(6,$StartDate,$EndDate)[0];
-        $Beginning_Inventory = Account::balances(15,$StartDate,$EndDate)[0];
-
-        $End_Inventory_Valuation = app(Inventory::class)
-        ->Valuate(['StartDate'=>$StartDate ,'EndDate'=>$EndDate]);
-        // get total cost of ending inventory
-        $Ending_Iventory_cost = $End_Inventory_Valuation->reduce(function($carry,$product){
-            return $carry + $product->ending_inventory_cost;
-        });
-
-        $Income_Statment = [
-            'Net_Purchases'=>   $Net_Purchases,
-            'Net_Sales'=>   $Net_Sales,
-            'Revenues'=> $Revenues,
-            'Expenses'=> $Expenses,
-            'Ending_Iventory_cost'=>  $Ending_Iventory_cost,
-            'Beginning_Inventory' => $Beginning_Inventory,
-        ];
-
-        return back()->with('Income_Statment.'.$data['winbox_id'],$Income_Statment);
-
-
-
-
-
-
+        $Income_Statment =app(FinancialStatment::class)->IncomeStatment($StartDate,$EndDate);
+       //dd([app(FinancialStatment::class)->NetTradeStatment($StartDate,$EndDate),$Trade_Statment]) ;
+       return back()->with('Income_Statment.'.$data['winbox_id'],$Income_Statment);
     }
+    //BalanceSheet
+    public function BalanceSheet( Request $request){
+       
+        $validator = Validator::make($request->all() ,[
+            'StartDate'=>'required','date' ,
+            'EndDate'=>'required','date',
+            'winbox_id'=>'required',
+            ],$masge=[
+
+            ],
+        );
+        if ($validator->fails()) {
+             return back()->withErrors($validator)->withInput();
+        }
+        $data = $validator->validated();
+        $StartDate = $data['StartDate'];
+        $EndDate = $data['EndDate'];
+        $FinancialStatment = app(FinancialStatment::class);
+        $Balance_Sheet =  $FinancialStatment->BalanceSheet($StartDate,$EndDate);
+        $updated_balances = app(FinancialStatment::class)->Update_child( $balances[0],$balances[1],80000000);
+
+       //dd([app(FinancialStatment::class)->NetTradeStatment($StartDate,$EndDate),$Trade_Statment]) ;
+       return back()->with('Balance_Sheet.'.$data['winbox_id'],$Balance_Sheet);
+    }
+
+
 
     
 }

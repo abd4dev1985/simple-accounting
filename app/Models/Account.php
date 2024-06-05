@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause ;
 use Illuminate\Support\Facades\DB;
 use SebastianBergmann\Type\FalseType;
+use Illuminate\Support\Facades\Cache;
+
 
 class Account extends Model
 {
@@ -29,6 +31,8 @@ class Account extends Model
      * @var string
      */
     protected $connection = 'tentant';
+
+   
 
     public static $ancestors=[];
 
@@ -73,9 +77,9 @@ class Account extends Model
      */
     public static function balances($id,$start_date,$end_date )
     {
-        if ( !self::find($id) ) {
-            return null;
-        }
+        //if ( !self::find($id) ) {
+           // return null;
+        // }
 
         $accounts_with_balances =EntryLines::selectRaw('
         accounts.name,SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance ,
@@ -89,6 +93,8 @@ class Account extends Model
         })
         ->whereBetween('date', [ $start_date,$end_date ])
         ->groupBy('account_id','accounts.name','accounts.has_sons_accounts','father_account_id');
+
+        //Cache::store('tentant')->put('grouped_accounts',null);
         if ( $accounts_with_balances->get()->count()==0 ) {
             $account =self::find($id);
             $account->balance=0;
@@ -96,11 +102,51 @@ class Account extends Model
         }
 
         if ( !self::find($id)?->has_sons_accounts ) {
-          return $accounts_with_balances->get();
+            return $accounts_with_balances->get();
         }
-        
+
         return self:: Descendants_accounts( $id,$accounts_with_balances ) ;
 
+    }
+     /**
+     *  return account with balance for given array or list of ids
+     */
+    public static function balancesOf($list,$start_date,$end_date )
+    {
+       
+        $balances =EntryLines::selectRaw('
+        accounts.name,SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance ,
+        account_id ,father_account_id ,accounts.has_sons_accounts') 
+        ->join('accounts', 'account_entry.account_id', '=', 'accounts.id')
+        ->where(function(Builder $query ) use($list){
+                $ID_list=[];
+                foreach ($list as $item) {
+                    $ID_list = array_merge( $ID_list,self::Get_Children_ids($item));
+                }
+                $query->whereIn('account_id',$ID_list);
+        })
+        ->whereBetween('date', [ $start_date,$end_date ])
+        ->groupBy('account_id','accounts.name','accounts.has_sons_accounts','father_account_id');
+        // combine accounts with balances
+        $balances = self::selectRaw('id,balances.balance,accounts.name,accounts.father_account_id')
+        ->leftJoinSub($balances, 'balances', function (JoinClause $join) {
+            $join->on('accounts.id', '=', 'balances.account_id');
+        })->get();  
+        //dd($balances);
+
+        $accounts_grouped_by_parent =  $balances->groupBy('father_account_id');
+        $accounts= self::whereIn('id',$list)->get();
+
+        $accounts = $accounts->mapWithKeys( function($account) use($accounts_grouped_by_parent,$balances){
+            if (!$account->has_sons_accounts){ 
+                return  [$account->id=>$balances->where('id',$account->id)->first()];
+            }
+            return [$account->id => self::Get_Children(self::find($account->id),$accounts_grouped_by_parent)];
+        });
+
+        Cache::store('tentant')->put('grouped_accounts',null);
+        return $accounts;
+     
     }
 
 
@@ -134,8 +180,11 @@ class Account extends Model
     }
 
     public static function Get_Children_ids($account_id){
-
-        $grouped_accounts = self::all()->groupBy('father_account_id');
+         $cached_group = Cache::store('tentant')->get('grouped_accounts');
+         if (! $cached_group) {
+            $cached_group = self::all()->groupBy('father_account_id') ;
+         }
+        $grouped_accounts =  $cached_group;
         $ids=[$account_id];
         if ($grouped_accounts->has($account_id)) {
             $account_children= $grouped_accounts[$account_id];
@@ -171,7 +220,6 @@ class Account extends Model
     
     public static function Descendants_accounts( $id,$balances=null)
     {
-        //dd($balances->get());
         $accounts_with_balances = self::selectRaw('id,balances.balance,accounts.name,accounts.father_account_id')
         ->leftJoinSub($balances, 'balances', function (JoinClause $join) {
             $join->on('accounts.id', '=', 'balances.account_id');

@@ -51,7 +51,6 @@ class HandleInertiaRequests extends Middleware
 
         if (Str::contains($request->url(),'team')) {
             return array_merge(parent::share($request), [
-
             ]);
         }   
         
@@ -63,7 +62,11 @@ class HandleInertiaRequests extends Middleware
             'tial_balance' => $request->session()->get('tial_balance'),
             'Account_Ledger_Book' => $request->session()->get('Account_Ledger_Book'), 
             'default_currency'=> ($request->user())? Currency::where('id',1)->first():null ,
-            'Trade_Statment'=> $request->session()->get('Trade_Statment')
+            'Trade_Statment'=> $request->session()->get('Trade_Statment'),
+            'Income_Statment'=> $request->session()->get('Income_Statment'),
+            'Balance_Sheet'=> $request->session()->get('Balance_Sheet'),
+
+
         ]);
     }
 }
