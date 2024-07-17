@@ -83,11 +83,8 @@ class Financial_Statment_Controller extends Controller
         $data = $validator->validated();
         $StartDate = $data['StartDate'];
         $EndDate = $data['EndDate'];
-        $FinancialStatment = app(FinancialStatment::class);
-        $Balance_Sheet =  $FinancialStatment->BalanceSheet($StartDate,$EndDate);
-        $updated_balances = app(FinancialStatment::class)->Update_child( $balances[0],$balances[1],80000000);
-
-       //dd([app(FinancialStatment::class)->NetTradeStatment($StartDate,$EndDate),$Trade_Statment]) ;
+        $Balance_Sheet = app(FinancialStatment::class)->BalanceSheet($StartDate,$EndDate);
+        //return  $Balance_Sheet ;
        return back()->with('Balance_Sheet.'.$data['winbox_id'],$Balance_Sheet);
     }
 

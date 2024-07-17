@@ -14,6 +14,10 @@ import { useWinBox } from 'vue-winbox'
 const createWindow = useWinBox()
 let winbox ;
 
+let props =defineProps({
+    account:{   } ,
+})
+
 let FormResult= ref()
 let MY_Balances= ref([])
 let ShowForm= ref(true)
@@ -44,7 +48,7 @@ let severity_style= ref('');
 const page = usePage()
 
 const LedgerBookForm = useForm({
-  account: null,
+  account: props.account,
   StartDate:page.props.year_start ,
   EndDate : new Date() ,
   Currency:page.props.currencies[0]
@@ -52,7 +56,6 @@ const LedgerBookForm = useForm({
 const currencies= (page.props.currencies)? page.props.currencies:[];
 
 function submit(){
-    console.log(LedgerBookForm.StartDate)
     LedgerBookForm
       .transform((data) => ({
           account: data.account,

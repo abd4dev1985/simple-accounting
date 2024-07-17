@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use App\Models\Account;
+use App\Models\Statment;
 
 use App\Actions\AccountingEnrty;
 
@@ -21,24 +22,22 @@ use Illuminate\Support\Facades\Validator;
 
 class AccountsController extends Controller
 {
-
-
     public function __construct(Request $request)
     {
         $this->middleware('auth');
         $this->middleware('CurrentDatabase');
-
     }
-
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        
+        return Inertia::render('Account/Index', [
+            'accounts' => Account::Descendants_accounts(),
+            'statments' => Statment::all(),
+            'test_account'=> Account::find(4),
+        ]);
     }
-
-
     /**
      * Show the form for creating a new resource.
      */
@@ -48,8 +47,32 @@ class AccountsController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * store new resource.
      */
+    public function store(Request $request)
+    {
+        //dd($request->ParentAccount);
+        $validator = Validator::make($request->all() ,[
+            'name'=>'required|unique:accounts,name', 
+            'number'=>'required',
+            'ParentAccount'=>'required|array' ,
+            'has_sons_accounts'=>'required|boolean',
+            ],$masge=[
+
+            ],
+        );
+        if ($validator->fails()) {
+             return back()->withErrors($validator)->withInput();
+        }
+        $data = $validator->validated();
+        $data['father_account_id'] = $data['ParentAccount']['id'];
+        $data['statment_id']= Account::find($data['father_account_id'])->statment_id ;
+
+        $account = Account::create($data);
+        return  redirect()->route('accounts.index');
+        
+    }
+
    
     /**
      * Display the specified resource.
@@ -103,13 +126,7 @@ class AccountsController extends Controller
             return $account;
         }
         $account_tree = Tree_Account($account,$Account_GroupedBy_Parent) ;
-        //dd ($account_tree)  ;
         return back()->with('Account_Ledger_Book.'.$data['winbox_id'],$account_tree);
-
-        // return  EntryLines::whereIn('account_id',$Accounts_Ids_Array )
-        //        ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
-         //       ->where('date','<=',$data['EndDate'])
-        //        ->get()->groupBy('account_id');  
                            
     }
      /**
@@ -123,7 +140,6 @@ class AccountsController extends Controller
             'StartDate'=>'required','date' ,
             'EndDate'=>'required','date',
             'winbox_id'=>'required',
-
             ],$masge=[
 
             ],
@@ -132,12 +148,12 @@ class AccountsController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
+        $array =[];
+
         $id = (array_key_exists("account",$data))? $data['account']['id']:null;
 
         $accounts_with_balances  =Account::balances($id,$data['StartDate'],$data['EndDate']);
-         //dd($accounts_with_balances) ;
-        // $accounts=Account::Descendants_accounts($id,$balances);
-         return back()->with('tial_balance.'.$data['winbox_id'],$accounts_with_balances);
+        return back()->with('tial_balance.'.$data['winbox_id'],$accounts_with_balances);
                            
     }
     /**
@@ -159,8 +175,30 @@ class AccountsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy()
+    public function destroy($id)
     {
-        //
+        $this->authorize('delete', Account::class);
+        $validator = Validator::make(['id'=> $id] ,['id'=>'required',]);
+        $validator->after(function ($validator) use($id) {
+            $account = Account::find($id) ;
+            // check if account have some entries
+            if ( $account->entries()->first() ) {
+                $validator->errors()->add('Have_Entries','account can not deleted becuase Entries');
+            }
+            // check if account has Sub Accounts
+            if (Account::where('father_account_id',$id)->first() ) {
+                $validator->errors()->add('Have_Sub_Accounts','account can not deleted becuase it has sub accounts');
+            }
+        });
+        // if validation  failed return errors
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        Account::destroy($id);
+        return  redirect()->route('accounts.index');
+
+
+
     }
 }

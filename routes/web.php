@@ -72,7 +72,21 @@ Route::get('/testaccount', function () {
    // $BalanceSheet = app(FinancialStatment::class)->BalanceSheet('01/01/2024',today());
    return $BalanceSheet ;
 
+ });
+
+ Route::get('/string', function(Request $request) {
+    
+  return    str_split('entry_lines.1.account.id')[12];
+
+
  })->middleware('CurrentDatabase');
+
+ Route::get('/testcache', function () {
+    Cache::store('tentant')->put('start period', '1/1/2024');
+    return    Cache::store('tentant')->get('start period');
+
+  
+})->middleware('CurrentDatabase');
 
 
 
@@ -120,8 +134,9 @@ Route::controller(AccountsController::class)->group(function () {
     //Route::get('/account/ledgerBookForm/{account?}','ledgerBook_form')->name('accounts.ledgerBookForm');
     Route::post('/account/ledgerBook','ledgerBook')->name('accounts.ledgerBook');
     Route::post('/account/TrialBalance','TrialBalance')->name('accounts.TrialBalance');
-
-    Route::delete('/account/{account}/', 'destroy')->name('account.delete');
+    Route::get('/accounts','index')->name('accounts.index');
+    Route::post('/accounts','store')->name('accounts.store');
+    Route::delete('/accounts/{account}/', 'destroy')->name('accounts.destroy');
 });
 // Financial_Statment_Controller
 Route::controller(Financial_Statment_Controller::class)->group(function () {
@@ -141,15 +156,6 @@ Route::post('/products/InventoryValuation', [ProductController::class, 'Inventor
 
 Route::resource('products', ProductController::class);
 
-Route::get('/testcache', function () {
-    //Cache::store('tentant')->put('testcach','ttttt' );
-  //  return Cache::store('tentant')->get('testcach')  ;
-    return Account::all();
-  // return Cache::store('tentant')->get('last general_entry')  ;
-  
-})->middleware('CurrentDatabase');
-
-
 Route::get('/cleanjson', function () {
 
     Invoice::where('id','>',0)->update(['customfields'=>'{}']);
@@ -159,11 +165,6 @@ Route::get('/cleanjson', function () {
   
 })->middleware('CurrentDatabase');
 
-
-Route::get('/nodetree', function () {
- return Account::find(1)->sub_accounts();
-      
-})->middleware('CurrentDatabase');
 
 Route::get('/balance', function () {
    Account::where('id','>',0)->update(['balance'=>null]);

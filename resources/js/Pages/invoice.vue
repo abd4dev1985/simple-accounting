@@ -562,7 +562,7 @@ const exportCSV = () => { dt.value.exportCSV()}
                                       <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
                                   </td>
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
-                                    <ccc v-model="line.product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']"
+                                    <ccc v-model="line.product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']" :aggregated_account="false"
                                     @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
                                     :SearchFunction="searchStore.search_product" :Suggestions="searchStore.available_products.value" >  
                                       <template #emptySuggestions>

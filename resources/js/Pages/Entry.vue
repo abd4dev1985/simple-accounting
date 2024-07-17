@@ -8,6 +8,7 @@ import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
+import Language from '@/Pages/Language.vue';
 
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
@@ -21,6 +22,15 @@ const toast = useToast();
 const createWindow = useWinBox()
 
 let severity_style= ref('');
+let Translate = Language.Translate
+
+ console.log('Language')
+ console.log(Language.CurrentLanguage.value)
+ console.log(Translate('jhjhjkhkjhjk'))
+
+
+
+
 
 let props =defineProps({
     entry_lines:{ type: Array , default:[] }   ,
@@ -341,7 +351,7 @@ function create_document(){
             
             <!-- DATE INPUT   -->
             <div class="flex-initial ">
-              <label class="block text-sm font-semibold text-left" for="">Date </label>
+              <label class="block text-sm font-semibold text-left" for=""> Date     </label>
               <Calendar v-model="document_date" showIcon  dateFormat="dd/mm/yy"
                 :pt="{
                     root:{class:' dark:bg-gray-700'},
@@ -399,7 +409,7 @@ function create_document(){
                                   
                                   <td class="whitespace-nowrap  border-gray-400   ">                         
                                     <ccc v-model="form[index].account"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
-                                    Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value" >  
+                                    Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value"  >  
                                       <template #emptySuggestions>
                                         <div class=""> account <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
                                         <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
@@ -414,7 +424,7 @@ function create_document(){
 
                                   <td class="whitespace-nowrap border-r border-gray-400">
                                     <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=5
-                                    Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center"
+                                    Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center" 
                                     :Suggestions="searchStore.available_cost_centers.value" >
                                       <template #emptySuggestions>
                                         <div class=""> cost center <span class="text-blue-600">{{form[index].cost_center }}</span> dose not exist </div>

@@ -94,14 +94,13 @@ function unformat_number( value ){
 
     <div class=" mt-5 " >
 
-
       <div class="flex justify-start space-x-4 w-full my-5 even:bg-gray-200 " >
         <span  class="inline-block w-1/2 text-xl ">  Name </span>
         <span class=" inline-block w-1/2 text-xl">  Ammount   </span> 
       </div>
 
       <div class="even:bg-gray-200">
-          <AccountTree :account="accounts.Net_Sales"   >
+          <AccountTree :account="accounts.Net_Sales"  >
           </AccountTree>
       </div>
 
@@ -113,7 +112,7 @@ function unformat_number( value ){
       </div> 
 
       <div class="even:bg-gray-200 border-b-2  ">
-        <AccountTree :account="accounts.Net_Purchases" :revers="true" >
+        <AccountTree :account="accounts.Net_Purchases" >
           <div class="w-1/2 tab:w-1/4 ml-[50%] border-b-2 border-black"> </div>
         </AccountTree>
       </div>

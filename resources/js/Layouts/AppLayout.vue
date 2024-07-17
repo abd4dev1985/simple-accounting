@@ -5,7 +5,11 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import LedgerBookForm from '@/pages/Account/LedgerBookForm.vue';
 import InventoryLedgerForm from '@/pages/Inventory/InventoryLedgerForm.vue';
 import InventoryValuationForm from '@/pages/Inventory/InventoryValuationForm.vue';
+
 import TradeStatmentForm from '@/pages/FinancialStatments/TradeStatmentForm.vue';
+import BalanceSheetForm from '@/pages/FinancialStatments/BalanceSheetForm.vue';
+import IncomeStatmentForm from '@/pages/FinancialStatments/IncomeStatmentForm.vue';
+
 
 
 import TrialBalanceForm from '@/pages/TrialBalanceForm.vue';
@@ -41,10 +45,13 @@ let TrialBalanceForms = ref([])
 let CostCenter_Ledgers = ref([])
 
 
-let Account_LedgerBooks_Index= ref(0)
+let Account_LedgerBooks_Array= ref([])
 let Inventory_Ledger_Index= ref(0)
 let Inventory_Valuation_Index= ref(0)
 let Trade_Statment_Index= ref(0)
+let Income_Statment_Index= ref(0)
+let Balance_Sheet_Index= ref(0)
+
 
 
 let TrialBalanceForms_Index= ref(0)
@@ -53,8 +60,8 @@ let Inventory_Ledger_wb =ref([])
 let CostCenter_Ledger_Index= ref(1)
 
 
-let Open_Account_LedgerBook=()=>{
-     Account_LedgerBooks_Index.value ++
+let Open_Account_LedgerBook=(account=null)=>{
+    Account_LedgerBooks_Array.value.push(account)
      closeSidebar();
 }
 
@@ -77,6 +84,15 @@ let Open_Trade_Statment=()=>{
     Trade_Statment_Index.value++
     closeSidebar();
 }
+let Open_Income_Statment=()=>{
+    Income_Statment_Index.value++
+    closeSidebar();
+}
+let Open_Balance_Sheet=()=>{
+    Balance_Sheet_Index.value++
+    closeSidebar();
+}
+
 
 let Open_Costcenter_Ledger= ()=>{
 
@@ -137,6 +153,10 @@ const logout = () => {
     router.post(route('logout'));
 };
 
+defineExpose({
+    Open_Account_LedgerBook
+});
+
 </script>
 
 <template>
@@ -149,8 +169,8 @@ const logout = () => {
     <div>
         <Head :title="title" />
         <Banner />
-        <div v-for="n in Account_LedgerBooks_Index "  :key="n">
-            <LedgerBookForm :index="n"   />
+        <div v-for="(account , index) in Account_LedgerBooks_Array "  :key="index">
+            <LedgerBookForm :index="index" :account="account"   />
         </div>
         <div v-for="n in Inventory_Valuation_Index"  :key="n">
             <InventoryValuationForm :index="n"   />
@@ -164,6 +184,15 @@ const logout = () => {
         <div v-for="n in Trade_Statment_Index" :key="n">
             <TradeStatmentForm :index="n"   />
         </div>
+        <div v-for="n in Income_Statment_Index" :key="n">
+            <IncomeStatmentForm :index="n"   />
+        </div>
+        <div v-for="n in Balance_Sheet_Index" :key="n">
+            <BalanceSheetForm :index="n"   />
+        </div>
+
+
+        
         
 
         <div class="relative min-h-screen bg-gray-100 dark:bg-gray-900 ">
@@ -427,6 +456,8 @@ const logout = () => {
                       @Open_TrialBalance_Form="Open_TrialBalance_Form" 
                       @Open_Inventory_Valuation="Open_Inventory_Valuation" 
                       @Open_Trade_Statment="Open_Trade_Statment"
+                      @Open_Income_Statment="Open_Income_Statment"
+                      @Open_Balance_Sheet="Open_Balance_Sheet"
 
                       @Open_Inventory_Ledger="Open_Inventory_Ledger" />
                 </div>

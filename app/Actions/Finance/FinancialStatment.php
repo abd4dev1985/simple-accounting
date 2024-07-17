@@ -94,18 +94,21 @@ class FinancialStatment
         $Net_Profit = $Income_Statment['Net_Profit'];
         $balances =Account::balancesOf([1,2],$StartDate,$EndDate);
         $Assets =   $balances[1];
+        $Liabilities = $balances[2];
+        $current_year_income = Account::find(35);
         // in BalanceSheet statments ,
         // the balance of stock need to be adjudted to Ending Iventory cost
         // which also adjudte Assets balance
         $adjudte_Assets = $this->Update_Balance($Assets,$Beginning_Inventory,$Ending_Iventory_cost); 
-        $Liabilities = $balances[2];
+        // we also need add net profit to equity
+        $adjudte_Liabilities = $this->Update_Balance($Liabilities,$current_year_income,-$Net_Profit); 
 
         $Balance_Sheet = [
             'Net_Profit'=> $Net_Profit,
             'StartDate'=>$StartDate,
             'EndDate'=>$EndDate,
             'Assets'=>$adjudte_Assets,
-            'Liabilities'=>$Liabilities,
+            'Liabilities'=>$adjudte_Liabilities,
         ];
 
         return $Balance_Sheet;

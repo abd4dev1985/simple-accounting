@@ -30,11 +30,11 @@ class CreateAccountsTable extends Migration
         Schema::create('accounts', function (Blueprint $table) {
   	      $table->id();
           $table->string('name');
-          $table->integer('account_no');
+          $table->integer('number');
           $table->integer('father_account_id')->nullable();
           $table->boolean('has_sons_accounts')->nullable();
           $table->integer('statment_id');
-          $table->float('balance')->nullable();
+          $table->float('current_balance')->nullable();
           $table->timestamps();
 
         });

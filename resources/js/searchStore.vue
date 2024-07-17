@@ -11,7 +11,7 @@ const available_products= ref([]);
 const available_cost_centers = ref([]);
 const available_custom_fields = ref([]);
 
-
+let selected_account = ref();
 const available_currencies = ref([]);
 const filterd_currencies = ref([]);
 
@@ -23,9 +23,10 @@ let create_new_CustomField_link=ref('');
 
 let create_new_product_link = ref('');
 
-const search_account =(event)=>{
+const search_account =(event )=>{
     axios.post('/search/account',{searchForAccount:event.query})
     .then(function (response) {
+        //console.log(response.data )
         available_accounts.value=response.data  
         if (available_accounts.value.length==0) {
             create_new_account_link.value = '/accounts/create?new_account_name='+event.query
@@ -37,11 +38,12 @@ const search_account =(event)=>{
 
 }
 const search_product =(event)=>{
+    console.log(event.query)
     axios.post('/search/product',{searchForProduct:event.query})
     .then(function (response) {
         available_products.value=response.data  
         if (available_products.value.length==0) {
-            create_new_product_link.value = '/accounts/create?new_account_name='+event.query
+            create_new_product_link.value = '/products/create?new_account_name='+event.query
         }
     })
     .catch(function (error) {
@@ -68,7 +70,6 @@ const search_currencey =(event)=>{
 
 }
 const search_cost_center =(event)=>{
-    console.log('hii')
     axios.post('/search/cost_center',{searchForCostCenter:event.query})
     .then(function (response) {
         available_cost_centers.value=response.data  
@@ -130,6 +131,8 @@ let searchStore ={
     search__account,
     search_account,
     create_new_account_link,
+
+    selected_account ,
 
     available_products,
     search_product,

@@ -99,8 +99,6 @@ class Invoice
             'lines.*.quantity' => ['nullable','numeric','required_with:lines.*.price,lines.*.product','gt:0',
             //function(string $attribute, mixed $valu, Closure $fail,array $data){}
             ],
-
-
            // 'lines.*.quantity' => 'nullable|numeric|required_with:lines.*.price,lines.*.product|gt:0',
             'lines.*.price' => 'nullable|numeric|required_with:lines.*.quantity,lines.*.product|gt:0',
             'lines.*.cost_center' => 'nullable|array' ,

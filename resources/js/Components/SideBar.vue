@@ -12,7 +12,7 @@ import SubMenue from '@/Components/SubMenue.vue';
 
 const emit = defineEmits([
     'Open_Account_LedgerBook','Open_Inventory_Ledger','Open_Costcenter_Ledger','Open_Inventory_Valuation',
-    'Open_Trade_Statment',
+    'Open_Trade_Statment','Open_Income_Statment','Open_Balance_Sheet'
 ])
 
 defineProps({
@@ -53,6 +53,8 @@ defineProps({
             <template  #menue_items >
                 <div  @click="$emit('Open_Account_LedgerBook')" class="py-1 text-left pl-3 cursor-pointer "  >Ledger Book</div>
                 <div  @click="$emit('Open_TrialBalance_Form')" class="py-1 text-left pl-3 cursor-pointer "  >Trail Balance</div>
+                <div class="py-2 text-left pl-3 "  >  <Link  href="/accounts/" >Account Index </Link>  </div>
+
                 <div  class="py-1 text-left pl-3 cursor-pointer  " >Begin Entry </div>       
             </template> 
         </SubMenue>
@@ -103,6 +105,9 @@ defineProps({
 
             <template  #menue_items >
                 <div  @click="$emit('Open_Trade_Statment')" class="py-1 text-left pl-3 cursor-pointer "  >Trade Statment</div>
+                <div  @click="$emit('Open_Income_Statment')" class="py-1 text-left pl-3 cursor-pointer "  >Income Statment</div>
+                <div  @click="$emit('Open_Balance_Sheet')" class="py-1 text-left pl-3 cursor-pointer "  >Balance Sheet</div>
+
                 <div  class="py-1 text-left pl-3 cursor-pointer  " >Begin Entry </div>       
             </template> 
         </SubMenue>

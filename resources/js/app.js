@@ -6,12 +6,13 @@ import { createInertiaApp } from '@inertiajs/vue3';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { ZiggyVue } from '../../vendor/tightenco/ziggy/dist/vue.m';
 import vClickOutside from 'click-outside-vue3';
+import Tooltip from 'primevue/tooltip';
 import PrimeVue from 'primevue/config';
 import ToastService from 'primevue/toastservice';
 
 const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
 
-createInertiaApp({
+let app= createInertiaApp({
     title: (title) => `${title} - ${appName}`,
     resolve: (name) => resolvePageComponent(`./Pages/${name}.vue`, import.meta.glob('./Pages/**/*.vue')),
     setup({ el, App, props, plugin }) {
@@ -21,7 +22,8 @@ createInertiaApp({
             .use(PrimeVue)
             .use(ZiggyVue, Ziggy)
             .use(ToastService)
-            .directive('clickOutside',vClickOutside.directive)
+            .directive('clickOutside',vClickOutside.directive,)
+            .directive('tooltip', Tooltip)
             .mount(el)
             
     },
@@ -29,3 +31,4 @@ createInertiaApp({
         color: '#4B5563',
     },
 });
+

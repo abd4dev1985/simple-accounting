@@ -55,7 +55,7 @@ class CreateDatabase
             die("DB ERROR: " . $e->getMessage());
         }
         config(['database.connections.tentant.database'=>$db,]) ;
-        Cache::store('tentant')->put('StartPeriod',$Validated['StartPeriod'] );
+       // Cache::store('tentant')->put('StartPeriod',$Validated['StartPeriod'] );
 
        
     }

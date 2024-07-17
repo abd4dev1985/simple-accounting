@@ -2,7 +2,7 @@
 
 namespace App\Actions;
 
-use App\Models\Document;
+use App\Models\Account;
 use App\Models\Entry;
 use App\Models\EntryLines;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
 use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
+use App\Rules\Balanced;
+use Closure;
 
 class AccountingEnrty 
 {
@@ -35,6 +37,7 @@ class AccountingEnrty
      */
     public function create(array $input )
     {
+        //dd($input );
         $entry = Entry::create([]);
 
          $data = collect($input['entry_lines']);
@@ -81,17 +84,37 @@ class AccountingEnrty
             'entry_lines.*.account' => 'nullable|array' ,
             'entry_lines.*.cost_center' => 'nullable|array' ,
             'entry_lines.*.currency_rate' => 'required' ,
-            'entry_lines.*' => Rule::forEach(function ( $line, string $attribute) {
-                return [
-                    Rule::excludeIf($line['account'] ==null && ( $line['debit_amount']==null && $line['credit_amount']==null))
-                ];
-            }),
+            'entry_lines'=>[new Balanced] ,
+           'entry_lines.*' => Rule::forEach(function ( $line, string $attribute) {
+               return [
+                    Rule::excludeIf($line['account'] ==null && ( $line['debit_amount']==null && $line['credit_amount']==null)) ,
+                    'array',
+             ];
+           }),
+
+            'entry_lines.*.account.id' => 'nullable|required_with:entry_lines.*.credit_amount,entry_lines.*.debit_amount',
+           
+            'entry_lines.*.account.id' => [
+                'nullable',
+                'required_with:entry_lines.*.credit_amount,entry_lines.*.debit_amount',
+                function (string $attribute, mixed $value, Closure $fail){
+                    $account = Account::find($value);
+                    if ( $account->has_sons_accounts) {
+                        $fail("The account of {$account->name} can not be used in entry because it has Sub accounts.");
+                    }
+                },
+            ],
+
             'entry_lines.*.debit_amount' => 'nullable|numeric|prohibits:entry_lines.*.credit_amount|gt:0',
             'entry_lines.*.credit_amount' => 'nullable|numeric|prohibits:entry_lines.*.debit_amount|gt:0',
-            'entry_lines.*.account.id' => 'nullable|required_with:entry_lines.*.credit_amount,entry_lines.*.debit_amount',
-        ],$masge=[
-
         ],
+        $masge=[
+            'entry_lines.*.account.id.required_with' => 'the account field in line '. intval(':index') .' is required',
+        ],
+        [
+          //  'entry_lines.*.account.id' => str_split(':attribute')[12] ,
+        ]
+       
         );
         
         //(check the balance of entry)
@@ -110,12 +133,6 @@ class AccountingEnrty
                         'entry_lines.'.$key.'.account.id', 'there is no debit or crdit amount against account in line '.$key+1
                     );
                 }  
-            }
-            //check the balance
-            if ($total_credit_amount!=$total_debit_amount ) {
-                $validator->errors()->add(
-                    'entry_balance', 'the entry not balanced  total credit '.$total_credit_amount. ' total debit '.$total_debit_amount
-                );
             }
         });
     

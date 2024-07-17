@@ -12,6 +12,7 @@ use App\Models\Entry;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\CustomField;
+use Illuminate\Support\Facades\App;
 
 
 class JournalEntryController extends Controller
@@ -65,6 +66,7 @@ class JournalEntryController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request)
     {
+        // App::setLocale('ar');
         $AccountingEnrty= app(AccountingEnrty::class);
         $validated_data =  $AccountingEnrty->validate($request->all());
         if (  $AccountingEnrty->validation_is_failed) {  
@@ -107,10 +109,11 @@ class JournalEntryController extends Controller
         }) ;
         $pervious_document=Document::where('number','<',$document->number)->orderBy('number','desc')->first();
         $next_document=Document::where('number','>',$document->number)->orderBy('number','asc')->first();
-
+        
         return Inertia::render('Entry', [
             'currencies' =>$currencies,
             'document_catagory'=> $document_catagory ,
+           // 'translate' => __(''),
             'document' => $document ,
             'entry_lines' =>$entry_lines  ,
             'operation'=>'update',

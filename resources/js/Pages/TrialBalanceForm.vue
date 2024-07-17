@@ -25,14 +25,14 @@ let props =defineProps({
 })
 const createWindow = useWinBox()
 let winbox ;
-let inventory_ledger =ref()
+let trial_balance =ref()
 
 onMounted(() => {
-  let width= (screen.width>1000)? "75%": "100%" ;
+  let width= (screen.width>1000)? "50%": "100%" ;
   let height= (screen.width>1000)? "90%": "100%" ;
   console.log(width)
   winbox=createWindow({
-     mount: inventory_ledger.value,
+     mount: trial_balance.value,
      title:'trial balance',
      index:40,
      class:'bg-sky-600',
@@ -62,17 +62,16 @@ function submit(){
     TrialbbalanceForm
     .transform((data) => ({
         account: data.account,
-        StartDate: DateObject.ToString( data.StartDate )  ,
-        EndDate: DateObject.ToString( data.EndDate )    ,
+        StartDate:(data.StartDate)? DateObject.ToString(data.StartDate) : null  ,
+        EndDate:(data.StartDate)? DateObject.ToString(data.EndDate) : null   ,
         Currency:data.Currency,
         winbox_id:winbox.id,
     }))
     .post(route('accounts.TrialBalance'),{
       onSuccess: () =>{
-         // winbox.close()
+         winbox.maximize()
          FormResult.value=page.props.tial_balance[winbox.id]
          ShowForm.value=false
-
       }, 
 
     })
@@ -87,19 +86,25 @@ function submit(){
 
 <template>
 <div  class="hidden" >
-  <div   class=" m-4" ref="inventory_ledger" >
+  <div   class=" m-4" ref="trial_balance" >
               
         <h4  class="m-2 text-2xl" >Trial Balance </h4>
-        <form   v-if="ShowForm"    @submit.prevent="submit"   >
+        <form   v-if="ShowForm"    @submit.prevent="submit"  class="m-3 my-5  flex flex-col justify-between gap-7" >
             <!-- Default Account Input -->
-            <div class=" my-5">
+            <div class=" w-full">
                 <label class="block text-sm font-semibold text-left" for=""> Account</label>
+                <div v-if="TrialbbalanceForm.errors.account" class="block text-sm font-semibold text-left"  >
+                  {{  TrialbbalanceForm.errors}}
+                </div>
                 <AutoComplete v-model="TrialbbalanceForm.account" :suggestions="searchStore.available_accounts.value"
                     @complete="searchStore.search_account" optionLabel="name" forceSelection 
                     :pt="{
+                        root: {
+                          class:'w-full'
+                        },
                         input: {
-                        class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
-                        placeholder:'All accounts',
+                          class: 'bg-white w-full h-8  py-5 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                          placeholder:'',
                         },
                     }">
                     <template #empty>
@@ -110,19 +115,23 @@ function submit(){
                     </template> 
                 </AutoComplete>
             </div>
-            <div>{{  TrialbbalanceForm.errors}}</div>
+            
 
             <!--start DATE INPUT   -->
-            <div class="flex-initial ">
+            <div class="flex-initial w-full  ">
                   <label class="block text-sm font-semibold text-left" for="">Start Date </label>
+                  <div v-if="TrialbbalanceForm.errors.StartDate" class="block text-sm font-semibold text-red-600"  >
+                       {{  TrialbbalanceForm.errors.StartDate}}
+                  </div>
                   <Calendar v-model="TrialbbalanceForm.StartDate" showIcon  dateFormat="dd/mm/yy"
+                  @date-select="TrialbbalanceForm.clearErrors('StartDate')"
                     :pt="{
-                        root:{class:' dark:bg-gray-700'},
+                        root:{class:' w-1/2 dark:bg-gray-700'},
                         input: { 
-                          class: 'bg-white text-center h-8 w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                          class: 'bg-white  h-8 w-full py-5 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                         dropdownButton: {
-                          root: { class: 'h-8' }
+                          root: { class: 'h-8 py-5 bg-sky-700 ' }
                         }
                     }"
                   />
@@ -133,12 +142,12 @@ function submit(){
                   <label class="block text-sm font-semibold text-left" for="">End Date </label>
                   <Calendar v-model="TrialbbalanceForm.EndDate" showIcon  dateFormat="dd/mm/yy"
                     :pt="{
-                        root:{class:' dark:bg-gray-700'},
+                        root:{class:'w-1/2  dark:bg-gray-700'},
                         input: { 
-                          class: 'bg-white text-center h-8 w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                          class: 'bg-white  h-8 py-5 w-full dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                         dropdownButton: {
-                          root: { class: 'h-8' }
+                          root: { class: 'h-8  py-5 bg-sky-700' }
                         }
                     }"
                   />
@@ -168,7 +177,9 @@ function submit(){
 
 
             <!-- submit -->
-            <button type="submit" >ok</button>
+            <button class="w-max p-3 bg-sky-800 text-white font-semibold rounded-lg " type="submit" >
+              Show result 
+            </button>
         </form>
         <!-- result -->
         <div v-if="FormResult"  >

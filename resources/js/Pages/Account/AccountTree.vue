@@ -19,7 +19,7 @@ import Button from 'primevue/button';
 
 let props =defineProps({
     account:{   } ,
-
+    without_balance:{  default:false }
 })
 let ShowChildren =ref(false)
 
@@ -41,43 +41,79 @@ function Format(value){
 }
 
 
-
-
-       
-
-
-
-let severity_style= ref('');
-//define computed props
-const page = usePage()
-const currencies= (page.props.currencies)? page.props.currencies:[];
-
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    name: { value: null, matchMode: FilterMatchMode.CONTAINS },
-   
-});
 // let MarginLeft = 'ml-'+props.account.level*3
+
+let PaddingLift = function(level){
+    return level*1.5 +'rem'
+}
+
+
+const my_bg = ref(null)
+onMounted(() => {
+    // console.log('my_bg.value.style.backgroundColor ' )
+    const compStyles = window.getComputedStyle(my_bg.value);
+    let bg_color = compStyles.getPropertyValue('background-color');
+    
+   // console.log(bg_color )
+  
+})
 
 </script>
 
 <template>
-    <div class="flex justify-start space-x-4 w-full"  >
-        <span @click="ShowChildren=!ShowChildren" class="w-1/2 ":class="{'text-lg':account.level==0}" :style="{'padding-left':account.level*1.5 +'rem'}" >
+    
+
+    <div class="flex justify-start space-x-4 w-full text-gray-700  " ref="my_bg"  >
+        <span @click="ShowChildren=!ShowChildren" class="w-1/2 "
+        :style="{'padding-left':  PaddingLift(account.level)}" >
             <svg  v-if="account.children"   data-slot="icon" class="inline h-3 w-4 rotate-90 mr-1 fill-slate-500" aria-hidden="true" fill="" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" stroke-linecap="round" stroke-linejoin="round"></path>
             </svg>
             <span >{{ account.name }}  </span>
         </span>
-        <span class="w-1/2" :class="{'text-lg':account.level==0}" >
-            {{ Format(account.balance) }}
+
+        <span v-show="!ShowChildren && !without_balance "  class="w-1/2" >
+            {{ Format(account.balance) }} 
         </span> 
+        <span  v-show="without_balance" class="bg-orange-200"  >
+            <slot name="control_panel" >
+            </slot>
+        </span>
+        
     </div>
-    <div  v-show="ShowChildren"  v-if="account.children" class="py-1" ></div>
-    <div v-show="ShowChildren"  v-if="account.children" v-for="(child,index) in account.children" :key="index" class="bg-sky-100 text-sm ">
-        <AccountTree :account="child"  >
-        </AccountTree>
+
+    <div  v-show="ShowChildren"  v-if="account.children && !without_balance" class="py-1" >
+        <div v-for="(child,index) in account.children" :key="index" class="text-base  ">
+            <AccountTree :account="child" :without_balance="without_balance"  >
+            </AccountTree>
+        </div>
+        <div class=" flex justify-start space-x-4 w-full border-b-2 border-gray-400 font-bold " ref="my_bg"   >
+            <span  class="w-1/2" :style="{'padding-left': PaddingLift(account.level)}" >
+                Total {{ account.name }}  
+            </span>
+            <span  class="w-1/2 ">
+                {{ Format(account.balance) }} 
+            </span> 
+        </div>
     </div>
+
+    <div  v-show="ShowChildren"  v-if="account.children && without_balance" class="py-1" >
+        <div v-for="(child,index) in account.children" :key="index" class="text-base my-1">
+            <AccountTree :account="child" :without_balance="without_balance"  >
+            </AccountTree>
+        </div>
+    </div>
+
+    
+
+
+
+   
+
+    
+    
+
+    
 
     <slot></slot> 
 

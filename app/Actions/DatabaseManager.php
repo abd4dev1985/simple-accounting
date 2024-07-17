@@ -4,6 +4,10 @@ namespace App\Actions;
 
 use Illuminate\Http\Request;
 use App\Models\Document_catagory;
+use App\Models\Statment;
+
+use App\Models\Account;
+use App\Actions\TreeAccounts;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Hash;
@@ -48,13 +52,13 @@ class DatabaseManager
      * @param  
      */
     public function migrateDatabase( )
-    {
-      
+    { 
+      // 2024_06_26_110641_create_statments_table.php
+      Artisan::call('migrate --database=tentant --path=/database/migrations/2024_06_26_110641_create_statments_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_08_13_184415_create_account_entry_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2021_07_12_120916_create_accounts_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_06_18_143401_create_products_table.php');
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_08_13_153304_create_documents_table.php');
-
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_06_23_100740_create_sales_table.php' );
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_06_23_101313_create_purchases_table.php' );
       Artisan::call('migrate --database=tentant --path=/database/migrations/2023_08_13_130346_create_entries_table.php' );
@@ -75,7 +79,14 @@ class DatabaseManager
         [ 'name'=>'general_entry','type' => 'entry' ],
       ],['id'],['name','type']);
 
-       Cache::store('tentant')->put('start period', '1/1/2024');
+      Statment::upsert([
+        ['name'=>'Balance Sheet'],
+        ['name'=>'Income Statments'],
+      ],['id'],['name']);
+
+      app(TreeAccounts::class)->create();
+
+      // Cache::store('tentant')->put('start period', '1/1/2024');
 
     }
    

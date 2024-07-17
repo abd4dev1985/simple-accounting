@@ -5,7 +5,7 @@ import searchStore from '../searchStore.vue';
 import { Link,  } from '@inertiajs/vue3';
 
 let props=  defineProps(['modelValue','TableObject','rows_index','columns_index',
-'Format','SearchFunction','Suggestions','Required','Default','ReadOnly', 'Invalid' ]);
+'Format','SearchFunction','Suggestions','Required','Default','ReadOnly', 'Invalid','aggregated_account' ]);
 
 const emit = defineEmits(['update:modelValue','change','UpdateCurrencyRate',])
 let Red_Alerte=ref(false)

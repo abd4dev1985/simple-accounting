@@ -21,13 +21,15 @@ import TreeTable from 'primevue/treetable';
 import Tree from 'primevue/tree';
 
 import Column from 'primevue/column';
+import { data } from 'autoprefixer';
 
 
 let props =defineProps({
   accounts:{   } ,
 
 })
-const expandedKeys = {1:true};
+let expandedKeys = reactive({});
+
 const toggleApplications = () => {
     let _expandedKeys = { ...expandedKeys.value };
     if (_expandedKeys['0']) delete _expandedKeys['0'];
@@ -35,10 +37,6 @@ const toggleApplications = () => {
 
     expandedKeys.value = _expandedKeys;
 }
-
-
-
-
 
 
 const dt = ref();
@@ -74,7 +72,6 @@ function unformat_number( value ){
 
 }
 
-
 function get_account_balance (account){
     if (account.children) {
         let  total_balances = 0
@@ -83,26 +80,26 @@ function get_account_balance (account){
             total_balances =  total_balances + get_account_balance(child)
         })
         return total_balances
-
     }else{
         return (account.balance)? Number(account.balance):Number(0)
     }
-
 }
 
-function get_accounts_nodes(accounts){
-    console.log('accounts')
-    console.log(accounts)
-
+function get_accounts_nodes(accounts,parent_name=null ){
     let node=  accounts.map(function(account){
+        expandedKeys[account.id]=true
         let obj={
             key: account.id,
             data:{ 
                     id:account.id ,
                     name:account.name ,
-                    balance:format_number( get_account_balance(account) ),  
+                    debit:(account.balance>0)? format_number( account.balance ):0,
+                    credit:(account.balance<0)? format_number( -1*account.balance ):0,
+                    has_children:(account.children) ?true:false ,
+                    parent_name:parent_name,
+                    balance:format_number( account.balance ),  
                 },
-            children:(account.children)? get_accounts_nodes(account.children) :null 
+            children:(account.children)? get_accounts_nodes(account.children,account.name) :null 
         }
         return obj
     });
@@ -114,12 +111,14 @@ function get_accounts_nodes(accounts){
 let accounts_nodes =ref()
 onMounted(() => {
     accounts_nodes.value=get_accounts_nodes(props.accounts)
+ 
+
 });
 
-let nodes= get_accounts_nodes(props.accounts)
+function show_data(data){
+    console.log('data')
 
-
-
+}
 </script>
 
 <template>
@@ -131,13 +130,50 @@ let nodes= get_accounts_nodes(props.accounts)
         </div>
         <div v-if="account.children" v-for="(child, index) in account.children"  class="flex justify-start"  >
             <div class="m-3">{{child.id}}</div>
-            <div  class="m-3">{{child.name}}</div>
+            <div  class="m-3 bg-red-700">{{child.name}}</div>
         </div>
     </div>
-    <Button class="hidden" @click="toggleApplications" label="Toggle Applications" />
-    <TreeTable v-model:expandedKeys="expandedKeys" showGridlines:true   :value="accounts_nodes">
-        <Column field="name" header="Name" expander></Column>
-        <Column field="balance" header="Balance"></Column>
+    <Button class="hidden " @click="toggleApplications" label="Toggle Applications" />
+
+    <TreeTable v-model:expandedKeys="expandedKeys"showGridlines:true 
+     :value="accounts_nodes" scrollable >
+
+        <Column  field="name" header="Name" expander style="width:25%" >
+          <template #body="propsbody">
+            <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
+            class="inline-block  ">
+                {{propsbody.node.data.name}}
+            </span>
+          </template>
+        </Column>
+
+        <Column field="debit" header="Debit" style="width:25%"  >
+            <template #body="propsbody">
+                <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
+                class="inline-block  ">
+                    {{propsbody.node.data.debit}}
+                </span>
+            </template>
+        </Column>
+
+        <Column field="credit" header="Credit" style="width:25%"  >
+            <template #body="propsbody">
+                <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
+                class="inline-block  ">
+                    {{propsbody.node.data.credit}}
+                </span>
+            </template>
+        </Column>
+
+        <Column field="parent_name" header="Parent" style="width:25%"  >
+            <template #body="propsbody">
+                <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
+                class="inline-block  ">
+                    {{propsbody.node.data.parent_name}}
+                </span>
+            </template>
+        </Column>
+
     </TreeTable>
 
   
