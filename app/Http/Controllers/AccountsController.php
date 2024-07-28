@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Statment;
 
 use App\Actions\AccountingEnrty;
+use App\Actions\LedgerAccount;
 
 
 use Illuminate\Support\Facades\Cache;
@@ -94,39 +95,9 @@ class AccountsController extends Controller
              return back()->withErrors($validator)->withInput();
         }
         $data = $validator->validated();
-        $account = Account::find($data['account']['id']);
-
-        $Account_with_SubAccounts =$account->Sub_Accounts();
-        $Accounts_Ids_Array = Account::find($data['account']['id'])->Sub_Accounts_Ids();
-
-        //$accounts = Account::with('entries')->whereIn('id', $Accounts_Ids_Array)->get();
-
-        $entries = EntryLines::whereIn('account_id',$Accounts_Ids_Array )
-        ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
-        ->where('date','<=',$data['EndDate'])->get()->groupBy('account_id');
-
-        $accounts = $Account_with_SubAccounts->map( function( $account ) use( $entries){
-        if ($entries->has($account->id)) {
-                $account->entries = $entries[$account->id];
-            }
-            return $account;
-        });
-         if (count( $accounts)<2) {
-            return back()->with('Account_Ledger_Book.'.$data['winbox_id'],$accounts->first());
-        }
-
-        $Account_GroupedBy_Parent = $accounts->groupBy('father_account_id');
-        function Tree_Account($account,$Account_GroupedBy_Parent){
-            if ($Account_GroupedBy_Parent->has($account->id)) {
-                $account->children = $Account_GroupedBy_Parent[$account->id];
-                foreach ($account->children as $child) {
-                    Tree_Account($child,$Account_GroupedBy_Parent);
-                }
-            }
-            return $account;
-        }
-        $account_tree = Tree_Account($account,$Account_GroupedBy_Parent) ;
-        return back()->with('Account_Ledger_Book.'.$data['winbox_id'],$account_tree);
+        $Account_Ledger_Book= app(LedgerAccount::class)->get($data);
+        //dd($Account_Ledger_Book);
+        return back()->with('Account_Ledger_Book.'.$data['winbox_id'],$Account_Ledger_Book);
                            
     }
      /**

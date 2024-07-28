@@ -25,14 +25,8 @@ class SearchController extends Controller
 
     public function search_account(Request $request)
     {
-        // $qurey = $request->searchForAccount;
         $qurey = $request->searchForAccount;
-        return  Account::where('name','like','%'.$qurey.'%')->get();
-       
-
-
-
-        
+        return  Account::where('name','like','%'.$qurey.'%')->get();        
     }
 
     public function search_cost_center(Request $request)

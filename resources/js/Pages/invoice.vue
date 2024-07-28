@@ -380,7 +380,7 @@ const exportCSV = () => { dt.value.exportCSV()}
             </div>
           </h1>
           <!-- header inputs like enrtry no,payment method,date and Currency  -->
-          <div class="flex mobile:flex-col flex-wrap mobile:gap-y-1 gap-y-5 gap-x-5 tab:gap-x-8     tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
+          <div class="flex mobile:flex-col flex-wrap mobile:gap-y-1 gap-y-5 gap-x-8      tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
             <!-- INPUT DOCUMENT NUMBER -->
             <div class="flex-initial  w-max">
               <div class="text-center relative">
@@ -408,9 +408,6 @@ const exportCSV = () => { dt.value.exportCSV()}
                 />
               </div>
 
-
-
-
              <!-- payment method Input   -->
              <div class="flex-initial ">
               <label class=" block  text-sm py-0.5 font-semibold text-left" for="">payment method</label>
@@ -433,7 +430,7 @@ const exportCSV = () => { dt.value.exportCSV()}
             
 
              <!-- client or vendor Account Input   -->
-             <div v-show="PaymentMethod.name !='cash' || !Device_is_Mobile" class=" ">
+             <div v-show="PaymentMethod.name !='cash' " class=" ">
               <label  class="block text-sm font-semibold text-left"  for="">
                 <span v-if="invoice_type=='purchase'"  >Vendor</span>
                 <span v-if="invoice_type=='sale'"  >Customer</span>
@@ -483,9 +480,9 @@ const exportCSV = () => { dt.value.exportCSV()}
             </div>
 
              <!-- INVOICE CURRENCY INPUT  -->
-            <div class=" mobile:flex justify-around ">
+            <div class=" mobile:flex justify-around">
               <div>
-                <label class="block self-start text-sm font-semibold text-left " for="">
+                <label class="block self-start text-sm font-semibold text-left" for="">
                   Currency
                 </label>
                 <AutoComplete v-model="Invoice_Currency" :suggestions="searchStore.filterd_currencies.value"  
@@ -562,7 +559,7 @@ const exportCSV = () => { dt.value.exportCSV()}
                                       <div class=" w-full py-3 px-1 border-r border-gray-400 ">{{index+1}}</div>                    
                                   </td>
                                   <td class="whitespace-nowrap border border-gray-400   ">                         
-                                    <ccc v-model="line.product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']" :aggregated_account="false"
+                                    <ccc v-model="line.product"  Format="aoutcomplete" :Invalid="errors['lines.'+index+'.product']" 
                                     @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=1
                                     :SearchFunction="searchStore.search_product" :Suggestions="searchStore.available_products.value" >  
                                       <template #emptySuggestions>

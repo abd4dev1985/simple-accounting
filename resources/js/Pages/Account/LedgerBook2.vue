@@ -5,6 +5,7 @@ import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import DateObject from '../../DateObject.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
+
 import DataTable from 'primevue/datatable';
 import InputText from 'primevue/inputtext';
 import Column from 'primevue/column';
@@ -145,7 +146,24 @@ let MarginLeft = 'ml-'+props.account.level*3
 
 <template>
 
-        <tr>{{ account.level }}</tr>
+    
+<table class="mx-auto w-full table-auto border-collapse border border-slate-400 ">
+          <thead  class=" dark:bg-gray-700 bg-white  font-medium dark:border-neutral-500">
+                <tr class="sticky top-12 z-10  border  border-slate-400 bg-gray-200  " >
+                    <th scope="col " class="w-1/5 p-4 border border-slate-400 ">name</th>
+                    <th scope="col" class="w-1/5    p-4 border border-slate-400 "> Debite</th>
+                    <th scope="col" class="w-1/5   dark:border-neutral-400 p-4  border border-slate-400">Credite</th>
+                    <th scope="col" class="w-1/5  dark:border-neutral-400  p-4 border border-slate-400">Balance</th>
+                    <th scope="col" class="w-1/5   dark:border-neutral-400  p-4 border border-slate-400">Date</th>
+                </tr>
+          </thead>
+          <LedgerBook :account="FormResult" >
+            
+          </LedgerBook>
+</table>
+
+
+
      <tr  v-show="!ShowEntries"   tabindex="0" class="border border-slate-400 text-red-900 font-semibold focus:bg-sky-900 focus:text-white divide-x-2 ">
         <td class="p-4 " >
             <button v-if="account.children" @click="ToogelShowChildren"  type="button" class=" inline"  :style="{marginLeft:account.level-1 +'rem'}"  style="visibility: visible;" tabindex="-1" data-pc-section="rowtoggler" data-pd-ripple="true">
@@ -183,7 +201,6 @@ let MarginLeft = 'ml-'+props.account.level*3
 
                 </div>
                 
-
                 <table     class="border-collapse  table-auto w-full overflow-visible divide-y-2">
                     <thead   class=" dark:bg-gray-700 font-medium dark:border-neutral-500  fi">
                         <tr   class="bg-gray-300 sticky top-36 z-30 " >

@@ -140,7 +140,11 @@ function submit(){
             <!--END DATE INPUT   -->
             <div class="flex-initial ">
                   <label class="block text-sm font-semibold text-left" for="">End Date </label>
+                  <div v-if="TrialbbalanceForm.errors.EndDate" class="block text-sm font-semibold text-red-600"  >
+                       {{  TrialbbalanceForm.errors.EndDate}}
+                  </div>
                   <Calendar v-model="TrialbbalanceForm.EndDate" showIcon  dateFormat="dd/mm/yy"
+                   @date-select="TrialbbalanceForm.clearErrors('EndDate')"
                     :pt="{
                         root:{class:'w-1/2  dark:bg-gray-700'},
                         input: { 

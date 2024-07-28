@@ -22,6 +22,9 @@ use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\Financial_Statment_Controller;
+use App\Http\Controllers\DocumentController;
+
+
 
 
 use App\Http\Controllers\AccountsController;
@@ -40,6 +43,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\SearchController;
+use App\Models\Entry;
 use App\Models\Product;
 use League\CommonMark\Extension\InlinesOnly\ChildRenderer;
 use PhpParser\Node\Stmt\Foreach_;
@@ -75,19 +79,17 @@ Route::get('/testaccount', function () {
  });
 
  Route::get('/string', function(Request $request) {
+    dd(url()->previous());
     
   return    str_split('entry_lines.1.account.id')[12];
 
-
  })->middleware('CurrentDatabase');
+
 
  Route::get('/testcache', function () {
     Cache::store('tentant')->put('start period', '1/1/2024');
     return    Cache::store('tentant')->get('start period');
-
-  
 })->middleware('CurrentDatabase');
-
 
 
 
@@ -96,6 +98,8 @@ Route::get('/invoice', function () {
     
     return Inertia::render('invoice', []);
 })->middleware('auth');
+
+Route::get('/get_document/{entry_id}',[DocumentController::class, 'Get_Document_By_Entry'])->name('document.show_by_entry');
 
 Route::controller(JournalEntryController::class)->group(function () {
     Route::get('/testentry/documents/{document:number}', 'testt')->name('entry.show');
