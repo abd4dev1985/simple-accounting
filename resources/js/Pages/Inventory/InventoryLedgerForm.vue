@@ -90,16 +90,18 @@ function submit(){
   <div   class=" m-4" ref="inventory_ledger" >
               
         <h4  class="m-2 text-2xl" >Inventory Ledger</h4>
-        <form   v-if="ShowForm"    @submit.prevent="submit"   >
+        <form   v-if="ShowForm"    @submit.prevent="submit" class="m-3 my-5 flex flex-col justify-between gap-7"  >
             <!-- Default Account Input -->
-            <div class=" my-5">
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-left" for=""> Product</label>
                 <AutoComplete v-model="LedgerBookForm.product" :suggestions="searchStore.available_products.value"
                     @complete="searchStore.search_product" optionLabel="name" forceSelection 
                     :pt="{
-                        input: {
-                        class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
-                        placeholder:'All Products',
+                      root: {
+                          class:'w-full'
+                      },
+                      input: {
+                        class: 'bg-white h-8 w-full py-5  dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                     }">
                     <template #empty>
@@ -110,63 +112,48 @@ function submit(){
                     </template> 
                 </AutoComplete>
             </div>
-            <div>{{  LedgerBookForm.errors}}</div>
 
             <!--start DATE INPUT   -->
-            <div class="flex-initial ">
+            <div class="flex-initial w-full ">
                   <label class="block text-sm font-semibold text-left" for="">Start Date </label>
                   <Calendar v-model="LedgerBookForm.StartDate" showIcon  dateFormat="dd/mm/yy"
                     :pt="{
-                        root:{class:' dark:bg-gray-700'},
+                        root:{class:'w-1/2 dark:bg-gray-700'},
                         input: { 
-                          class: 'bg-white text-center h-8 w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                          class: 'bg-white h-8 w-full py-5 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                         dropdownButton: {
-                          root: { class: 'h-8' }
+                          root: { class: 'h-8 py-5 bg-sky-700' }
                         }
                     }"
                   />
             </div>
 
             <!--END DATE INPUT   -->
-            <div class="flex-initial ">
+            <div class="flex-initial w-full ">
                   <label class="block text-sm font-semibold text-left" for="">End Date </label>
                   <Calendar v-model="LedgerBookForm.EndDate" showIcon  dateFormat="dd/mm/yy"
                     :pt="{
-                        root:{class:' dark:bg-gray-700'},
+                        root:{class:'w-1/2 dark:bg-gray-700'},
                         input: { 
-                          class: 'bg-white text-center h-8 w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                          class: 'bg-white h-8 w-full py-5  dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                         dropdownButton: {
-                          root: { class: 'h-8' }
+                          root: { class: 'h-8 py-5 bg-sky-700' }
                         }
                     }"
                   />
             </div>
-            <!-- INVOICE CURRENCY INPUT  -->
-            <div class=" ">
-                  <label class="block text-sm font-semibold text-left " for="">
-                    Currency
-                  </label>
-                  <AutoComplete v-model="LedgerBookForm.Currency" :suggestions="searchStore.filterd_currencies.value"  
-                    @complete="searchStore.search_currencey" optionLabel="name" forceSelection
-                    :pt="{
-                        input: {
-                          class: 'bg-white h-8 w-24 py-2 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
-                        },
-                      }">
-                      <template #empty>
-                          <div   class="font-semibold p-3 border-2 border-blue-500">
-                              <div class=""> currency <span class="text-blue-600">{{Invoice_Currency }}</span> dose not exist </div>
-                              <Link :href="searchStore.create_new_currencey_link.value" class="text-blue-600"> create new one</Link>
-                          </div>
-                      </template> 
-                  </AutoComplete>
-                </div>
-
 
             <!-- submit -->
-            <button type="submit" >ok</button>
+            <button class="flex w-max p-2 bg-sky-800 text-white font-semibold rounded-lg gap-1 " type="submit" >
+              <svg class="h-7 w-7" data-slot="icon" aria-hidden="true" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m5.231 13.481L15 17.25m-4.5-15H5.625c-.621 0-1.125.504-1.125 1.125v16.5c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Zm3.75 11.625a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+              <span class="text-lg">Show result </span>    
+            </button>
+            
+
         </form>
         <!-- result -->
         <div v-if="FormResult"  >

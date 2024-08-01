@@ -9,8 +9,6 @@ import searchStore from '../../searchStore.vue';
 import DateObject from '../../DateObject.vue';
 import DataTable from '@/pages/DataTable.vue';
 import InventoryValuation from '@/pages/Inventory/InventoryValuation.vue';
-
-
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
@@ -89,16 +87,18 @@ function submit(){
   <div   class=" m-4" ref="inventory_Valuation" >
               
         <h4  class="m-2 text-2xl" >Inventory Valuation</h4>
-        <form   v-if="ShowForm"    @submit.prevent="submit"   >
+        <form   v-if="ShowForm"    @submit.prevent="submit" class="m-3 my-5 flex flex-col justify-between gap-7" >
             <!-- Default Account Input -->
-            <div class=" my-5">
+            <div class="w-full">
                 <label class="block text-sm font-semibold text-left" for=""> Product</label>
                 <AutoComplete v-model="LedgerBookForm.product" :suggestions="searchStore.available_products.value"
                     @complete="searchStore.search_product" optionLabel="name" forceSelection 
                     :pt="{
+                        root: {
+                          class:'w-full'
+                        },
                         input: {
-                        class: 'bg-white h-8 w-44 py-2   dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
-                        placeholder:'All Products',
+                          class: 'bg-white w-full h-8  py-5 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                     }">
                     <template #empty>
@@ -109,41 +109,40 @@ function submit(){
                     </template> 
                 </AutoComplete>
             </div>
-            <div>{{  LedgerBookForm.errors}}</div>
 
             <!--start DATE INPUT   -->
-            <div class="flex-initial ">
+            <div class="flex-initial w-full">
                   <label class="block text-sm font-semibold text-left" for="">Start Date </label>
                   <Calendar v-model="LedgerBookForm.StartDate" showIcon  dateFormat="dd/mm/yy"
                     :pt="{
-                        root:{class:' dark:bg-gray-700'},
+                        root:{class:'w-1/2  dark:bg-gray-700'},
                         input: { 
-                          class: 'bg-white text-center h-8 w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                          class: 'bg-white  h-8 w-full py-5 `dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                         dropdownButton: {
-                          root: { class: 'h-8' }
+                          root: { class: 'h-8 py-5 bg-sky-700 '}
                         }
                     }"
                   />
             </div>
 
             <!--END DATE INPUT   -->
-            <div class="flex-initial ">
+            <div class="flex-initial w-full ">
                   <label class="block text-sm font-semibold text-left" for="">End Date </label>
                   <Calendar v-model="LedgerBookForm.EndDate" showIcon  dateFormat="dd/mm/yy"
                     :pt="{
-                        root:{class:' dark:bg-gray-700'},
+                        root:{class:'w-1/2 dark:bg-gray-700'},
                         input: { 
-                          class: 'bg-white text-center h-8 w-32 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
+                          class: 'bg-white  h-8 w-full py-5 `dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                         },
                         dropdownButton: {
-                          root: { class: 'h-8' }
+                          root: { class: 'h-8 py-5 bg-sky-700 '}
                         }
                     }"
                   />
             </div>
             <!-- valuation  CURRENCY INPUT  -->
-            <div class=" ">
+            <div class=" hidden ">
                   <label class="block text-sm font-semibold text-left " for="">
                     Currency
                   </label>

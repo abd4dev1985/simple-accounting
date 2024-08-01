@@ -12,8 +12,6 @@ import DateObject from '../DateObject.vue';
 import MoblieInvoiceTable from '@/Pages/MoblieInvoiceTable.vue';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
-
-
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import DangerButton from '@/Components/DangerButton.vue';    
@@ -22,7 +20,6 @@ import Toast from 'primevue/toast';
 import { useToast } from "primevue/usetoast";
 import Invoice from '../InvoiceLines.vue';
 import {Create_Invoice_Line,Create_Entry_Line} from '../EntryInvoiceLines.vue';
-
 import { useWinBox } from 'vue-winbox'
 
 // console.log(Setup_Lines)
@@ -31,9 +28,7 @@ let screenWidth=ref(0);
 screenWidth.value= document.getElementById("app").offsetWidth
 let Device_is_Mobile = ref(screenWidth.value <=800?true:false )
 
-
 const createWindow = useWinBox()
-
 let severity_style= ref('');
 
 onMounted(() => {
@@ -97,6 +92,15 @@ let  PaymentMethod = ref({name:'cash'});
 
 let AvailablePaymentMethod=ref([{name:'cash'},{name:'credit'}])
 
+ let NewInvoiceLink = computed(()=>{
+  if (props.invoice_type == 'purchase') {
+    return route('purchase.create',props.document_catagory.name)
+  }
+  if (props.invoice_type == 'sale') {
+    return route('sale.create',props.document_catagory.name)
+  }
+ })
+
 function select_currency(){
   for (let index = 0; index < currencies.length; index++) {
     if (currencies[index].id==props.currency_id) {
@@ -117,24 +121,11 @@ let Copy_Invoice_Lines = props.invoice_lines.map((obj) =>{
 let Invoice_Lines = ref ( );
 Invoice_Lines.value = Copy_Invoice_Lines ;
 
-// create copy of invoce lines props
-let Copy_Entry_Lines = props.entry_lines.map((obj) =>{ 
-  obj.customfields = JSON.parse(obj.customfields)
-  return {...obj} 
-});
-let Etry_Lines = ref ( );
-Etry_Lines.value = Copy_Entry_Lines ;
-
 
 let rows_count = 15 + Invoice_Lines.value.length;
 
 // create array from the lines of receipt (form)
-if ( !Etry_Lines.value[0]) {
-  Etry_Lines.value[0]={
-    debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
-    currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-  }
-}
+
 for (let index = 0; index < rows_count; index++) {
   if ( !Invoice_Lines.value[index]) {
     Invoice_Lines.value[index]={
@@ -142,19 +133,7 @@ for (let index = 0; index < rows_count; index++) {
       currency_rate:1, cost_center:null , customfields: get_standard_object(),
     }
   }
-
-  if (!Etry_Lines.value[index] && index !=0 ) {
-    Etry_Lines.value[index]={
-      debit_amount:null,credit_amount:null,account:null,description:null,
-      currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-    }  
-  }
 }
-Etry_Lines.value.push({
-  debit_amount:null,credit_amount:null,account:null,description:null,
-  currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-
-})
 
 // add more lines(products) to invoice  
 function Add_Lines(){
@@ -162,27 +141,18 @@ function Add_Lines(){
     quantity:null,price:null,product:null,ammount:null,description:null,currency:Invoice_Currency.value,
     currency_rate:1, cost_center:null , customfields: get_standard_object(),
   })
-  Etry_Lines.value.push({
-    debit_amount:null,credit_amount:null,account:null,description:null,
-    currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-  })
 }
 
 
 watch([PaymentMethod,Client_Or_Vendor_Account],([NewPaymentMethod,New_Client_Or_Vendor_Account])=>{
   if (NewPaymentMethod.name=='cash') {
     Client_Or_Vendor_Account.value=null
-    Etry_Lines.value[0].account = props.cash_account
   }else{
-    Etry_Lines.value[0].account = New_Client_Or_Vendor_Account
   }
 })
 
 watch([Invoice_Currency,Invoice_Currency_Rate],([New_Invoice_Currency,New_Invoice_Currency_Rate])=>{
   for (let index = 0; index < Invoice_Lines.value.length; index++) {
-    Etry_Lines.value[index].currency=New_Invoice_Currency
-    Etry_Lines.value[index].currency_rate=New_Invoice_Currency_Rate
-
     Invoice_Lines.value[index].currency=New_Invoice_Currency
     Invoice_Lines.value[index].currency_rate=New_Invoice_Currency_Rate
   }
@@ -190,11 +160,8 @@ watch([Invoice_Currency,Invoice_Currency_Rate],([New_Invoice_Currency,New_Invoic
 })
  Invoice_Currency.value=select_currency()
 //debugger;
-
-
 const rows = ref([])
 const scrollable_table = ref()
-
 let column_index=0
 
 const tableHeader=ref()
@@ -206,14 +173,6 @@ const Totals_Ammount =computed(()=>{
       total = total + Number(line.ammount)
     }
   });
-
-  if (props.invoice_type=='purchase') {
-    Etry_Lines.value[0].credit_amount=total
-  }
-  if (props.invoice_type=='sale') {
-    Etry_Lines.value[0].debit_amount = total
-  }
-
   return total
 });
 
@@ -225,46 +184,26 @@ let TableObject =computed(()=>{
 
 //inforce value of an element inside array to be a number  
 function format_number(value){
-let formatter =Intl.NumberFormat('en')
-if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
-    return formatter.format(value)
-  }else{  
-    return null 
-  }
+  let formatter =Intl.NumberFormat('en')
+  if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
+      return formatter.format(value)
+    }else{  
+      return null 
+    }
 }
 
 function get_ammount(index){
-
-
   Invoice_Lines.value[index].ammount=Invoice_Lines.value[index].price*Invoice_Lines.value[index].quantity
-  if (props.invoice_type=='purchase' && !isNaN(Invoice_Lines.value[index].ammount)  ) {
-    Etry_Lines.value[index+1].debit_amount=Invoice_Lines.value[index].ammount 
-    Etry_Lines.value[index+1].account=default_account.value
-
-  }
-  if (props.invoice_type=='sale' && !isNaN(Invoice_Lines.value[index].ammount)) {
-    Etry_Lines.value[index+1].credit_amount=Invoice_Lines.value[index].ammount 
-    Etry_Lines.value[index+1].account=default_account.value
-  }
-
 }
 
 function clear_form(){
   PaymentMethod.value={name:'cash'}
-  Etry_Lines.value[0]={
-    debit_amount:null,credit_amount:null,account:props.cash_account,description:null,
-    currencey:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-  }
   rows_count = 30 
   for(let index = 0; index < rows_count; index++) {
     Invoice_Lines.value[index]={
       quantity:null,price:null,product:null,ammount:null,description:null,currency:null,
       currency_rate:1, cost_center:null , customfields: get_standard_object(),
     }
-    Etry_Lines.value[index]={
-      debit_amount:null,credit_amount:null,account:null,description:null,
-      currency:Invoice_Currency.value,currency_rate:1,cost_center:null , customfields: get_standard_object(),
-    }  
   }
   document_number.value=(props.document)? props.document.number: props.new_document_number
 }
@@ -296,7 +235,6 @@ function update_document() {
     default_account:default_account.value,
     PaymentMethod:PaymentMethod.value.name,
     Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
-    entry_lines:Etry_Lines.value,
     document_catagory_id:page.props.document_catagory.id ,
     lines:Invoice_Lines.value ,
     date:DateObject.ToString(document_date.value) ,
@@ -329,7 +267,6 @@ function create_document(){
         default_account:default_account.value,
         PaymentMethod:PaymentMethod.value.name,
         Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
-        entry_lines:Etry_Lines.value,
         document_catagory_id:page.props.document_catagory.id ,
         lines:x ,
         date:DateObject.ToString(document_date.value) ,
@@ -410,7 +347,7 @@ const exportCSV = () => { dt.value.exportCSV()}
 
              <!-- payment method Input   -->
              <div class="flex-initial ">
-              <label class=" block  text-sm py-0.5 font-semibold text-left" for="">payment method</label>
+              <label class="block text-sm py-0.5 font-semibold text-left" for="">payment method</label>
               <Dropdown v-model="PaymentMethod" :options="AvailablePaymentMethod"
                  optionLabel="name"  
                 :pt="{
@@ -418,11 +355,11 @@ const exportCSV = () => { dt.value.exportCSV()}
                       class:'h-8 dark:bg-gray-700 mobile:w-full dark:text-gray-200  ',
                     },
                     input: {
-                      class: ' p-0 text-center w-14  dark:text-gray-200  ',
+                      class: 'p-0 text-center w-14  dark:text-gray-200',
                       form : 'myform' ,
                     },
                     trigger:{
-                      class:' dark:text-gray-200',
+                      class:'dark:text-gray-200',
                     },
                   }">
               </Dropdown>
@@ -623,7 +560,6 @@ const exportCSV = () => { dt.value.exportCSV()}
                                   </td>
 
                                   <td class="whitespace-nowrap border border-gray-400">
-
                                   </td>
                                 </tr>
                             </tbody>
@@ -641,7 +577,7 @@ const exportCSV = () => { dt.value.exportCSV()}
                 
                 <button @click="update_document" class="mobile:col-span-2 p-1.5 min-w-max font-semibold rounded-md text-gray-900 border-2 border-gray-600"   >Share</button>
 
-                <Link @click.prevent="console.log(route('purchase.create',props.document_catagory.name))" :href="route('purchase.create',props.document_catagory.name)" class="block mobile:col-span-2 min-w-max p-2 font-semibold rounded-md bg-black text-white text-center "  >
+                <Link  :href="NewInvoiceLink" class="block mobile:col-span-2 min-w-max p-2 font-semibold rounded-md bg-black text-white text-center "  >
                   New  
                 </Link>
 

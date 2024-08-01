@@ -2,24 +2,16 @@
 
 import { reactive ,computed,watch,onMounted,ref,  } from 'vue'
 import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
-import AutoComplete from 'primevue/autocomplete';
-import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-
-import SecondaryButton from '@/Components/SecondaryButton.vue'; 
-import DataTable from 'primevue/datatable';
-import InputText from 'primevue/inputtext';
-
 import ColumnGroup from 'primevue/columngroup';   
 import Row from 'primevue/row';                   
 import { FilterMatchMode } from 'primevue/api';
 import Button from 'primevue/button';
 import TreeTable from 'primevue/treetable';
 import Tree from 'primevue/tree';
-
 import Column from 'primevue/column';
 import { data } from 'autoprefixer';
 
@@ -42,8 +34,6 @@ const toggleApplications = () => {
 const dt = ref();
 const exportCSV = () => { dt.value.exportCSV()}
 
-
-let severity_style= ref('');
 //define computed props
 const page = usePage()
 const currencies= (page.props.currencies)? page.props.currencies:[];
@@ -135,46 +125,48 @@ function show_data(data){
     </div>
     <Button class="hidden " @click="toggleApplications" label="Toggle Applications" />
 
-    <TreeTable v-model:expandedKeys="expandedKeys"showGridlines:true 
-     :value="accounts_nodes" scrollable >
+    <div class="min-w-[470px]">
+        <TreeTable v-model:expandedKeys="expandedKeys"showGridlines:true 
+        :value="accounts_nodes" scrollable >
 
-        <Column  field="name" header="Name" expander style="width:25%" >
-          <template #body="propsbody">
-            <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
-            class="inline-block  ">
-                {{propsbody.node.data.name}}
-            </span>
-          </template>
-        </Column>
-
-        <Column field="debit" header="Debit" style="width:25%"  >
+            <Column  field="name" header="Name" expander style="width:25%" >
             <template #body="propsbody">
                 <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
                 class="inline-block  ">
-                    {{propsbody.node.data.debit}}
+                    {{propsbody.node.data.name}}
                 </span>
             </template>
-        </Column>
+            </Column>
 
-        <Column field="credit" header="Credit" style="width:25%"  >
-            <template #body="propsbody">
-                <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
-                class="inline-block  ">
-                    {{propsbody.node.data.credit}}
-                </span>
-            </template>
-        </Column>
+            <Column field="debit" header="Debit" style="width:25%"  >
+                <template #body="propsbody">
+                    <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
+                    class="inline-block  ">
+                        {{propsbody.node.data.debit}}
+                    </span>
+                </template>
+            </Column>
 
-        <Column field="parent_name" header="Parent" style="width:25%"  >
-            <template #body="propsbody">
-                <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
-                class="inline-block  ">
-                    {{propsbody.node.data.parent_name}}
-                </span>
-            </template>
-        </Column>
+            <Column field="credit" header="Credit" style="width:25%"  >
+                <template #body="propsbody">
+                    <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
+                    class="inline-block  ">
+                        {{propsbody.node.data.credit}}
+                    </span>
+                </template>
+            </Column>
 
-    </TreeTable>
+            <Column field="parent_name" header="Parent" style="width:25%"  >
+                <template #body="propsbody">
+                    <span :class="{'text-red-700 font-semibold':(propsbody.node.data.has_children)}"
+                    class="inline-block  ">
+                        {{propsbody.node.data.parent_name}}
+                    </span>
+                </template>
+            </Column>
+
+        </TreeTable>
+    </div>
 
   
 

@@ -96,7 +96,6 @@ class AccountsController extends Controller
         }
         $data = $validator->validated();
         $Account_Ledger_Book= app(LedgerAccount::class)->get($data);
-        //dd($Account_Ledger_Book);
         return back()->with('Account_Ledger_Book.'.$data['winbox_id'],$Account_Ledger_Book);
                            
     }

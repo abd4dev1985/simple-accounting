@@ -74,33 +74,35 @@ class SaleController extends Controller
     {
         DB::transaction(function () use($document_catagory,$request ) {
             $request['operation']='create';
-            $Invoice_Action= app(Invoice::class,['invoice_type' => 'sale']);
+            $Invoice_Action = app(Invoice::class,['document_catagory_id'=>$document_catagory->id ,'invoice_type' =>'sale']);
             $invoice_data =  $Invoice_Action->validate($request->all());
             if (  $Invoice_Action->validation_is_failed) {  
                 return back()->withErrors($Invoice_Action->validator)->withInput();
             }
 
-            $Accounting_Enrty_Action = app(AccountingEnrty::class);
-            $entry_data =  $Accounting_Enrty_Action->validate($request->all());
-            if (  $Accounting_Enrty_Action->validation_is_failed) {  
-                return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
-            }
+           //  $Accounting_Enrty_Action = app(AccountingEnrty::class);
+           // $entry_data =  $Accounting_Enrty_Action->validate($request->all());
+           // if (  $Accounting_Enrty_Action->validation_is_failed) {  
+           //     return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
+           // }
             //dd($invoice_data);
-            $entry =  $Accounting_Enrty_Action->create( $entry_data);
+           // $entry =  $Accounting_Enrty_Action->create( $entry_data);
 
-            $document = Document::create([ 
-                'number'=> $entry_data['document_number'] ,
-                'document_catagory_id' => $document_catagory->id ,
-                'entry_id'=> $entry->id,
-                'date'=>$entry_data['date'],
-            ]);
+           // $document = Document::create([ 
+             //   'number'=> $entry_data['document_number'] ,
+             //  'document_catagory_id' => $document_catagory->id ,
+             //   'entry_id'=> $entry->id,
+             //   'date'=>$entry_data['date'],
+            //]);
             
-            $sales = $Invoice_Action->create( $document,$invoice_data);
+            $sales = $Invoice_Action->create($invoice_data);
+            $document = $Invoice_Action->document;
 
             $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
             if ( $document->number > $last_document?->number) { 
-                Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
+               Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
             }
+
             return back()->with('success','ok');
         });
     }

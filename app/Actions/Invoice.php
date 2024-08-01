@@ -3,18 +3,17 @@
 namespace App\Actions;
 
 use App\Models\Document;
+use App\Models\Document_catagory;
 use App\Models\Entry;
 use App\Models\Purchase;
 use App\Models\Product;
+use App\Models\Account ;
+use App\Models\EntryLines ;
 use App\Models\Invoice as Invoice_line;
 use App\Models\Sale;
 use App\Actions\Inventory\Inventory;
-
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
@@ -23,46 +22,47 @@ use Closure;
 
 class Invoice 
 {
-
-
-    public function __construct( public  $invoice_type){
-
+    public function __construct( public  $invoice_type , public $document_catagory_id)
+    {
 
     }
-
-    public $document_number;
+    public $document;
     public $lines;
     public $validation_is_failed;
     public $validator ;
     public $Errors;
-    public $document_catagory_id ;
-
-    
-
-
+    public $entry ;
 
     /**
      * Create a new invoice for transaction.
      *   @param  Document  $document
      *   @param  array  $input
      */
-    public function create(Document $document   ,array $input )
+    public function create( array $input )
     {
+        $document = Document::create([ 
+            'number'=> $input['document_number'] ,
+            'document_catagory_id' => $this->document_catagory_id ,
+             // 'entry_id'=> $entry->id,
+            'date'=>$input['date'],
+        ]);
+        $catagory_name = Document_catagory::find($this->document_catagory_id )->name ;
+        $description = $catagory_name.' number'. $input['document_number'] ;
+
         switch ($this->invoice_type) {
             case 'purchase':
                 $invoice = Purchase::create(['document_id'=>$document->id]);
             break;
             case 'sale':
                 $invoice = Sale::create(['document_id'=>$document->id]);
-            break;    
-            
+            break;     
         }
         $data =[];
         $tota_ammount=0;
 
         $lines = $input['lines'];
         foreach ($lines as $index=> $line) {
-            $tota_ammount+=$line['ammount'];
+            $tota_ammount+=$line['ammount'] ;
             $data[$index] =[
                 'invoiceable_id'=>$invoice->id,
                 'invoiceable_type' => $this->invoice_type,
@@ -78,8 +78,29 @@ class Invoice
                 'customfields' => json_encode($line['customfields']),
             ];
         }
-     
+
         Invoice_line::upsert($data,['invoiceable_id']); 
+        $cash_account =Account::find(12);
+        $Credit_Or_Debit_Account_id  = ($input['Client_Or_Vendor_Account'])? $input['Client_Or_Vendor_Account']['id']: $cash_account->id ;
+        $entry = Entry::create([]);
+        if ($this->invoice_type=='sale') {
+            $entry_lines = [
+                ['entry_id'=> $entry->id,'account_id'=> 22,'credit_amount'=> $tota_ammount,'debit_amount'=>null,'date'=> $input['date'] ,'description'=> $description,         ],
+                ['entry_id'=> $entry->id,'account_id'=> $Credit_Or_Debit_Account_id,'credit_amount'=>null,'debit_amount'=> $tota_ammount ,'date'=> $input['date'],'description'=> $description,  ],
+            ];
+        }
+        if ($this->invoice_type=='purchase') {
+            $entry_lines = [
+                ['entry_id'=> $entry->id,'account_id'=> 18 ,'credit_amount'=>null,'debit_amount'=> $tota_ammount, 'date'=> $input['date'],'description'=> $description,   ],
+                ['entry_id'=> $entry->id,'account_id'=> $Credit_Or_Debit_Account_id, 'credit_amount'=>$tota_ammount,'debit_amount'=> null, 'date'=> $input['date'] ,'description'=> $description,  ],
+            ];
+        }
+        // dd($entry_lines);
+        EntryLines::upsert($entry_lines,['entry_id'],['account_id','credit_amount','debit_amount']);
+        $document->entry_id = $entry?->id ;
+        $document->save();
+        $this->document  = $document;
+
         return $invoice ;
     }
     
@@ -118,8 +139,6 @@ class Invoice
             $product_count = app(Inventory::class)->CountProducts( $products,today() );
         });
 
-
-        
         if ($validator->fails()) {
              $this->validation_is_failed=true;
              $this->validator=$validator;

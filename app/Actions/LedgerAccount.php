@@ -42,7 +42,6 @@ class LedgerAccount
         if (count( $Account_with_SubAccounts)<2) {
             return $Account_with_SubAccounts->first();
         }
-
         $Account_GroupedBy_Parent = $Account_with_SubAccounts->groupBy('father_account_id');
         function Tree_Account($account,$Account_GroupedBy_Parent){
             if ($Account_GroupedBy_Parent->has($account->id)) {
@@ -53,7 +52,7 @@ class LedgerAccount
             }
             return $account;
         }
-            $Account_with_SubAccounts = Tree_Account($account,$Account_GroupedBy_Parent) ;
+            $Account_with_SubAccounts = Tree_Account($Account_with_SubAccounts->first(),$Account_GroupedBy_Parent) ;
             return $Account_with_SubAccounts;
 
 
