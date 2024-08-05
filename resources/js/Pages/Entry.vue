@@ -1,7 +1,7 @@
 <script setup>
 
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { reactive ,computed,watch,onUpdated,ref,  } from 'vue'
+import { reactive ,computed,watch,onUpdated,ref,onMounted  } from 'vue'
 import { Head, Link, router,usePage,useRemember,useForm} from '@inertiajs/vue3';
 import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
@@ -9,17 +9,31 @@ import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
 import Language from '@/Pages/Language.vue';
+import EntriesTableForDesktop from '@/Pages/JournalEntry/EntriesTableForDesktop.vue';
 import CreateEntryLines from '@/Pages/CreateEntryLines.vue';
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import DangerButton from '@/Components/DangerButton.vue';    
-import ccc from '@/Components/ccc.vue';
 import Toast from 'primevue/toast';
+import ccc from '@/Components/ccc.vue';
 import { useToast } from "primevue/usetoast";
 import { useWinBox } from 'vue-winbox'
 
 const toast = useToast();
-const createWindow = useWinBox()
+let screenWidth=ref(0);
+screenWidth.value= document.getElementById("app").offsetWidth
+let Device_is_Mobile = ref(screenWidth.value <=800?true:false )
+
+onMounted(() => {
+    if (window !== undefined) {
+        window.addEventListener('resize', ()=>{
+        screenWidth.value= document.getElementById("app").offsetWidth
+        Device_is_Mobile.value = screenWidth.value <=800?true:false 
+
+        })
+    }
+})
+
 let severity_style= ref('');
 let Translate = Language.Translate
 
@@ -69,8 +83,6 @@ let Etry_Lines = computed(()=>{
 
 })
 
-// create array from the lines of receipt (form)
-// let rows_count = 30 + Etry_Lines.value.length;
 
 console.log('CreateEntryLines')
 let my_lines = [ ...Etry_Lines.value.concat(CreateEntryLines(currencies[0],props.customfields,4))]
@@ -86,48 +98,6 @@ const Entry_Totals =computed(()=>{
   return { debit_side:total_of_debit , credit_side: total_of_credit  }
 });
 
-
-const rows = ref([])
-const scrollable_table = ref()
-
-const tableHeader=ref()
-
-
-let TableObject =computed(()=>{
-  return {
-    Table:scrollable_table.value ,TableHeader:tableHeader.value,Rows:rows.value,
-    CollumnsCount:props.columns_count + props.customfields.length}
-})
-
-//inforce value of an element inside array to be a number  
-function Force_Number_VALUE(array_objects,object_key ,index){
-  if (isNaN(Number(array_objects[index][object_key])) && Number (array_objects[index][object_key]) !=null ) {
-    array_objects[index][object_key] =null
-  }
-}
-//inforce value of an element inside array to be a oject  
-function Force_Object_VALUE(array_objects,object_key ,index){
-  if (isNaN(Number(array_objects[index][object_key])) && Number (array_objects[index][object_key]) !=null ) {
-    array_objects[index][object_key] =null
-  }
-}
-
-//clear credit_amount input value if valide debit_amount input is inserted in the same line of form
-function remove_credit_amount(index) {
- // form_have_been_adjusted.value=true
-  Force_Number_VALUE(form.value,'debit_amount',index)
-  if (form.value[index].debit_amount  ) {
-    form.value[index].credit_amount = null 
-  }
-}
-// clear debit_amount input value if valide credit_amount input is inserted in the same line of form
-function remove_debit_amount(index) {
-  //form_have_been_adjusted.value=true
-  Force_Number_VALUE  (form.value,'credit_amount',index)
-  if (form.value[index].credit_amount) {
-    form.value[index].debit_amount =null
-  }
-}
 function clear_form(){
  // rows_count = 30 
   let lines=[]
@@ -157,7 +127,6 @@ function delete_document(){
       toast.add({ severity: 'success', summary: 'successfully deleted', detail:'kkk' , life: 3000 });
       clear_form()
     },  
-
   }
   )
 }
@@ -245,8 +214,7 @@ function create_document(){
             </div>
 
           </h1>
-          <div class="flex flex-col  tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
-           
+          <div class="flex flex-col gap-y-2 tab:flex-row dark:text-gray-200 justify-between mx-3 my-4 ">
             <!-- INPUT DOCUMENT NUMBER -->
             <div class="flex-initial  w-max">
               <div class="text-center relative">
@@ -256,11 +224,9 @@ function create_document(){
                 <div v-if="errors.receipt_id" class="   text-red-500">{{ errors.receipt_id}}</div>
                 -->
               </div>
-
             </div>
-            
             <!-- Default Account Input   -->
-            <div class="flex-initial ">
+            <div class="flex-initial hidden ">
               <label class="block text-sm font-semibold text-left" for="">Default Account</label>
               <AutoComplete v-model="default_account" :suggestions="searchStore.available_accounts.value"
                 @complete="searchStore.search_account" optionLabel="name" forceSelection 
@@ -278,7 +244,6 @@ function create_document(){
                   </template> 
               </AutoComplete>
             </div>
-            
             <!-- DATE INPUT   -->
             <div class="flex-initial ">
               <label class="block text-sm font-semibold text-left" for=""> Date     </label>
@@ -297,113 +262,23 @@ function create_document(){
             </div>
 
           </div>
-          
-            
+
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
                <!-- entry table   -->
-               <div ref="scrollable_table"  class=" lg:h-[410px] mx-6 relative  overflow-auto scrollbar larg:max-w-[73vw] " >
-                    <table class=" dark:text-gray-200   text-center border-separate   text-sm font-light">
-                      <thead ref="tableHeader"  class="sticky top-0 z-[20] bg-white dark:bg-gray-700 bg-inherit  border-2 font-medium dark:border-neutral-400">
-                          <tr class="" >
-                          <th scope="col " class=" border-r b py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
-                          <th scope="col" class=" border-r border-b  py-4  "> Debite</th>
-                          <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4  ">Credite</th>
-                          <th scope="col" class=" border-r border-b  dark:border-neutral-400  py-4">Account</th>
-                          <th scope="col" class=" block border-r border-b  overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
-                          <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Cost center</th>
-                          <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Currency</th>
-                          <th scope="col" class=" border-r border-b  dark:border-neutral-400 py-4">rate</th>
-                          <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4 border-2 dark:border-neutral-400">
-                            {{ field }}  
-                          </th>
-                          </tr>
-                      </thead>
-                      <tbody> 
-                          <tr v-for="(i,index) in form.length " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700  ">
-                            <td class="sticky left-0 bg-inherit z-10  text-center font-medium border-r  border-gray-400">
-                                <div class=" w-full py-3 px-1  border-gray-400 ">{{index+1}}</div>                    
-                            </td>
+               <EntriesTableForDesktop v-show="!Device_is_Mobile"  v-model:entries="form" :customfields="customfields"  />
 
-                            <td class="whitespace-nowrap   border-gray-400 ">
-                              <ccc  v-model="form[index].debit_amount"   @change="remove_credit_amount(index)"  
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=1  Format="number" />
-                            </td>
-
-                            <td class="whitespace-nowrap   border-gray-400 ">
-                              <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)" 
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
-                            </td>
-                            
-                            <td class="whitespace-nowrap  border-gray-400   ">                         
-                              <ccc v-model="form[index].account"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
-                              Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value"  >  
-                                <template #emptySuggestions>
-                                  <div class=""> account <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
-                                  <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
-                                </template>
-                              </ccc>
-                            </td>
-
-                            <td class="whitespace-nowrap border-gray-400  ">
-                              <ccc  v-model="form[index].description"  @change="form_have_been_adjusted=true" 
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="text" />
-                            </td>
-
-                            <td class="whitespace-nowrap border-r border-gray-400">
-                              <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=5
-                              Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center" 
-                              :Suggestions="searchStore.available_cost_centers.value" >
-                                <template #emptySuggestions>
-                                  <div class=""> cost center <span class="text-blue-600">{{form[index].cost_center }}</span> dose not exist </div>
-                                  <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
-                                </template>
-                              </ccc>
-                            </td>
-
-                            <td class="whitespace-nowrap  border-gray-400  dark:text-gray-200 text-gray-800 ">
-                              <ccc v-model="form[index].currency" :TableObject="TableObject" :rows_index="index" :columns_index=6
-                              @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate" 
-                              Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
-                                <template #emptySuggestions>
-                                  <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>
-                                </template>
-                              </ccc>
-                            </td>
-
-                            <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap  border-gray-400  " >
-                              <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7
-                              :Default ="form[index].currency?.default_rate"  Format="number" 
-                              />
-                            </td>
-
-                            <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
-                              <ccc  v-model="form[index].customfields[field]" 
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=8  Format="text" />
-                            </td>
-
-                            <td class="whitespace-nowrap border border-gray-400">
-
-                              
-                            </td>
-                          </tr>
-                      </tbody>
-                            
-                    </table>
-                </div>
-
+                <div class="mx-5 w-48  ">Total</div>
                 <div class=" w-60 inline-flex justify-around bg-sky-200  ">
-                  <div class="">Total</div>
-
-                    <div class="">{{ Entry_Totals.debit_side }}</div>
-                    <div class="" >{{ Entry_Totals.credit_side }}</div>
+                  <ccc v-model="Entry_Totals.debit_side"  :disabled="true"  Format="number" />
+                  <ccc v-model="Entry_Totals.credit_side" :disabled="true"   Format="number" />
                 </div>
               <!-- buttons --> 
               <div  class="flex justify-end w-9/12  my-0.5 float-right  mr-9">
                 <Link @click.prevent="console.log(form_have_been_adjusted)" href="/create_entry/general_entry/documents" class=" p-2 mx-4 font-semibold rounded-md bg-black text-white "  >New  {{ form_have_been_adjusted }}</Link>
-                <button @click="update_document" class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Update</button>
+                <button v-if="operation=='update'"  @click="update_document" class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Update</button>
                 <div @click="DeleteModal=true" class=" p-2 mx-4 font-semibold rounded-md bg-red-600 text-white "   >Delete</div>
                 <button class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Print</button>
-                <button class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "  type="submit" >save</button>
+                <button  v-if="operation=='create'" class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "  type="submit" >save</button>
 
               </div>
             </form>

@@ -28,7 +28,6 @@ let screenWidth=ref(0);
 screenWidth.value= document.getElementById("app").offsetWidth
 let Device_is_Mobile = ref(screenWidth.value <=800?true:false )
 
-const createWindow = useWinBox()
 let severity_style= ref('');
 
 onMounted(() => {
@@ -459,7 +458,7 @@ const exportCSV = () => { dt.value.exportCSV()}
           </div>
             <form class="sm:-mx-1 lg:-mx-2 h-screen flex flex-col " id="myform" @submit.prevent="submit">
                <!-- invoice table for mobile   -->
-               <div v-if="Device_is_Mobile" class="mx-3"  >
+               <div v-if="Device_is_Mobile" class="mx-3 mt-7"  >
                   <h1>ITEMS</h1>
                   <div v-for="(line,index) in Invoice_Lines"  :key="index" > 
                       <MoblieInvoiceTable  v-model:line="Invoice_Lines[index]" @change="get_ammount(index)" :default_line="props.invoice_lines[index]"  >

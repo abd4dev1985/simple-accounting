@@ -5,7 +5,7 @@ import searchStore from '../searchStore.vue';
 import { Link,  } from '@inertiajs/vue3';
 
 let props=  defineProps(['modelValue','TableObject','rows_index','columns_index',
-'Format','SearchFunction','Suggestions','Required','Default','ReadOnly', 'Invalid','aggregated_account' ]);
+'Format','SearchFunction','Suggestions','Required','Default','ReadOnly', 'Invalid','aggregated_account','disabled' ]);
 
 const emit = defineEmits(['update:modelValue','change','UpdateCurrencyRate',])
 let Red_Alerte=ref(false)
@@ -128,7 +128,7 @@ function focusLeft(Rows,row_index,collumn_index){
         @keydown.down.prevent="focusDown(TableObject.Rows,rows_index,columns_index)"
         @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"
         @keyup.right="focusRight(TableObject.Rows,rows_index,columns_index)"
-        @focus="force_number" :readonly="ReadOnly"
+        @focus="force_number" :readonly="ReadOnly" :disabled="disabled"
         class="bg-inherit text-transparent focus:text-gray-950 dark:focus:text-gray-200 py-3 mobile:w-20 mobile:text-sm w-28 max-w-max text-center rounded-md ring-offset-1 focus:ring-2 "> 
         <div v-if="Red_Alerte"  @click="focus_input"  class="block absolute group-focus-within:hidden   h-1/3 mobile:text-sm
          text-center w-full   top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2 text-base text-red-600 ">
@@ -161,8 +161,9 @@ function focusLeft(Rows,row_index,collumn_index){
     <div v-if="props.Format=='text'"  >
       <input v-model="value" @keyup.up="focusUp(TableObject.Rows,rows_index,columns_index)"
       @keydown.down.prevent="focusDown(TableObject.Rows,rows_index,columns_index)"
-      @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"
+      @keyup.left="focusLeft(TableObject.Rows,rows_index,columns_index)"  
       @keyup.right="focusRight(TableObject.Rows,rows_index,columns_index)"
+      :disabled="disabled"
       class="bg-inherit  w-full py-3 rounded-md ring-offset-1 focus:ring-2 ">
     </div>
 
