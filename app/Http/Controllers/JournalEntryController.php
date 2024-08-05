@@ -103,10 +103,14 @@ class JournalEntryController extends Controller
     { 
         $currencies=Currency::all();
         $entry = $document->entry ;
-        $entry_lines = $entry->accounts->map(function($item){
+        $entry_lines = $entry->accounts->map(function($item) use ($currencies) {
             $item['pivot']['account'] =  ['id'=>$item['id']  ,'name'=>$item['name'] ];
+            $currency_id = $item['pivot']['currency_id'];
+            $currency = $currencies->filter(function($currency) use( $currency_id ){ return $currency->id==$currency_id;})->first();
+            $item['pivot']['currency'] = $currency ;
             return $item['pivot'];
         }) ;
+        //dd( $entry_lines );
         $pervious_document=Document::where('number','<',$document->number)->orderBy('number','desc')->first();
         $next_document=Document::where('number','>',$document->number)->orderBy('number','asc')->first();
         

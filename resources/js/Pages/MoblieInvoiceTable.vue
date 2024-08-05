@@ -62,7 +62,7 @@ function Is_Number(value){
     return  ( isNaN(Number(value)) || Number(value)==0  )? false:true  
 }
 function open_Product_Modal(){
-    console.log('from slot')
+   // console.log('from slot')
      ShowProductModal.value = true 
 }
 function Close_Without_Save(){

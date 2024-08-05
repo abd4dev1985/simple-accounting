@@ -9,7 +9,7 @@ import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
 import Language from '@/Pages/Language.vue';
-import CreateEntryLines from '@/Pages/CreateEntryLines.vue';
+
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import DangerButton from '@/Components/DangerButton.vue';    
@@ -51,30 +51,64 @@ function get_standard_object(){
 const page = usePage()
 // const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
+console.log(currencies[0])
+const Etry_Lines = ( page.props.entry_lines)? page.props.entry_lines : [] ;
+
 let document_number =ref( (props.document)? props.document.number: props.new_document_number );
+
 let document_date = ref( (props.document)? props.document.date : new Date()  )
+
 searchStore.available_currencies.value = currencies
 
 let form_have_been_adjusted = ref(false);
+
+let rows_count = 30 + Etry_Lines.length;
 
 let DeleteModal = ref(false)
 
 let default_account=ref('')
 
-let Etry_Lines = computed(()=>{
-  return props.entry_lines.map((line)=>{
-    line.customfields = (line.customfields)? JSON.parse(line.customfields ): get_standard_object()
-    return line 
-  })
-
-})
 
 // create array from the lines of receipt (form)
-// let rows_count = 30 + Etry_Lines.value.length;
+let lines=[]
+for (let index = 0; index < rows_count; index++) {
+  if (Etry_Lines[index]) {
 
-console.log('CreateEntryLines')
-let my_lines = [ ...Etry_Lines.value.concat(CreateEntryLines(currencies[0],props.customfields,4))]
-let form = ref(my_lines)
+      lines[index] = {
+      id: Etry_Lines[index].id,
+      debit_amount:Etry_Lines[index].debit_amount,
+      credit_amount:Etry_Lines[index].credit_amount,
+      account:Etry_Lines[index].account,
+      description:Etry_Lines[index].description,
+      currency:currencies.filter((currency)=> currency.id ==Etry_Lines[index].currency_id) [0]  ,
+      currency_rate:1,
+      cost_center:Etry_Lines[index].cost_center,
+      customfields: (Etry_Lines[index].customfields)? JSON.parse(Etry_Lines[index].customfields ): get_standard_object(),
+      } 
+  } else {
+
+    lines[index] = {
+    debit_amount:null,
+    credit_amount:null,
+    account:null,
+    description:null,
+    currency:currencies[0],
+    currency_rate:1,
+    cost_center:null ,
+    customfields: get_standard_object(),
+
+    }
+    
+  }
+
+}
+let form = ref(lines)
+
+function set_currencey_rate_line(rate,index ){
+  console.log(rate)
+  form.value[index].currency_rate = rate
+}
+
 
 const Entry_Totals =computed(()=>{
   let total_of_credit=0
@@ -89,6 +123,15 @@ const Entry_Totals =computed(()=>{
 
 const rows = ref([])
 const scrollable_table = ref()
+
+let column_index=0
+
+
+function   get_columen_index(){
+    console.log("dd")
+    column_index ++
+    return column_index
+}
 
 const tableHeader=ref()
 
@@ -119,7 +162,9 @@ function remove_credit_amount(index) {
   if (form.value[index].debit_amount  ) {
     form.value[index].credit_amount = null 
   }
+ 
 }
+
 // clear debit_amount input value if valide credit_amount input is inserted in the same line of form
 function remove_debit_amount(index) {
   //form_have_been_adjusted.value=true
@@ -129,9 +174,9 @@ function remove_debit_amount(index) {
   }
 }
 function clear_form(){
- // rows_count = 30 
-  let lines=[]
-  for(let index = 0; index < form.value.length ; index++) {
+  rows_count = 30 
+  lines=[]
+  for(let index = 0; index < rows_count; index++) {
     lines[index] ={
       debit_amount:null,credit_amount:null,account:null,description:null,currency:null,
       currency_rate:1,cost_center:null ,customfields: get_standard_object(),
@@ -139,6 +184,7 @@ function clear_form(){
   }
   form.value= lines
   document_number.value=(props.document)? props.document.number: props.new_document_number
+
 }
 
 function submit() {
@@ -147,6 +193,7 @@ function submit() {
   }else{
       create_document()
   }
+  
 }
 
 function delete_document(){
@@ -191,13 +238,17 @@ function update_document() {
 }
 
 function create_document(){
+  let document_catagory = page.props.document_catagory 
+  
+  let URL= '/'+ document_catagory.type +'/document_catagories/'+document_catagory.id
+
   let data={
     document_number:document_number.value ,
-    document_catagory_id:props.document_catagory.id,
+    document_catagory_id:document_catagory.id ,
     entry_lines:form.value ,
     date:DateObject.ToString(document_date.value),
   }
-  router.post( route('entry.store',props.document_catagory.id) , data,{
+  router.post(URL, data,{
     onError:(errors)=>{
       //errorMassageModal.value=true
       for (const key in errors) {
@@ -211,7 +262,7 @@ function create_document(){
     },
     onSuccess: page => {
       severity_style.value ='bg-green-400 text-white'
-      toast.add({ severity: 'success', summary: 'New entry added', detail:'New entry successfully created ' , life: 3000 });
+      toast.add({ severity: 'success', summary: 'New entry added', detail:'kkk' , life: 3000 });
       clear_form()
     },
   })
@@ -297,96 +348,99 @@ function create_document(){
             </div>
 
           </div>
-          
+              
+           
             
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
                <!-- entry table   -->
                <div ref="scrollable_table"  class=" lg:h-[410px] mx-6 relative  overflow-auto scrollbar larg:max-w-[73vw] " >
                     <table class=" dark:text-gray-200   text-center border-separate   text-sm font-light">
-                      <thead ref="tableHeader"  class="sticky top-0 z-[20] bg-white dark:bg-gray-700 bg-inherit  border-2 font-medium dark:border-neutral-400">
-                          <tr class="" >
-                          <th scope="col " class=" border-r b py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
-                          <th scope="col" class=" border-r border-b  py-4  "> Debite</th>
-                          <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4  ">Credite</th>
-                          <th scope="col" class=" border-r border-b  dark:border-neutral-400  py-4">Account</th>
-                          <th scope="col" class=" block border-r border-b  overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
-                          <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Cost center</th>
-                          <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Currency</th>
-                          <th scope="col" class=" border-r border-b  dark:border-neutral-400 py-4">rate</th>
-                          <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4 border-2 dark:border-neutral-400">
-                            {{ field }}  
-                          </th>
-                          </tr>
-                      </thead>
-                      <tbody> 
-                          <tr v-for="(i,index) in form.length " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700  ">
-                            <td class="sticky left-0 bg-inherit z-10  text-center font-medium border-r  border-gray-400">
-                                <div class=" w-full py-3 px-1  border-gray-400 ">{{index+1}}</div>                    
-                            </td>
-
-                            <td class="whitespace-nowrap   border-gray-400 ">
-                              <ccc  v-model="form[index].debit_amount"   @change="remove_credit_amount(index)"  
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=1  Format="number" />
-                            </td>
-
-                            <td class="whitespace-nowrap   border-gray-400 ">
-                              <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)" 
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
-                            </td>
+                        
+                            <thead ref="tableHeader"  class="sticky top-0 z-[20] bg-white dark:bg-gray-700 bg-inherit  border-2 font-medium dark:border-neutral-400">
+                                <tr class="" >
+                                <th scope="col " class=" border-r b py-4 sticky  z-[10] left-0   bg-gray-200 ">#</th>
+                                <th scope="col" class=" border-r border-b  py-4  "> Debite</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4  ">Credite</th>
+                                <th scope="col" class=" border-r border-b  dark:border-neutral-400  py-4">Account</th>
+                                <th scope="col" class=" block border-r border-b  overflow-auto resize-x py-4 min-w-[200px] ">Description</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Cost center</th>
+                                <th scope="col" class="border-r border-b  dark:border-neutral-400 py-4">Currency</th>
+                                <th scope="col" class=" border-r border-b  dark:border-neutral-400 py-4">rate</th>
+                                <th v-for="(field,index) in customfields" :key="index"  scope="col" class="py-4 border-2 dark:border-neutral-400">
+                                  {{ field }}  
+                                </th>
+                                </tr>
+                            </thead>
                             
-                            <td class="whitespace-nowrap  border-gray-400   ">                         
-                              <ccc v-model="form[index].account"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
-                              Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value"  >  
-                                <template #emptySuggestions>
-                                  <div class=""> account <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
-                                  <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
-                                </template>
-                              </ccc>
-                            </td>
+                            <tbody> 
+                                <tr v-for="(i,index) in rows_count " :key="index" ref="rows" class=" odd:bg-white even:bg-slate-200 dark:border-neutral-500 dark:odd:bg-gray-800 dark:even:bg-gray-700  ">
+                                  <td class="sticky left-0 bg-inherit z-10  text-center font-medium border-r  border-gray-400">
+                                      <div class=" w-full py-3 px-1  border-gray-400 ">{{index+1}}</div>                    
+                                  </td>
 
-                            <td class="whitespace-nowrap border-gray-400  ">
-                              <ccc  v-model="form[index].description"  @change="form_have_been_adjusted=true" 
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="text" />
-                            </td>
+                                  <td class="whitespace-nowrap   border-gray-400 ">
+                                    <ccc  v-model="form[index].debit_amount"   @change="remove_credit_amount(index)"  
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=1  Format="number" />
+                                  </td>
 
-                            <td class="whitespace-nowrap border-r border-gray-400">
-                              <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=5
-                              Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center" 
-                              :Suggestions="searchStore.available_cost_centers.value" >
-                                <template #emptySuggestions>
-                                  <div class=""> cost center <span class="text-blue-600">{{form[index].cost_center }}</span> dose not exist </div>
-                                  <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
-                                </template>
-                              </ccc>
-                            </td>
+                                  <td class="whitespace-nowrap   border-gray-400 ">
+                                    <ccc  v-model="form[index].credit_amount"   @change="remove_debit_amount(index)" 
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=2  Format="number" />                                 
+                                  </td>
+                                  
+                                  <td class="whitespace-nowrap  border-gray-400   ">                         
+                                    <ccc v-model="form[index].account"   @change="form_have_been_adjusted=true" :TableObject="TableObject"  :rows_index="index" :columns_index=3
+                                    Format="aoutcomplete" :SearchFunction="searchStore.search_account" :Suggestions="searchStore.available_accounts.value"  >  
+                                      <template #emptySuggestions>
+                                        <div class=""> account <span class="text-blue-600">{{form[index].account }}</span> dose not exist </div>
+                                        <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
+                                      </template>
+                                    </ccc>
+                                  </td>
 
-                            <td class="whitespace-nowrap  border-gray-400  dark:text-gray-200 text-gray-800 ">
-                              <ccc v-model="form[index].currency" :TableObject="TableObject" :rows_index="index" :columns_index=6
-                              @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate" 
-                              Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
-                                <template #emptySuggestions>
-                                  <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>
-                                </template>
-                              </ccc>
-                            </td>
+                                  <td class="whitespace-nowrap border-gray-400  ">
+                                    <ccc  v-model="form[index].description"  @change="form_have_been_adjusted=true" 
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=4  Format="text" />
+                                  </td>
 
-                            <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap  border-gray-400  " >
-                              <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7
-                              :Default ="form[index].currency?.default_rate"  Format="number" 
-                              />
-                            </td>
+                                  <td class="whitespace-nowrap border-r border-gray-400">
+                                    <ccc v-model="form[index].cost_center" :TableObject="TableObject"  :rows_index="index" :columns_index=5
+                                    Format="aoutcomplete" :SearchFunction="searchStore.search_cost_center" 
+                                    :Suggestions="searchStore.available_cost_centers.value" >
+                                      <template #emptySuggestions>
+                                        <div class=""> cost center <span class="text-blue-600">{{form[index].cost_center }}</span> dose not exist </div>
+                                        <Link :href="searchStore.create_new_account_link.value" class="text-blue-600"> create new one</Link>
+                                      </template>
+                                    </ccc>
+                                  </td>
 
-                            <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
-                              <ccc  v-model="form[index].customfields[field]" 
-                              :TableObject="TableObject"  :rows_index="index" :columns_index=8  Format="text" />
-                            </td>
+                                  <td class="whitespace-nowrap  border-gray-400  dark:text-gray-200 text-gray-800 ">
+                                    <ccc v-model="form[index].currency" :TableObject="TableObject" :rows_index="index" :columns_index=6
+                                    @UpdateCurrencyRate="(rate)=>form[index].currency_rate=rate" 
+                                    Format="aoutcomplete" :SearchFunction="searchStore.search_currencey" :Suggestions="searchStore.filterd_currencies.value" >  
+                                      <template #emptySuggestions>
+                                        <div class=""> currency <span class="text-blue-600">{{form[index].currency }}</span> dose not exist </div>
+                                      </template>
+                                    </ccc>
+                                  </td>
 
-                            <td class="whitespace-nowrap border border-gray-400">
+                                  <td :class="{'text-transparent': form[index].currency_rate==1}" class="whitespace-nowrap  border-gray-400  " >
+                                    <ccc v-model="form[index].currency_rate"  :TableObject="TableObject"  :rows_index="index" :columns_index=7
+                                    :Default ="form[index].currency?.default_rate"  Format="number" 
+                                    />
+                                  </td>
 
-                              
-                            </td>
-                          </tr>
-                      </tbody>
+                                  <td v-for="(field,failed_index) in customfields" :key="failed_index" class="whitespace-nowrap border border-gray-400 ">
+                                    <ccc  v-model="form[index].customfields[field]" 
+                                    :TableObject="TableObject"  :rows_index="index" :columns_index=8  Format="text" />
+                                  </td>
+
+                                  <td class="whitespace-nowrap border border-gray-400">
+
+                                    
+                                  </td>
+                                </tr>
+                            </tbody>
                             
                     </table>
                 </div>
