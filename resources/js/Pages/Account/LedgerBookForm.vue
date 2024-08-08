@@ -216,7 +216,7 @@ function submit(){
         <table class="mx-auto w-full min-w-[700px] table-fixed border-collapse border border-slate-400 ">
           <thead  class=" dark:bg-gray-700 bg-white  font-medium dark:border-neutral-500">
                 <tr class="sticky top-12 z-10  border  border-slate-400 bg-gray-200  " >
-                    <th scope="col " class=" p-4 border border-slate-400 ">name</th>
+                    <th scope="col " class=" p-4 border border-slate-400  ">name</th>
                     <th scope="col" class="   p-4 border border-slate-400 "> Debite</th>
                     <th scope="col" class="  dark:border-neutral-400 p-4  border border-slate-400">Credite</th>
                     <th scope="col" class="  dark:border-neutral-400  p-4 border border-slate-400">Balance</th>

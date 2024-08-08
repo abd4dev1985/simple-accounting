@@ -11,7 +11,7 @@ import ccc from '@/Components/ccc.vue';
 let props= defineProps({
     default_line:{  default:[]}
 })
-const entries =  defineModel('entries');
+const line =  defineModel('line');
 const emit = defineEmits(['change','New_Line_Added']) 
 let Chosen_Custom_fields = ref( [])
 
@@ -48,25 +48,25 @@ function focus_input(event){
   event.target.previousElementSibling.focus()
 }
 
-let ShowProductModal = ref(false)
+let ShowEntryModal = ref(false)
 let Changes_is_Accepted = ref(false)
 
 function Is_Number(value){
     return  ( isNaN(Number(value)) || Number(value)==0  )? false:true  
 }
-function open_Product_Modal(){
+function open_Entry_Modal(){
    // console.log('from slot')
-     ShowProductModal.value = true 
+     ShowEntryModal.value = true 
 }
 function Close_Without_Save(){
     line.value ={...props.default_line} 
-    ShowProductModal.value = false 
+    ShowEntryModal.value = false 
 }
 
 function Close_Product_Modal(){
     if (line.value.product && Is_Number(line.value.price) && Is_Number(line.value.quantity)) {
         emit('New_Line_Added');
-        ShowProductModal.value = false 
+        ShowEntryModal.value = false 
     }
 }
 function force_number(event){
@@ -78,15 +78,15 @@ function force_number(event){
 
 </script>
 <template>
-    <slot    :ShowProductModal="ShowProductModal" :open_Product_Modal="open_Product_Modal" ></slot>
+    <slot    :ShowEntryModal="ShowEntryModal" :open_Entry_Modal="open_Entry_Modal" ></slot>
     <!-- invoice table for mobile   -->
-    <div v-if="line.product"  class="bg-white p-2 text-gray-800 space-y-1">
+    <div v-if="line.account"  class="bg-white p-2 text-gray-800 space-y-1">
         <div class="font-semibold flex justify-between">
-            <span >{{line.product?.name}}</span>
-            <span  @click="ShowProductModal=true" class="tex" > Edite </span>  
+            <span >Account name : {{line.account?.name}}</span>
+            <span  @click="ShowEntryModal=true" class="tex" > Edite </span>  
         </div>
         <div class="text-sm" >
-            unit {{ line.quantity }} * {{line.price}}  each = &nbsp; &nbsp;&nbsp; {{ format_number(line.ammount) }}
+            {{line.debit}}  each = &nbsp; &nbsp;&nbsp; {{ format_number(line.debit) }}
         </div>
         <div v-for="(field, name) in line.customfields" class="flex gap-6  my-5">
             <div v-if="field">
@@ -97,16 +97,16 @@ function force_number(event){
         </div>
     </div>
 
-    <DialogModal :show="ShowProductModal" @close="Close_Without_Save">
+    <DialogModal :show="ShowEntryModal" @close="Close_Without_Save">
           <template #title>
-              Edit Product
+              Edit Line
           </template>
 
           <template #content>
             <div class="flex flex-col my-8">
-                <label for="">Product name</label>
-                <AutoComplete v-model="line.product" :suggestions="searchStore.available_products.value"
-                @complete="searchStore.search_product" optionLabel="name"
+                <label for="">account name</label>
+                <AutoComplete v-model="line.account" :suggestions="searchStore.available_accounts.value"
+                @complete="searchStore.search_account" optionLabel="name"
                 :pt="{
                     input:{class: 'w-full'}
 

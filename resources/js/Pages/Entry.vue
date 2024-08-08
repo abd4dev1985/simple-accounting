@@ -10,6 +10,7 @@ import searchStore from '../searchStore.vue';
 import DateObject from '../DateObject.vue';
 import Language from '@/Pages/Language.vue';
 import EntriesTableForDesktop from '@/Pages/JournalEntry/EntriesTableForDesktop.vue';
+import EntriesTableForMobile from '@/Pages/JournalEntry/EntriesTableForMobile.vue';
 import CreateEntryLines from '@/Pages/CreateEntryLines.vue';
 import ConfirmationModal  from '@/Components/ConfirmationModal.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
@@ -191,7 +192,7 @@ function create_document(){
 
 <template>
     <AppLayout title="Dashboard">
-        <div class=" dark:bg-gray-800   shadow-xl sm:rounded-lg">
+        <div class=" dark:bg-gray-800  h-screen shadow-xl sm:rounded-lg">
           
           <h1  class="flex  justify-start text-xl w-full bg-sky-700 text-white  px-4  py-2">
             <div class="flex-shrink font-semibold">
@@ -262,10 +263,19 @@ function create_document(){
             </div>
 
           </div>
-
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
-               <!-- entry table   -->
-               <EntriesTableForDesktop v-show="!Device_is_Mobile"  v-model:entries="form" :customfields="customfields"  />
+              <!-- entry table For mobile  -->
+              <div v-if="false" class="mx-3 mt-7"  >
+                <div v-for="(line,index) in form"  :key="index" > 
+                    <EntriesTableForMobile  v-model:line="form[index]" @change="get_ammount(index)" :default_line="props.entry_lines[index]"  >
+                    </EntriesTableForMobile>
+                </div>
+                <EntriesTableForMobile  v-model:line="form[form.length-1]" @New_Line_Added="Add_Lines()"  v-slot="slotProps">
+                  <div @click="slotProps.open_Entry_Modal" class="font-semibold text-green-600 mt-4 ">  + Add Line</div>
+                </EntriesTableForMobile>
+              </div>
+               <!-- entry table For Desktop  -->
+               <EntriesTableForDesktop v-show="true"  v-model:entries="form" :customfields="customfields"  />
 
                 <div class="mx-5 w-48  ">Total</div>
                 <div class=" w-60 inline-flex justify-around bg-sky-200  ">
@@ -273,12 +283,12 @@ function create_document(){
                   <ccc v-model="Entry_Totals.credit_side" :disabled="true"   Format="number" />
                 </div>
               <!-- buttons --> 
-              <div  class="flex justify-end w-9/12  my-0.5 float-right  mr-9">
-                <Link @click.prevent="console.log(form_have_been_adjusted)" href="/create_entry/general_entry/documents" class=" p-2 mx-4 font-semibold rounded-md bg-black text-white "  >New  {{ form_have_been_adjusted }}</Link>
-                <button v-if="operation=='update'"  @click="update_document" class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Update</button>
+              <div  class="flex justify-start tab:w-9/12 mobile:my-2  my-0.5 tab:float-right   ">
+                <Link @click.prevent="console.log(form_have_been_adjusted)" href="/create_entry/general_entry/documents" class=" p-2 mx-4 font-semibold rounded-md bg-black text-white "  >New </Link>
+                <button v-if="operation=='update'"  @click="update_document" class=" p-2 mx-2 font-semibold rounded-md bg-blue-600 text-white "   >Update</button>
                 <div @click="DeleteModal=true" class=" p-2 mx-4 font-semibold rounded-md bg-red-600 text-white "   >Delete</div>
                 <button class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "   >Print</button>
-                <button  v-if="operation=='create'" class=" p-2 mx-4 font-semibold rounded-md bg-blue-600 text-white "  type="submit" >save</button>
+                <button  v-if="operation=='create'" class=" p-2 mx-2 font-semibold rounded-md bg-blue-600 text-white "  type="submit" >save</button>
 
               </div>
             </form>
@@ -311,7 +321,6 @@ function create_document(){
               </DangerButton>
           </template>
         </ConfirmationModal>
-
 
 
     </AppLayout>
