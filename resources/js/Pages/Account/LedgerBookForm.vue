@@ -7,7 +7,7 @@ import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../../searchStore.vue';
 import DateObject from '@/DateObject.vue';
-import LedgerBook from '@/pages/Account/LedgerBook.vue';
+import LedgerBook2 from '@/pages/Account/LedgerBook2.vue';
 import ToggleButton from 'primevue/togglebutton';
 // import ToggleSwitch from 'primevue/toggleswitch';
 
@@ -213,7 +213,7 @@ function submit(){
             <span class=""> Currency : {{ LedgerBookForm.Currency.name }} </span>
         </div>
 
-        <table class="mx-auto w-full min-w-[700px] table-fixed border-collapse border border-slate-400 ">
+        <table class="mx-auto w-full min-w-[700px] table-auto border-collapse border border-slate-400 ">
           <thead  class=" dark:bg-gray-700 bg-white  font-medium dark:border-neutral-500">
                 <tr class="sticky top-12 z-10  border  border-slate-400 bg-gray-200  " >
                     <th scope="col " class=" p-4 border border-slate-400  ">name</th>
@@ -224,9 +224,9 @@ function submit(){
                     <th scope="col" class="   dark:border-neutral-400  p-4 border border-slate-400">Date</th>
                 </tr>
           </thead>
-          <LedgerBook :account="FormResult" >
+          <LedgerBook2 :account="FormResult" >
             
-          </LedgerBook>
+          </LedgerBook2>
         </table>
       
       </div>
