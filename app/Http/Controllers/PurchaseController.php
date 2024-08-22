@@ -50,6 +50,7 @@ class PurchaseController extends Controller
                 'document_catagory'=> $document_catagory ,
                 'new_document_number' =>$last_document ?->number + 1,
                 'invoice_type'=>'purchase',
+                'last_document'=> $last_document ,
                 'operation'=>'create',
                 'columns_count'=>8,
                 'store_url'=>route('purchase.store',[
@@ -58,10 +59,7 @@ class PurchaseController extends Controller
                 'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
                 'cash_account'=>Account::find(12),
                 'default_account'=>Account::find(18),
-                'pervious_document_url' => !($last_document) ? null: route('purchase.show',[
-                    'document_catagory'=>$document_catagory->name,
-                    'document'=>$last_document->number,
-                ]),
+               
             ]);
         }
     }
@@ -157,6 +155,7 @@ class PurchaseController extends Controller
             'document_catagory'=> $document_catagory ,'document' => $document ,
             'invoice_type'=>'purchase','operation'=>'update','columns_count'=>8,
             'currency_id'=> $invoice->pivot->currency_id , 
+            'operation'=>'update',
             'Invoice_Currency_Rate'=>$invoice->pivot->currency_rate  ,
             'invoice_lines'=>$invoice_line,'entry_lines'=>$entry_lines,
             'store_url'=>route('purchase.store',[ 'document_catagory'=> $document_catagory->id,]),
@@ -165,14 +164,7 @@ class PurchaseController extends Controller
             'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
             'cash_account'=>Account::find(12),
             'default_account'=>Account::find(18),
-            'pervious_document_url' => !($last_document_number) ? null: route('purchase.pervious',[
-                'document_catagory'=>$document_catagory->name,
-                'document'=>$document->number,
-            ]),
-            'next_document_url' =>  route('purchase.next',[
-                'document_catagory'=>$document_catagory->name,
-                'document'=>$document->number,
-            ]),
+            
         ]);
     }
 

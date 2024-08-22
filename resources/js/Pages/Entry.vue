@@ -43,16 +43,33 @@ let props =defineProps({
     document_catagory:{   }   ,
     accounts:{},
     document : {        },
+    last_document: {  } ,
     new_document_number:{     },
     columns_count:{},
     customfields:{type:Array },
     currencies : { type: Array , default:[]   },
     operation :{ type:String , default: 'update'  },
     delete_url:{},
-    update_url:{},
-    pervious_document_url :{  },
-    next_document_url :{  },
 })
+
+let document_number =ref( (props.document)? props.document.number: props.new_document_number );
+
+let pervious_document_url = computed(()=>{
+  if (props.document ) {
+    return route('entry.pervious',{document_catagory:props.document_catagory.name ,document:props.document.number})
+  }
+  if (props.last_document  ) {
+    return route('entry.show',{document_catagory:props.document_catagory.name ,document:props.last_document.number})
+  }
+  return ""
+ })
+
+ let next_document_url = computed(()=>{
+  if (props.document ) {
+    return route('entry.next',{document_catagory:props.document_catagory.name ,document:props.document.number})
+  }
+  return ""
+ })
 
 function get_standard_object(){
   let standard_object ={}
@@ -66,7 +83,6 @@ function get_standard_object(){
 const page = usePage()
 // const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
-let document_number =ref( (props.document)? props.document.number: props.new_document_number );
 let document_date = ref( (props.document)? props.document.date : new Date()  )
 searchStore.available_currencies.value = currencies
 
@@ -79,13 +95,14 @@ let default_account=ref('')
 let Etry_Lines = computed(()=>{
   return props.entry_lines.map((line)=>{
     line.customfields = (line.customfields)? JSON.parse(line.customfields ): get_standard_object()
-    return line 
+    return{...line }
   })
 
 })
 
 
 console.log('CreateEntryLines')
+
 let my_lines = [ ...Etry_Lines.value.concat(CreateEntryLines(currencies[0],props.customfields,4))]
 let form = ref(my_lines)
 
@@ -140,7 +157,7 @@ function update_document() {
     date:DateObject.ToString(document_date.value)
   }
 
-  router.put(props.update_url, data,{
+  router.put(route('entry.update',{document_catagory:props.document_catagory.name ,document:props.document.number}), data,{
     onError:(errors)=>{
       //errorMassageModal.value=true
       for (const key in errors) {
@@ -186,6 +203,18 @@ function create_document(){
     },
   })
 }
+let FirstEmptyLines =()=>{
+  return form.value.filter((line)=>!(line.account))
+ }
+ 
+ console.log('FirstEmptyLine')
+ console.log(FirstEmptyLines())
+
+// add more lines to entries  
+function Add_Lines(){
+  form.value.push( CreateEntryLines(currencies[0],props.customfields,1)[0])
+}
+
 
 
 </script>
@@ -199,7 +228,7 @@ function create_document(){
               <span v-if="operation=='create'" >New </span> {{ document_catagory.name }}
             </div> 
             <div class="flex-shrink  flex justify-end items-center  mx-4  text-sky-600 ">
-              <Link v-if="pervious_document_url"  :href="pervious_document_url">
+              <Link v-if="pervious_document_url" :href="pervious_document_url">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 rotate-180"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
@@ -207,8 +236,8 @@ function create_document(){
                 <input v-model="document_number" id="document_no" form="myform" class=" text-center  rounded-md w-12 h-6 text-gray-700 " >
               </div>
               
-              <Link v-if="next_document_url" :href="next_document_url"  >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
+              <Link v-if="next_document_url && operation=='update'" :href="next_document_url"  >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
 
@@ -264,20 +293,31 @@ function create_document(){
 
           </div>
             <form class="sm:-mx-1 lg:-mx-2 " id="myform" @submit.prevent="submit">
+              
               <!-- entry table For mobile  -->
-              <div v-if="false" class="mx-3 mt-7"  >
+              <div v-if="Device_is_Mobile" class="mx-3 mt-3" >
+                
+                <div  class="font-semibold flex justify-start  gap-2">
+                  <div >Account </div>
+                  <div  class=" flex-auto  w-1/2 text-right mr-2"  >Ammount</div> 
+                </div>
+
                 <div v-for="(line,index) in form"  :key="index" > 
-                    <EntriesTableForMobile  v-model:line="form[index]" @change="get_ammount(index)" :default_line="props.entry_lines[index]"  >
+                    <EntriesTableForMobile  v-model:line="form[index]" :default_line="props.entry_lines[index]"  >
                     </EntriesTableForMobile>
                 </div>
-                <EntriesTableForMobile  v-model:line="form[form.length-1]" @New_Line_Added="Add_Lines()"  v-slot="slotProps">
-                  <div @click="slotProps.open_Entry_Modal" class="font-semibold text-green-600 mt-4 ">  + Add Line</div>
+                <EntriesTableForMobile v-if="Device_is_Mobile"  v-model:line="form[form.length-1]" @New_Line_Added="Add_Lines()"  v-slot="slotProps">
+                  <div @click="slotProps.open_Entry_Modal" class=" -semibold text-lg text-green-600 mt-4 ">
+
+                      + Add Entry Line
+                  </div>
                 </EntriesTableForMobile>
               </div>
-               <!-- entry table For Desktop  -->
-               <EntriesTableForDesktop v-show="true"  v-model:entries="form" :customfields="customfields"  />
 
-                <div class="mx-5 w-48  ">Total</div>
+               <!-- entry table For Desktop  -->
+               <EntriesTableForDesktop v-if="!Device_is_Mobile"  v-model:entries="form" :customfields="customfields"  />
+
+                <div class="mx-5 w-48 mt-4  ">Total</div>
                 <div class=" w-60 inline-flex justify-around bg-sky-200  ">
                   <ccc v-model="Entry_Totals.debit_side"  :disabled="true"  Format="number" />
                   <ccc v-model="Entry_Totals.credit_side" :disabled="true"   Format="number" />
@@ -293,7 +333,8 @@ function create_document(){
               </div>
             </form>
             <div   class="clear-both"></div>
-            <Toast 
+            <div></div>
+            <Toast position="top-left" 
               :pt="{ 
                     root:{class: 'opacity-95'},
                     content: { class:severity_style ,},

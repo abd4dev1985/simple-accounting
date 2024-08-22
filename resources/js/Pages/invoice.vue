@@ -45,6 +45,7 @@ let props =defineProps({
     document_catagory:{   }   ,
     accounts:{},
     document : {        },
+    last_document: {  } ,
     new_document_number:{     },
     currency_id:{},
     Invoice_Currency_Rate:{},
@@ -60,9 +61,27 @@ let props =defineProps({
     delete_url:{},
     update_url:{},
     store_url:{},
-    pervious_document_url :{  },
-    next_document_url :{  },
 })
+
+let document_number =ref( (props.document)? props.document.number: props.new_document_number );
+
+let pervious_document_url = computed(()=>{
+  if (props.document ) {
+    return route(props.invoice_type +'.pervious',{document_catagory:props.document_catagory.name ,document:props.document.number})
+  }
+  if (props.last_document  ) {
+    return route(props.invoice_type +'.show',{document_catagory:props.document_catagory.name ,document:props.last_document.number})
+  }
+  return ""
+ })
+
+ let next_document_url = computed(()=>{
+  if (props.document ) {
+    return route(props.invoice_type +'.next',{document_catagory:props.document_catagory.name ,document:props.document.number})
+  }
+  return ""
+ })
+
 function get_standard_object(){
   let standard_object ={}
     props.customfields.forEach(field => {
@@ -76,7 +95,6 @@ const page = usePage()
  const errors = computed(() => page.props.errors)
 const currencies= (page.props.currencies)? page.props.currencies:[];
 
-let document_number =ref( (props.document)? props.document.number: props.new_document_number );
 let document_date = ref( (props.document)? props.document.date : new Date() )
 
 searchStore.available_currencies.value = currencies
@@ -309,8 +327,8 @@ const exportCSV = () => { dt.value.exportCSV()}
                 <input v-model="document_number" id="document_no" form="myform" class=" text-center  rounded-md w-12 h-6 text-gray-700 " >
               </div>
               
-              <Link v-if="next_document_url" :href="next_document_url"  >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
+              <Link  v-if="next_document_url && operation=='update'" :href="next_document_url"  >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
               </Link>
               <svg v-else xmlns="http://www.w3.org/2000/svg" fill="#d1d5db" viewBox="0 0 24 24" stroke-width="1.5" stroke="#d1d5db" class="w-9 h-9 "><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.348a1.125 1.125 0 010 1.971l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"></path></svg>
             </div>

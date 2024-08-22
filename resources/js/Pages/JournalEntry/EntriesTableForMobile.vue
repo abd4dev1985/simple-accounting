@@ -12,8 +12,9 @@ let props= defineProps({
     default_line:{  default:[]}
 })
 const line =  defineModel('line');
-const emit = defineEmits(['change','New_Line_Added']) 
+const emit = defineEmits(['New_Line_Added']) 
 let Chosen_Custom_fields = ref( [])
+let ShoWDetail = ref(false)
 
 // setup  Chosen Custom fields
 if (props.default_line.customfields) {
@@ -29,9 +30,6 @@ if (props.default_line.customfields) {
     //     return {name:field}
     // }) 
 }
-
-
-
 
 
 function format_number( value ){
@@ -52,49 +50,94 @@ let ShowEntryModal = ref(false)
 let Changes_is_Accepted = ref(false)
 
 function Is_Number(value){
-    return  ( isNaN(Number(value)) || Number(value)==0  )? false:true  
+    return   isNaN(Number(value)) ? false:true  
 }
 function open_Entry_Modal(){
    // console.log('from slot')
      ShowEntryModal.value = true 
 }
 function Close_Without_Save(){
+   // console.log('Close_Without_Save')
+   // console.log(props.default_line)
     line.value ={...props.default_line} 
     ShowEntryModal.value = false 
 }
 
-function Close_Product_Modal(){
-    if (line.value.product && Is_Number(line.value.price) && Is_Number(line.value.quantity)) {
+function Close_Entry_Modal(){
+    if (line.value.account && Number(line.value.debit_amount)+ Number(line.value.credit_amount)>0) {
         emit('New_Line_Added');
         ShowEntryModal.value = false 
     }
 }
-function force_number(event){
- if ( isNaN( Number(event.target.value) )    ) {
-  event.target.value=null ;
+function force_number(){
+ if ( isNaN( Number(line.value.debit_amount) )    ) {
+    line.value.debit_amount=null ;
   }
+  if ( isNaN( Number(line.value.credit_amount) )    ) {
+    line.value.credit_amount=null ;
+  }
+}
+//clear credit_amount input value if valide debit_amount input is inserted in the same line of entry
+function remove_credit_amount() {
+   force_number()
+   if (line.value.debit_amount   ) {
+        line.value.credit_amount = null 
+    }
+}
+// clear debit_amount input value if valide credit_amount input is inserted in the same line of entry
+function remove_debit_amount() {
+    force_number()
+    if (line.value.credit_amount ) {
+        line.value.debit_amount =null
+    }
 }
 
 
 </script>
 <template>
     <slot    :ShowEntryModal="ShowEntryModal" :open_Entry_Modal="open_Entry_Modal" ></slot>
-    <!-- invoice table for mobile   -->
-    <div v-if="line.account"  class="bg-white p-2 text-gray-800 space-y-1">
-        <div class="font-semibold flex justify-between">
-            <span >Account name : {{line.account?.name}}</span>
-            <span  @click="ShowEntryModal=true" class="tex" > Edite </span>  
-        </div>
-        <div class="text-sm" >
-            {{line.debit}}  each = &nbsp; &nbsp;&nbsp; {{ format_number(line.debit) }}
-        </div>
-        <div v-for="(field, name) in line.customfields" class="flex gap-6  my-5">
-            <div v-if="field">
-                <span> {{ name }} : </span>
-                <span> {{ field}} </span>
+    <!--    line for mobile   -->
+    <div v-if="line.account"  class="bg-white p-2 text-gray-800 my-3">
+        <div  class="font-semibold flex justify-start gap-2" :class="{'text-red-700':line.debit_amount,'text-blue-800':line.credit_amount }" >
+            <div  >
+                {{line.account?.name}}
             </div>
-
+            <div  class="flex justify-end flex-auto  w-1/2 " >
+                <div v-if="line.debit_amount" class=" mr-1 " >
+                     Debit;  {{ format_number(line.debit_amount)}} 
+                </div>
+                <span v-if="line.credit_amount" class="mr-1 " > 
+                    Credit;  {{ format_number(line.credit_amount)}}
+                </span>
+                <svg v-show="!ShoWDetail" @click="ShoWDetail=true"  class="ml-1 h-6 w-5"  data-slot="icon" aria-hidden="true" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m19.5 8.25-7.5 7.5-7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+                <svg v-show="ShoWDetail" @click="ShoWDetail=false"   class="ml-1  h-6 w-5"  aria-hidden="true" fill="none" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m4.5 15.75 7.5-7.5 7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            </div> 
         </div>
+
+         <!-- entry detail  -->
+        <div v-show="ShoWDetail"  :class="{'text-red-700':line.debit_amount,'text-blue-800':line.credit_amount }"  class="my-1 space-y-1">
+            
+            <div> <span class="font-semibold ">Description :  </span>
+               <span class="text-sm ml-0.5">  {{ line.description }} </span>
+            </div>
+            <div> <span class="font-semibold ">Currency :  </span>
+               <span class="text-sm ml-0.5">  {{ line.currency.name }} Rate {{  line.currency_rate  }} </span>
+            </div>
+            <div v-for="(field, name) in line.customfields" class="flex gap-6  my-5">
+                <div v-if="field">
+                    <span class="font-semibold "> {{ name }} : </span>
+                    <span  class="text-sm ml-0.5"> {{ field}} </span>
+                </div>
+            </div>
+            <div class="text-right font-semibold ">
+                <span @click="ShowEntryModal=true"  >Edite</span>  
+            </div>
+        </div>
+        
     </div>
 
     <DialogModal :show="ShowEntryModal" @close="Close_Without_Save">
@@ -113,21 +156,32 @@ function force_number(event){
                 }">
                 </AutoComplete>
             </div>
-            <div class="flex flex-col  my-8">
-                <label for="">Price</label>
+            <div class="flex flex-col  my-5">
+                <label for="">Debit Ammount</label>
                 <div class="relative group bg-white dark:bg-black dark:text-white ">
-                    <input v-model="line.price"  @focus="force_number" @change="$emit('change')"
+                    <input v-model="line.debit_amount"  @change="remove_credit_amount"
                     class="bg-inherit text-transparent focus:text-gray-950 dark:focus:text-gray-200 p-3 w-full rounded-md ring-offset-1 border border-gray-300 focus:ring-1 "> 
-                    <div  @click="focus_input"  class="block absolute  group-focus-within:hidden px-3   h-1/3  w-full top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2   ">
-                        {{ format_number(line.price) }}
+                    <div  @click="focus_input"   class="block absolute  group-focus-within:hidden px-3   h-1/3  w-full top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2   ">
+                        {{ format_number(line.debit_amount) }}
                     </div>  
                 </div>    
             </div>
-
-            <div class="flex flex-col my-8">
-                <label for="">Quantity</label>
-                <input  v-model="line.quantity"  @change="$emit('change')"class=" focus:text-gray-950 dark:focus:text-gray-200 p-3
-                 w-full rounded-md ring-offset-1 border border-gray-300 focus:ring-1 "  >
+            <div class="flex flex-col  my-5">
+                <label for="">Credit Ammount</label>
+                <div class="relative group bg-white dark:bg-black dark:text-white ">
+                    <input v-model="line.credit_amount"  @change="remove_debit_amount"
+                    class="bg-inherit text-transparent focus:text-gray-950 dark:focus:text-gray-200 p-3 w-full rounded-md ring-offset-1 border border-gray-300 focus:ring-1 "> 
+                    <div  @click="focus_input"  class="block absolute  group-focus-within:hidden px-3   h-1/3  w-full top-1/2 left-1/2  -translate-x-1/2 -translate-y-1/2   ">
+                        {{ format_number(line.credit_amount) }}
+                    </div>  
+                </div>    
+            </div>
+            <div class="  my-5">
+                <label for="">Description</label>
+                <div class="relative group bg-white  dark:bg-black dark:text-white ">
+                    <textarea  v-model="line.description" rows="6" class="p-3 w-full overflow-auto text-gray-800 rounded-md ring-offset-1 border border-gray-300 focus:ring-1" >
+                    </textarea>
+                </div>    
             </div>
 
             <div class="flex flex-col my-5">
@@ -148,8 +202,6 @@ function force_number(event){
                 min-w-max rounded-md ring-offset-1 border border-gray-300 focus:ring-1  "  >
             </div>
 
-
-            
           </template>
 
           <template #footer>
@@ -157,8 +209,8 @@ function force_number(event){
                   Back
               </SecondaryButton>
 
-              <PrimaryButton class="p-2 mx-4 font-semibold rounded-md" @click="Close_Product_Modal"   >
-                  Add Product
+              <PrimaryButton class="p-2 mx-4 font-semibold rounded-md" @click="Close_Entry_Modal"   >
+                  Add Entry Line
               </PrimaryButton>
           </template>
     </DialogModal>

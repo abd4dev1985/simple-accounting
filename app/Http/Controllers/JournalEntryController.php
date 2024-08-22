@@ -48,6 +48,7 @@ class JournalEntryController extends Controller
 
         return Inertia::render('Entry', [
             'document_catagory'=> $document_catagory ,
+            'last_document'=>$last_document ,
             'new_document_number' =>$last_document?->number + 1,
             'operation'=>'create',
             'columns'=> $columns ,
@@ -111,9 +112,6 @@ class JournalEntryController extends Controller
             return $item['pivot'];
         }) ;
         //dd( $entry_lines );
-        $pervious_document=Document::where('number','<',$document->number)->orderBy('number','desc')->first();
-        $next_document=Document::where('number','>',$document->number)->orderBy('number','asc')->first();
-        
         return Inertia::render('Entry', [
             'currencies' =>$currencies,
             'document_catagory'=> $document_catagory ,
@@ -127,19 +125,7 @@ class JournalEntryController extends Controller
                 'document_catagory'=> $document_catagory->name,
                 'document'=>$document->number ,
             ]),
-            'update_url'=>route('entry.update',[
-                'document_catagory'=> $document_catagory->name,
-                'document'=>$document->number ,
-            ]),
-            'pervious_document_url' =>( $pervious_document)? route('entry.show',[
-                'document_catagory'=>$document_catagory->name,
-                'document'=>$pervious_document?->number ,
-            ]) :  null ,
-            'next_document_url' =>( $next_document)? route('entry.show',[
-                'document_catagory'=>$document_catagory->name,
-                'document'=>$next_document?->number ,
-            ]) :  null ,
-            
+     
         ]);
     }
 
@@ -182,4 +168,43 @@ class JournalEntryController extends Controller
         Document::destroy($document->id);
         return redirect()->route('entry.create',['document_catagory'=>$document_catagory->name]) ;
     }
+
+    /**
+     * display next entry 
+     */
+    public function next(Document_catagory $document_catagory, Document $document)
+    {
+        $next_document = Document::where('number','>',$document->number)
+        ->where('document_catagory_id',$document_catagory->id)->orderBy('number','asc')->first();
+        if ($next_document) {
+            return  redirect()->route('entry.show',[
+                'document_catagory'=>$document_catagory->name,'document'=>$next_document?->number
+            ]) ;
+        }else{
+            return back();
+        }
+    }
+
+    /**
+     * display pervious entry 
+     */
+    public function pervious(Document_catagory $document_catagory, Document $document)
+    {
+        $pervious_document=Document::where('number','<',$document->number)
+        ->where('document_catagory_id',$document_catagory->id)->orderBy('number','desc')->first();
+        if ($pervious_document) {
+            return  redirect()->route('entry.show',[
+                'document_catagory'=>$document_catagory->name,'document'=>$pervious_document?->number
+            ]) ;
+        } else {
+            return back();
+        }   
+    }
+
+
+
+
+
+
+
 }

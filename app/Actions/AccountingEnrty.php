@@ -76,6 +76,7 @@ class AccountingEnrty
     
     public function validate(array $input)
     {
+        //dd($input) ;
         $validator = Validator::make($input ,
         [
             'document_number' => ['bail','required', 'numeric','gt:0'],

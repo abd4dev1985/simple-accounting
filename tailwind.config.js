@@ -36,6 +36,7 @@ export default {
 
     plugins: [
         require('tailwind-scrollbar'),
+        require('@tailwindcss/container-queries'),
         forms,
         typography,
     ],

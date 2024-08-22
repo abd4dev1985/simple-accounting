@@ -46,10 +46,10 @@ class SaleController extends Controller
     {
         {
             $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
-            
             return Inertia::render('Invoice', [
                 'document_catagory'=> $document_catagory ,
                 'new_document_number' =>$last_document ?->number + 1,
+                'last_document'=> $last_document ,
                 'invoice_type'=>'sale',
                 'operation'=>'create',
                 'columns_count'=>8,
@@ -59,10 +59,6 @@ class SaleController extends Controller
                 'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
                 'cash_account'=>Account::find(12),
                 'default_account'=>Account::find(22),
-                'pervious_document_url' => !($last_document) ? null: route('sale.show',[
-                    'document_catagory'=>$document_catagory->name,
-                    'document'=>$last_document->number,
-                ]),
             ]);
         }
     }
@@ -157,6 +153,7 @@ class SaleController extends Controller
             'invoice_type'=>'sale','operation'=>'update','columns_count'=>8,
             'currency_id'=> $invoice->pivot->currency_id , 
             'Invoice_Currency_Rate'=>$invoice->pivot->currency_rate  ,
+            'operation'=>'update',
             'invoice_lines'=>$invoice_line,'entry_lines'=>$entry_lines,
             'store_url'=>route('sale.store',[ 'document_catagory'=> $document_catagory->id,]),
             'delete_url'=>route('sale.delete',['document_catagory'=>$document_catagory->name,'document'=>$document->number,]),
@@ -164,14 +161,7 @@ class SaleController extends Controller
             'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
             'cash_account'=>Account::find(12),
             'default_account'=>Account::find(22),
-            'pervious_document_url' => !($last_document_number) ? null: route('sale.pervious',[
-                'document_catagory'=>$document_catagory->name,
-                'document'=>$document->number,
-            ]),
-            'next_document_url' =>  route('sale.next',[
-                'document_catagory'=>$document_catagory->name,
-                'document'=>$document->number,
-            ]),
+            
         ]);
     }
 

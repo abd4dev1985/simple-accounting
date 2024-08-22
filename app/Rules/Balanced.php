@@ -14,7 +14,7 @@ class Balanced implements ValidationRule
      */
     public function validate(string $attribute, mixed $lines, Closure $fail): void
     {
-        
+        //dd($lines);
         $total_debit_amount =0 ;
         $total_credit_amount =0 ;
 

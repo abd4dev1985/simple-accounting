@@ -79,9 +79,6 @@ function submit(){
 }
 
 
-
-
-
 </script>
 
 <template>
@@ -90,7 +87,7 @@ function submit(){
               
         <h4  class="m-2 text-2xl" >Trial Balance </h4>
         <form   v-if="ShowForm"    @submit.prevent="submit"  class="m-3 my-5 flex flex-col justify-between gap-7" >
-            <!-- Default Account Input -->
+            <!--  Account Input -->
             <div class=" w-full">
                 <label class="block text-sm font-semibold text-left" for=""> Account</label>
                 <div v-if="TrialbbalanceForm.errors.account" class="block text-sm font-semibold text-left"  >
@@ -107,6 +104,9 @@ function submit(){
                           placeholder:'',
                         },
                     }">
+                    <template #option="slotProps">
+                      <div>{{ slotProps.option.number }}_ {{ slotProps.option.name }}</div>
+                    </template>
                     <template #empty>
                         <div   class="font-semibold p-3 border-2 border-blue-500">
                             <div class=""> account <span class="text-blue-600">{{TrialbbalanceForm.account }}</span> dose not exist </div>

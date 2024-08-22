@@ -102,7 +102,9 @@ Route::get('/invoice', function () {
 Route::get('/get_document/{entry_id}',[DocumentController::class, 'Get_Document_By_Entry'])->name('document.show_by_entry');
 
 Route::controller(JournalEntryController::class)->group(function () {
-    Route::get('/testentry/documents/{document:number}', 'testt')->name('entry.show');
+   // Route::get('/testentry/documents/{document:number}', 'testt')->name('entry.show');
+    Route::get('/next_entry/{document_catagory:name}/documents/{document:number}', 'next')->name('entry.next');
+    Route::get('/pervious_entry/{document_catagory:name}/documents/{document:number}', 'pervious')->name('entry.pervious');
 
     Route::get('/entry/{document_catagory:name}/documents/{document:number}', 'show')->name('entry.show');
     Route::put('/entry/{document_catagory:name}/documents/{document:number}', 'update')->name('entry.update');

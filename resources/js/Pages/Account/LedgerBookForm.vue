@@ -7,7 +7,7 @@ import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import searchStore from '../../searchStore.vue';
 import DateObject from '@/DateObject.vue';
-import LedgerBook2 from '@/pages/Account/LedgerBook2.vue';
+import LedgerBook from '@/pages/Account/LedgerBook.vue';
 import ToggleButton from 'primevue/togglebutton';
 // import ToggleSwitch from 'primevue/toggleswitch';
 
@@ -100,7 +100,7 @@ function submit(){
                   {{  LedgerBookForm.errors.account}}
               </div>
               <AutoComplete v-model="LedgerBookForm.account" :suggestions="searchStore.available_accounts.value"
-                  @complete="searchStore.search_account" optionLabel="name" forceSelection 
+                  @complete="searchStore.search_account" optionLabel="name"   forceSelection 
                   @item-select="LedgerBookForm.clearErrors('account')" 
                   :pt="{
                       root: {
@@ -110,6 +110,9 @@ function submit(){
                       class: 'bg-white w-full h-8  py-5 dark:bg-gray-700 dark:text-gray-200  focus:ring-2',
                       },
                   }">
+                  <template #option="slotProps">
+                    <div>{{ slotProps.option.number }}_ {{ slotProps.option.name }}</div>
+                  </template>
                   <template #empty>
                       <div   class="font-semibold p-3 border-2 border-blue-500">
                           <div class=""> account <span class="text-blue-600">{{LedgerBookForm.account }}</span> dose not exist </div>
@@ -213,20 +216,18 @@ function submit(){
             <span class=""> Currency : {{ LedgerBookForm.Currency.name }} </span>
         </div>
 
-        <table class="mx-auto w-full min-w-[700px] table-auto border-collapse border border-slate-400 ">
+        <table class="mx-auto w-full min-w-[700px] table-fixed border-collapse border border-slate-400 ">
           <thead  class=" dark:bg-gray-700 bg-white  font-medium dark:border-neutral-500">
-                <tr class="sticky top-12 z-10  border  border-slate-400 bg-gray-200  " >
+                <tr class="sticky top-12 z-30  border  border-slate-400 bg-gray-200  " >
                     <th scope="col " class=" p-4 border border-slate-400  ">name</th>
-                    <th scope="col" class="   p-4 border border-slate-400 "> Debite</th>
-                    <th scope="col" class="  dark:border-neutral-400 p-4  border border-slate-400">Credite</th>
+                    <th scope="col" class="   p-4 border border-slate-400 ">Total Debite</th>
+                    <th scope="col" class="  dark:border-neutral-400 p-4  border border-slate-400">Total Credite</th>
                     <th scope="col" class="  dark:border-neutral-400  p-4 border border-slate-400">Balance</th>
-                    <th scope="col" class="  dark:border-neutral-400 p-4  border border-slate-400"></th>
-                    <th scope="col" class="   dark:border-neutral-400  p-4 border border-slate-400">Date</th>
                 </tr>
           </thead>
-          <LedgerBook2 :account="FormResult" >
+          <LedgerBook :account="FormResult" >
             
-          </LedgerBook2>
+          </LedgerBook>
         </table>
       
       </div>
