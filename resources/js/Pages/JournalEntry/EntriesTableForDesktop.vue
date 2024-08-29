@@ -60,7 +60,7 @@ function remove_debit_amount(index) {
 
 <template>
   <!-- entry table   -->
-  <div ref="scrollable_table"  class=" lg:h-[410px] mx-6 relative  overflow-auto scrollbar larg:max-w-[73vw] " >
+  <div ref="scrollable_table"  class=" lg:h-[320px] mx-6 relative  overflow-auto scrollbar larg:max-w-[73vw] " >
       <table class=" dark:text-gray-200   text-center border-separate   text-sm font-light">
         <thead ref="tableHeader"  class="sticky top-0 z-[20] bg-white dark:bg-gray-700 bg-inherit  border-2 font-medium dark:border-neutral-400">
             <tr class="" >

@@ -46,7 +46,7 @@ class JournalEntryController extends Controller
             'credit_amount'=>[2,'number','Credite'] ,
         ];
 
-        return Inertia::render('Entry', [
+        return Inertia::render('JournalEntry/Entry', [
             'document_catagory'=> $document_catagory ,
             'last_document'=>$last_document ,
             'new_document_number' =>$last_document?->number + 1,
@@ -112,7 +112,7 @@ class JournalEntryController extends Controller
             return $item['pivot'];
         }) ;
         //dd( $entry_lines );
-        return Inertia::render('Entry', [
+        return Inertia::render('JournalEntry/Entry', [
             'currencies' =>$currencies,
             'document_catagory'=> $document_catagory ,
            // 'translate' => __(''),
@@ -158,10 +158,10 @@ class JournalEntryController extends Controller
     public function destroy(Document_catagory $document_catagory ,Document $document)
     {
         $entry=Entry::find($document->entry_id);
-        $last_document_number = Cache::store('tentant')->get('last '.$document_catagory->name);
-        if ( $last_document_number ==$document->number) {
+        $last_document = Cache::store('tentant')->get('last '.$document_catagory->name);
+        if ( $last_document ['number'] ==$document->number) {
             $last_document_number=Document::where('number','<',$document->number)->orderBy('number','desc')->first();
-            Cache::store('tentant')->put('last '.$$document_catagory->name, $last_document_number);
+            Cache::store('tentant')->put('last '.$document_catagory->name, $last_document);
         }
         $entry->accounts()->detach(); 
         $entry->delete();

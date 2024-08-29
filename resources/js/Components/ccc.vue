@@ -46,6 +46,12 @@ let keyboared_Navigation = ref(true)
 
 
 const formatter =Intl.NumberFormat('en')
+onMounted(()=>{
+ 
+ mytable = computed(()=>  props.TableObject  ) 
+ // console.log('update input')
+ // console.log(mytable.value)
+})
 
 onUpdated(()=>{
  

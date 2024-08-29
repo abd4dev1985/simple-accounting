@@ -16,6 +16,11 @@ const emit = defineEmits(['New_Line_Added'])
 let Chosen_Custom_fields = ref( [])
 let ShoWDetail = ref(false)
 
+let LineIsEmpty = computed(()=>{
+    return !(line.value.account || Number(line.value.credit_amount)+ Number(line.value.debit_amount)>0  )
+})
+
+
 // setup  Chosen Custom fields
 if (props.default_line.customfields) {
     for ( var key in props.default_line.customfields ) {
@@ -97,7 +102,7 @@ function remove_debit_amount() {
 <template>
     <slot    :ShowEntryModal="ShowEntryModal" :open_Entry_Modal="open_Entry_Modal" ></slot>
     <!--    line for mobile   -->
-    <div v-if="line.account"  class="bg-white p-2 text-gray-800 my-3">
+    <div v-if="!LineIsEmpty"  class="bg-white p-2 text-gray-800 my-3">
         <div  class="font-semibold flex justify-start gap-2" :class="{'text-red-700':line.debit_amount,'text-blue-800':line.credit_amount }" >
             <div  >
                 {{line.account?.name}}
