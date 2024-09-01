@@ -26,7 +26,6 @@ screenWidth.value= document.getElementById("app").offsetWidth
 let Device_is_Mobile = ref(screenWidth.value <=800?true:false )
 let html_to_pdf = ref()
 
-
 onMounted(() => {
     if (window !== undefined) {
         window.addEventListener('resize', ()=>{
@@ -40,7 +39,6 @@ let download_pdf =function(){
   var worker = html2pdf().from(html_to_pdf.value).save();
  // html2pdf(html_to_pdf.value,{filename:"test.pdf"}) 
 }
-
 let severity_style= ref('');
 let Translate = Language.Translate
 
@@ -98,24 +96,21 @@ let DeleteModal = ref(false)
 
 let default_account=ref('')
 
-let Etry_Lines = computed(()=>{
+// convert  custom fields in entry lines to object instead of jeson 
+let Lines = computed(()=>{
   return props.entry_lines.map((line)=>{
     line.customfields = (line.customfields)? JSON.parse(line.customfields ): get_standard_object()
     return{...line }
   })
-
 })
 
-
-console.log('CreateEntryLines')
-
-let my_lines = [ ...Etry_Lines.value.concat(CreateEntryLines(currencies[0],props.customfields,4))]
-let form = ref(my_lines)
+let lines_Copy = [ ...Lines.value.concat(CreateEntryLines(currencies[0],props.customfields,4))]
+let Entry_Lines = ref(lines_Copy)
 
 const Entry_Totals =computed(()=>{
   let total_of_credit=0
   let total_of_debit=0
-  form.value.forEach(line => {
+  Entry_Lines.value.forEach(line => {
     total_of_debit = !isNaN(Number(line.debit_amount)) && line.debit_amount !=null ? Number(line.debit_amount) + total_of_debit : total_of_debit
     total_of_credit = !isNaN(Number(line.credit_amount)) && line.credit_amount !=null  ? Number(line.credit_amount) + total_of_credit  : total_of_credit
   });
@@ -123,17 +118,18 @@ const Entry_Totals =computed(()=>{
 });
 
 function clear_form(){
- // rows_count = 30 
-  let lines=[]
-  for(let index = 0; index < form.value.length ; index++) {
-    lines[index] ={
-      debit_amount:null,credit_amount:null,account:null,description:null,currency:null,
-      currency_rate:1,cost_center:null ,customfields: get_standard_object(),
-    }
-  }
-  form.value= lines
+  Entry_Lines.value =   [ ...CreateEntryLines(currencies[0],props.customfields,4)]
   document_number.value=(props.document)? props.document.number: props.new_document_number
 }
+
+let Form = computed( ()=> {
+  return {
+    document_number:document_number.value ,
+    document_catagory_id:props.document_catagory.id,
+    entry_lines:Entry_Lines.value ,
+    date:DateObject.ToString(document_date.value),
+  }
+})
 
 function submit() {
   if (props.operation=="update") {
@@ -156,14 +152,7 @@ function delete_document(){
 }
 
 function update_document() {
-  let data={
-    document_number:document_number.value ,
-    document_catagory_id:page.props.document_catagory.id  ,
-    entry_lines:form.value ,
-    date:DateObject.ToString(document_date.value)
-  }
-
-  router.put(route('entry.update',{document_catagory:props.document_catagory.name ,document:props.document.number}), data,{
+  router.put(route('entry.update',{document_catagory:props.document_catagory.name ,document:props.document.number}), Form.value,{
     onError:(errors)=>{
       //errorMassageModal.value=true
       for (const key in errors) {
@@ -179,18 +168,11 @@ function update_document() {
       severity_style.value ='bg-green-400 text-white'
       toast.add({ severity: 'success', summary: 'successfully updated', detail:'kkk' , life: 3000 });
     },  
-  })
-    
+  })   
 }
 
 function create_document(){
-  let data={
-    document_number:document_number.value ,
-    document_catagory_id:props.document_catagory.id,
-    entry_lines:form.value ,
-    date:DateObject.ToString(document_date.value),
-  }
-  router.post( route('entry.store',props.document_catagory.id) , data,{
+  router.post( route('entry.store',props.document_catagory.id) , Form.value,{
     onError:(errors)=>{
       //errorMassageModal.value=true
       for (const key in errors) {
@@ -209,24 +191,19 @@ function create_document(){
     },
   })
 }
+
 let FirstEmptyLines = computed( ()=>{
-  for (let index = 0; index < form.value.length; index++) {
-    if ( !  (form.value[index].account || Number(form.value[index].credit_amount) + Number(form.value[index].debit_amount)>0  )   ) {
+  for (let index = 0; index < Entry_Lines.value.length; index++) {
+    if ( !  (Entry_Lines.value[index].account || Number(Entry_Lines.value[index].credit_amount) + Number(Entry_Lines.value[index].debit_amount)>0  )   ) {
       return index
     } 
   }
  }) 
- 
-
 // add more lines to entries  
 function Add_Lines(){
-  form.value.push( CreateEntryLines(currencies[0],props.customfields,1)[0])
+  Entry_Lines.value.push( CreateEntryLines(currencies[0],props.customfields,1)[0])
 }
-
-
-
 </script>
-
 <template>
   
     <AppLayout title="Dashboard">
@@ -316,8 +293,8 @@ function Add_Lines(){
                   <div  class=" flex-auto  w-1/2 text-right mr-2"  >Ammount</div> 
                 </div>
 
-                <div v-for="(line,index) in form"  :key="index" > 
-                    <EntriesTableForMobile  v-model:line="form[index]" :default_line="props.entry_lines[index]"
+                <div v-for="(line,index) in Entry_Lines"  :key="index" > 
+                    <EntriesTableForMobile  v-model:line="Entry_Lines[index]" :default_line="props.entry_lines[index]"
                     @New_Line_Added="Add_Lines()"  v-slot="slotProps">
                       <div v-show="index==FirstEmptyLines"  @click="slotProps.open_Entry_Modal" class=" font-bold text-lg text-green-600 mt-4 my-3 ">
                         + Add Entry Line
@@ -328,7 +305,7 @@ function Add_Lines(){
               </div>
 
                <!-- entry table For Desktop  -->
-                <EntriesTableForDesktop v-if="!Device_is_Mobile"  v-model:entries="form" :customfields="customfields"  />
+                <EntriesTableForDesktop v-if="!Device_is_Mobile"  v-model:entries="Entry_Lines" :customfields="customfields"  />
                 <div v-show="!Device_is_Mobile"  @click="Add_Lines" class=" font-bold text-lg text-green-700 mx-3 mt-6 ">
                   + Add Entry Line
                 </div> 
@@ -409,8 +386,6 @@ function Add_Lines(){
               </DangerButton>
           </template>
         </ConfirmationModal>
-        
-
 
     </AppLayout>
 </template>

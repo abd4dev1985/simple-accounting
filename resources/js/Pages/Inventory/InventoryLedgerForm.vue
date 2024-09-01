@@ -90,7 +90,7 @@ function submit(){
   <div   class=" m-4" ref="inventory_ledger" >
               
         <h4  class="m-2 text-2xl" >Inventory Ledger</h4>
-        <form   v-if="ShowForm"    @submit.prevent="submit" class="m-3 my-5 flex flex-col justify-between gap-7"  >
+        <form   v-if="ShowForm"    @submit.prevent="submit" class="my-1 flex flex-col justify-between gap-5"  >
             <!-- Default Account Input -->
             <div class="w-full">
                 <label class="block text-sm font-semibold text-left" for=""> Product</label>

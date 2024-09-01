@@ -95,33 +95,35 @@ function unformat_number( value ){
     <div class=" mt-5 " >
 
 
-      <div class="flex justify-start space-x-4 w-full my-5 even:bg-gray-200 " >
+      <div class="flex justify-start space-x-4 w-full my-5 " >
         <span  class="inline-block w-1/2 text-xl ">  Name </span>
         <span class=" inline-block w-1/2 text-xl">  Ammount   </span> 
       </div>
 
-      <div class="even:bg-gray-200">
+      <div class="">
           <AccountTree :account="accounts.Net_Sales"   >
           </AccountTree>
       </div>
 
-      <div class="h-7 w-full even:bg-gray-200"></div>
+      <div class="h-7 w-full "></div>
 
-      <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
-        <span  class="w-1/2 text-lg border">{{ accounts.Beginning_Inventory.name }}</span>
-        <span class="w-1/2 text-lg border">{{ Format(accounts.Beginning_Inventory.balance) }}</span> 
-      </div> 
-
-      <div class="even:bg-gray-200 border-b-2  ">
+      <div class=" ">
         <AccountTree :account="accounts.Net_Purchases" :revers="true" >
-          <div class="w-1/2 tab:w-1/4 ml-[50%] border-b-2 border-black"> </div>
         </AccountTree>
       </div>
+ 
+      <div class="flex justify-start space-x-4 w-full my-1 " >
+        <span  class="w-1/2  "> + Beginning Inventory</span>
+        <span class="w-1/2  ">{{ Format(accounts.Beginning_Inventory.balance) }}</span> 
+      </div> 
 
-      <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
-        <span  class="w-1/2 text-lg"> Total Avilable Goods for Sale</span>
-        <span class="w-1/2 text-lg">{{ Format(Total_Avilable_Goods_for_Sale) }}</span> 
+     
+
+      <div class="flex justify-start space-x-4 w-full font-semibold " >
+        <span  class="w-1/2 "> Total Avilable Goods for Sale</span>
+        <span class="w-1/2 ">{{ Format(Total_Avilable_Goods_for_Sale) }}</span> 
       </div>
+
       <div class="h-6 w-full even:bg-gray-200 "> </div>
       <div class="flex justify-start space-x-2 w-full even:bg-gray-200" >
         <span  class="w-1/2 text-lg"> - Ending Iventory Cost</span>

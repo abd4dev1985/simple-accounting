@@ -23,9 +23,7 @@
         "@tailwindcss/container-queries": "^0.1.1",
         "click-outside-vue3": "^4.0.1",
         "html2pdf.js": "^0.10.2",
-        "jspdf": "^2.5.1",
         "primevue": "^3.30.2",
-        "vue-html2pdf": "^1.8.0",
         "vue-winbox": "^0.2.3"
     }
 }

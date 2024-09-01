@@ -25,6 +25,7 @@ class FinancialStatment
 
         $End_Inventory_Valuation = app(Inventory::class)
         ->Valuate(['StartDate'=>$StartDate ,'EndDate'=>$EndDate]);
+        
         // get total cost of ending inventory
         $Ending_Iventory_cost = $End_Inventory_Valuation->reduce(function($carry,$product){
             return $carry + $product->ending_inventory_cost;
