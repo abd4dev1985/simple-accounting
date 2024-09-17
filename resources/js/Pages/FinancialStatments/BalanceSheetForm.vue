@@ -29,7 +29,7 @@ let winbox ;
 let inventory_Valuation =ref()
 
 onMounted(() => {
-  let width= (screen.width>1000)? "50%": "100%" ;
+  let width= (screen.width>1000)? "80%": "100%" ;
   let height= (screen.width>1000)? "95%": "100%" ;
   console.log(width)
   winbox=createWindow({

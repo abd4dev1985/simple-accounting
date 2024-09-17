@@ -34,7 +34,9 @@ let ToogelShowChildren= ()=>{
 function Format(value){
     let formatter =Intl.NumberFormat('en')
     if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
-        return formatter.format(value)
+        let number = Math.trunc(value)  
+       // number = Math.abs(number)
+        return formatter.format(number)
     }else{  
         return 0 
     }
@@ -50,11 +52,9 @@ let PaddingLift = function(level){
 
 const my_bg = ref(null)
 onMounted(() => {
-    // console.log('my_bg.value.style.backgroundColor ' )
-    const compStyles = window.getComputedStyle(my_bg.value);
-    let bg_color = compStyles.getPropertyValue('background-color');
-    
-   // console.log(bg_color )
+   if (props.account.level==0) {
+    ShowChildren.value =true
+   }
   
 })
 
@@ -63,8 +63,8 @@ onMounted(() => {
 <template>
     
 
-    <div class="flex justify-start space-x-4 w-full text-gray-700  " ref="my_bg"  >
-        <span @click="ShowChildren=!ShowChildren" class="w-1/2 "
+    <div class="flex justify-start gap-4 mobile:gap-2 w-full text-gray-700 my-3  " ref="my_bg"  >
+        <span @click="ShowChildren=!ShowChildren" class="w-2/3 " :class="{'text-2xl font-semibold':account.level==0  }"    
         :style="{'padding-left':  PaddingLift(account.level)}" >
             <svg  v-if="account.children"   data-slot="icon" class="inline h-3 w-4 rotate-90 mr-1 fill-slate-500" aria-hidden="true" fill="" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -72,7 +72,7 @@ onMounted(() => {
             <span >{{ account.name }}  </span>
         </span>
 
-        <span v-show="!ShowChildren && !without_balance "  class="w-1/2" >
+        <span v-show="!ShowChildren && !without_balance "  class="w-1/3" >
             {{ Format(account.balance) }} 
         </span> 
         <span  v-show="without_balance" class="bg-orange-200"  >
@@ -88,10 +88,10 @@ onMounted(() => {
             </AccountTree>
         </div>
         <div class=" flex justify-start space-x-4 w-full border-b-2 border-gray-400 font-bold " ref="my_bg"   >
-            <span  class="w-1/2" :style="{'padding-left': PaddingLift(account.level)}" >
+            <span  class="w-2/3" :style="{'padding-left': PaddingLift(account.level)}" >
                 Total {{ account.name }}  
             </span>
-            <span  class="w-1/2 ">
+            <span  class="w-1/3 ">
                 {{ Format(account.balance) }} 
             </span> 
         </div>

@@ -156,11 +156,15 @@ function submit(){
         </form>
         <!-- result -->
         <div v-if="FormResult" class="" >
-            <div class="text-gray-900 flex flex-wrap justify-start gap-6  text-sm">
+            <div class="text-gray-900 flex flex-wrap justify-start gap-6 mb-2 text-sm">
               <span class=""> From :  {{ Form.StartDate }}  </span>
               <span class=""> Untill : {{  DateObject.ToString( Form.EndDate ) }} </span>
               <span class=""> Currency : {{ Form.Currency.name }} </span>
+            </div>
 
+            <div class="flex justify-start  w-full  bg-gray-200  font-bold border-b-4  border-sky-900 py-2 " >
+              <span  class="inline-block w-1/2 pl-1  text-xl ">  Name </span>
+              <span class=" inline-block w-1/2 pl-1  b text-xl">  Ammount   </span> 
             </div>
 
             <IncomeStatment :accounts="FormResult" >

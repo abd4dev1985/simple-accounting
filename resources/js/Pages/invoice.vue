@@ -647,7 +647,7 @@ const exportCSV = () => { dt.value.exportCSV()}
                   Nevermind
               </SecondaryButton>
 
-              <DangerButton class="p-2 mx-4 font-semibold rounded-md" @click="delete_document"  :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+              <DangerButton class="p-2 mx-4 font-semibold rounded-md" @click="delete_document" >
                   Delete Document
               </DangerButton>
           </template>

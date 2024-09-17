@@ -26,7 +26,7 @@ return new class extends Migration
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
             $table->foreignId('document_id')->constrained();
-
+            $table->date('date');
             $table->timestamps();
         });
     }

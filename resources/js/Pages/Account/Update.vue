@@ -23,6 +23,7 @@ let props =defineProps({
 
 
 let  UpdateForm = useForm({
+    id:props.account?.id, 
     name: props.account?.name, 
     number: props.account?.number,
     ParentAccount:null,
@@ -37,18 +38,20 @@ function close_without_save(){
 }
 
 function submit(){
-    UpdateForm.post(route('accounts.store'),
+    UpdateForm.put(route('accounts.update'),
       {
         onSuccess: () =>{
           ShowUpdateModal.value = false
           UpdateForm.reset()
+          toast.add({ severity: 'success', summary: 'Success Message', detail: ' Acoount has been Updated', life: 3000 });
+
         }
       },
     )
 }
 
 onUpdated(() => {
- 
+  UpdateForm.id = props.account?.id
   UpdateForm.name = props.account?.name
   UpdateForm.number = props.account?.number
   UpdateForm.ParentAccount = props.ParentAccount
@@ -95,7 +98,7 @@ onUpdated(() => {
                    {{ UpdateForm.errors.ParentAccount }}
               </div>
               <AutoComplete v-model="UpdateForm.ParentAccount" :suggestions="searchStore.available_accounts.value"
-                  @complete="searchStore.search_account()" optionLabel="name" forceSelection 
+                  @complete="searchStore.search_account" optionLabel="name" forceSelection 
                   :pt="{
                       input: {
                       class: 'bg-white h-8  py-5  dark:bg-gray-700 dark:text-gray-200  focus:ring-2',

@@ -118,8 +118,9 @@ class ProductController extends Controller
         $products = $inventory->Valuate($data);
         return back()->with('inventory_Valuation.'.$request['winbox_id'],$products);
 
-
     }
+
+    
 
     public function ledgerBook( Request $request)
     {

@@ -19,6 +19,8 @@ use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
 use App\Rules\CompositeUnique;
 use Closure;
+use App\Actions\AccountingEnrty;
+
 
 class Invoice 
 {
@@ -26,12 +28,17 @@ class Invoice
     {
 
     }
+
     public $document;
     public $lines;
     public $validation_is_failed;
     public $validator ;
     public $Errors;
     public $entry ;
+    public $tota_ammount ;
+    public $Credit_Or_Debit_Account ;
+    public $date ;
+    public $description ;
 
     /**
      * Create a new invoice for transaction.
@@ -81,8 +88,11 @@ class Invoice
 
         Invoice_line::upsert($data,['invoiceable_id']); 
         $cash_account =Account::find(12);
+        $this->Credit_Or_Debit_Account = ($input['Client_Or_Vendor_Account'])? $input['Client_Or_Vendor_Account']: $cash_account  ;
+
         $Credit_Or_Debit_Account_id  = ($input['Client_Or_Vendor_Account'])? $input['Client_Or_Vendor_Account']['id']: $cash_account->id ;
         $entry = Entry::create([]);
+
         if ($this->invoice_type=='sale') {
             $entry_lines = [
                 ['entry_id'=> $entry->id,'account_id'=> 22,'credit_amount'=> $tota_ammount,'debit_amount'=>null,'date'=> $input['date'] ,'description'=> $description,         ],
@@ -149,9 +159,43 @@ class Invoice
         return  $validated_data;
     
     }
+
+     /**
+     * make entery lines.
+     *
+     * @param  Document  $document
+     *  @param  array  $input 
+     */
+    public function MakeEntry()
+    {
+        $Purchases_account =Account::find(18);
+        $sales_account =Account::find(22);
+    
+        if ($this->invoice_type=='sale') {
+            $entry_lines = [
+                ['account'=> $sales_account,'credit_amount'=> $this->tota_ammount,'debit_amount'=>null,'description'=> $this->description,   ],
+                ['account'=> $this->Credit_Or_Debit_Account,'credit_amount'=>null,'debit_amount'=> $this->tota_ammount ,'description'=> $this->description,  ],
+            ];
+        }
+        if ($this->invoice_type=='purchase') {
+            $entry_lines = [
+                ['account'=> $Purchases_account ,'credit_amount'=>null,'debit_amount'=>$this->tota_ammount, 'description'=> $this->description,   ],
+                ['account'=> $this->Credit_Or_Debit_Account, 'credit_amount'=> $this->tota_ammount,'debit_amount'=> null, 'description'=> $this->description,  ],
+            ];
+        }
+
+        $AccountingEnrty= app(AccountingEnrty::class);
+
+
+        EntryLines::upsert($entry_lines,['entry_id'],['account_id','credit_amount','debit_amount']);
+        $document->entry_id = $entry?->id ;
+        $document->save();
+        $this->document  = $document;
+
+    }
    
     /**
-     * updat entery lines.
+     * updat invoice lines.
      *
      * @param  Document  $document
      *  @param  array  $input 
@@ -160,6 +204,7 @@ class Invoice
     {
         $invoice_type=$this->invoice_type ;
         $invoice= $document->$invoice_type ;
+    
         $data =[];
         $tota_ammount=0;
 

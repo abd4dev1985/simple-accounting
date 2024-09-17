@@ -137,9 +137,30 @@ class AccountsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update()
+    public function update(Request $request)
     {
-        //
+       // dd( $request->all());
+        $validator = Validator::make($request->all() ,[
+            'id'=>'required',
+            'name'=>'required', 
+            'number'=>'required',
+            'ParentAccount'=>'required|array' ,
+            'has_sons_accounts'=>'required|boolean',
+            ],$masge=[
+
+            ],
+        );
+        if ($validator->fails()) {
+             return back()->withErrors($validator)->withInput();
+        }   
+
+        $data = $validator->validated();
+        $data['father_account_id'] = $data['ParentAccount']['id'];
+        $data['statment_id']= Account::find($data['father_account_id'])->statment_id ;
+        unset( $data['ParentAccount']);
+        $account = Account::where('id',$data['id'])->update($data);
+        //dd( $account);
+        return  redirect()->route('accounts.index');
     }
 
     /**

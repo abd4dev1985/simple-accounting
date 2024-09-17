@@ -77,7 +77,7 @@ function unformat_number( value ){
     <div class=" mt-5 " >
 
       
-      <div class="flex justify-around space-x-10 w-full my-5 " >
+      <div class="flex justify-around larg:flex-row flex-col  larg:gap-10 gap-3 w-full my-5 " >
         <div  class="flex-auto" >
             <AccountTree :account="accounts.Liabilities"  >
             </AccountTree>

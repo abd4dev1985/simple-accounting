@@ -17,12 +17,9 @@ use App\Rules\CompositeUnique;
 
 class TreeAccounts 
 {
-
-
- 
     public $accounts=[
         ['id'=>1,'number'=>1,'name'=>'Assets','father_account_id'=>null, 'has_sons_accounts'=>true,'statment_id'=>1 ],
-        ['id'=>2,'number'=>2,'name'=>'Liabilities','father_account_id'=>null, 'has_sons_accounts'=>true,'statment_id'=>1 ],
+        ['id'=>2,'number'=>2,'name'=>'Liabilities and Equity','father_account_id'=>null, 'has_sons_accounts'=>true,'statment_id'=>1 ],
         ['id'=>3,'number'=>3,'name'=>'Expenses','father_account_id'=>null, 'has_sons_accounts'=>true,'statment_id'=>2 ],
         ['id'=>4,'number'=>4,'name'=>'Revenues','father_account_id'=>null, 'has_sons_accounts'=>true,'statment_id'=>2 ],
         ['id'=>5,'number'=>5,'name'=>'Net Purchases','father_account_id'=>null, 'has_sons_accounts'=>true,'statment_id'=>2 ],

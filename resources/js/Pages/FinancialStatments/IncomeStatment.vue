@@ -6,6 +6,8 @@ import AutoComplete from 'primevue/autocomplete';
 import Calendar from 'primevue/calendar';
 import "primevue/resources/themes/lara-light-indigo/theme.css";
 import AppLayout from '@/Layouts/AppLayout.vue';
+import TradeStatment from '@/pages/FinancialStatments/TradeStatment.vue';
+
 
 import SecondaryButton from '@/Components/SecondaryButton.vue'; 
 import DataTable from 'primevue/datatable';
@@ -24,16 +26,8 @@ import Column from 'primevue/column';
 
 let props =defineProps({
   accounts:{   } ,
-
 })
-const expandedKeys = {1:true};
-const toggleApplications = () => {
-    let _expandedKeys = { ...expandedKeys.value };
-    if (_expandedKeys['0']) delete _expandedKeys['0'];
-    else _expandedKeys['0'] = true;
 
-    expandedKeys.value = _expandedKeys;
-}
 // format number and make more readable for human by addind comma  
 function Format(value){
     let formatter =Intl.NumberFormat('en')
@@ -45,35 +39,19 @@ function Format(value){
 }
 
 
-let Total_Avilable_Goods_for_Sale = computed(()=>{
-  return  Number(props.accounts.Beginning_Inventory.balance)+Number(props.accounts.Net_Purchases.balance) 
-})
-
-let Cost_Of_Sold_Inventory = computed(()=>{
-  return  Total_Avilable_Goods_for_Sale.value - Number(props.accounts.Ending_Iventory_cost) 
-})
-
-let Net_trade_STATMENT = computed(()=>{
-  return  -1*Number(props.accounts.Net_Sales.balance)-Cost_Of_Sold_Inventory.value 
-         
-})
 
 const dt = ref();
 const exportCSV = () => { dt.value.exportCSV()}
 
 
-let severity_style= ref('');
-//define computed props
-const page = usePage()
-const currencies= (page.props.currencies)? page.props.currencies:[];
-
 
 const formatter =Intl.NumberFormat('en')
 function format_number( value ){
   if (  !isNaN(Number(value))  &&  Number(value) != 0    ) {
-    return formatter.format(value)
+    let number = Math.abs(value)
+    return formatter.format(number)
   }else{  
-    return null 
+    return 0 
   }
 
 }
@@ -83,63 +61,75 @@ function unformat_number( value ){
   }else{  
     return null 
   }
-
 }
+let ShowRevenuesGroup = ref(false)
+let ShowExpensesGroup = ref(false)
+
 
 
 </script>
 
 <template>
-  
 
-    <div class=" mt-5 " >
+    <div class="" >
+      <!-- TradeStatment --> 
+      <TradeStatment :accounts="accounts" >
+      </TradeStatment>
 
-      <div class="flex justify-start space-x-4 w-full my-5 even:bg-gray-200 " >
-        <span  class="inline-block w-1/2 text-xl ">  Name </span>
-        <span class=" inline-block w-1/2 text-xl">  Ammount   </span> 
+      <!-- Expenses --> 
+      <div class="flex gap-2 font-semibold bg-gray-200 py-2 my-0.5 ">
+        <div class="w-1/2">
+          <svg  @click="ShowExpensesGroup = !ShowExpensesGroup"
+          :class="{ 'rotate-90' :! ShowExpensesGroup }"
+           data-slot="icon" class="inline h-3 w-4  mr-1 fill-slate-500" aria-hidden="true" fill="" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+            Expenses
+          </div>
+        <div  class="w-1/2"> {{Format(accounts.Expenses.balance) }}</div>
       </div>
 
-      <div class="even:bg-gray-200">
-          <AccountTree :account="accounts.Net_Sales"  >
-          </AccountTree>
+      <Transition   name="slide-fade">
+        <div v-show="ShowExpensesGroup" class="  border-black " >
+          <div v-for="account in accounts.Expenses.children " class="flex gap-2 my-2 ">
+            <div class="w-1/2 px-2"> {{ account.name }}</div>
+            <div class="w-1/2" > {{format_number(account.balance) }}</div>
+          </div>
+        </div>
+      </Transition>
+
+      <!-- Revenues --> 
+      <div class="flex gap-2 font-semibold bg-gray-200 py-2  my-0.5">
+        <div class="w-1/2">
+          <svg  @click="ShowRevenuesGroup = !ShowRevenuesGroup"
+          :class="{ 'rotate-90' :! ShowExpensesGroup }"
+           data-slot="icon" class="inline h-3 w-4  mr-1 fill-slate-500" aria-hidden="true" fill="" stroke-width="1.5" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+            Revenues
+          </div>
+        <div  class="w-1/2"> {{Format(accounts.Revenues.balance) }}</div>
       </div>
 
-      <div class="h-7 w-full even:bg-gray-200"></div>
+      <Transition   name="slide-fade">
+        <div v-show="ShowRevenuesGroup" class="  border-black " >
+          <div v-for="account in accounts.Revenues.children " class="flex gap-2 my-2 ">
+            <div class="w-1/2 px-2"> {{ account.name }}</div>
+            <div class="w-1/2" > {{format_number(account.balance) }}</div>
+          </div>
+        </div>
+      </Transition>
 
-      <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
-        <span  class="w-1/2 text-lg border">{{ accounts.Beginning_Inventory.name }}</span>
-        <span class="w-1/2 text-lg border">{{ Format(accounts.Beginning_Inventory.balance) }}</span> 
-      </div> 
 
-      <div class="even:bg-gray-200 border-b-2  ">
-        <AccountTree :account="accounts.Net_Purchases" >
-          <div class="w-1/2 tab:w-1/4 ml-[50%] border-b-2 border-black"> </div>
-        </AccountTree>
-      </div>
-
-      <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
-        <span  class="w-1/2 text-lg"> Total Avilable Goods for Sale</span>
-        <span class="w-1/2 text-lg">{{ Format(Total_Avilable_Goods_for_Sale) }}</span> 
-      </div>
-      <div class="h-6 w-full even:bg-gray-200 "> </div>
-      <div class="flex justify-start space-x-2 w-full even:bg-gray-200" >
-        <span  class="w-1/2 text-lg"> - Ending Iventory Cost</span>
-        <span class="w-1/2 tab:w-1/4  text-lg border-b-2 border-black">{{ Format(accounts.Ending_Iventory_cost) }}</span> 
-      </div>
-
-      <div class="flex justify-start space-x-4 w-full even:bg-gray-200 " >
-        <span  class="w-1/2 text-lg">Cost Of Sold Inventory</span>
-        <span class="w-1/2 tab:w-1/4 text-lg border-b-2 border-black">{{ Format(Cost_Of_Sold_Inventory) }}</span> 
+      <div :class="{'text-blue-900 to-blue-200 ':accounts.Net_Profit>0 ,'text-red-900 to-red-200':accounts.Net_Profit<0}"
+       class="flex gap-2 p-2 my-0.5 bg-gradient-to-t from-white  text-lg font-extrabold  ">
+        <div class="w-1/2 "> Net Income</div>
+        <div class="w-1/2">{{Format(accounts.Net_Profit) }} </div>
       </div>
 
 
-     
-
-      <div class="flex justify-start space-x-4 w-full even:bg-gray-200" >
-        <span  class="w-1/2 text-lg"> Net Trade </span>
-        <span class="w-1/2 text-lg">{{ Format(Net_trade_STATMENT) }}</span> 
-      </div>
-
+      
+      
 
 
 

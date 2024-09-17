@@ -180,7 +180,7 @@ class SaleController extends Controller
     {
         //dd([$request->entry_lines,$request ->lines]);
         $request['operation']='update';
-        $Invoice_Action= app(Invoice::class,['invoice_type' => 'sale']);
+        $Invoice_Action= app(Invoice::class,['document_catagory_id'=>$document_catagory->id ,'invoice_type' => 'sale']);
         $invoice_data =  $Invoice_Action->validate($request->all());
         if (  $Invoice_Action->validation_is_failed) {  
             return back()->withErrors($Invoice_Action->validator)->withInput();

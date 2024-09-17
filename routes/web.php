@@ -142,6 +142,7 @@ Route::controller(AccountsController::class)->group(function () {
     Route::post('/account/TrialBalance','TrialBalance')->name('accounts.TrialBalance');
     Route::get('/accounts','index')->name('accounts.index');
     Route::post('/accounts','store')->name('accounts.store');
+    Route::put('/accounts','update')->name('accounts.update');
     Route::delete('/accounts/{account}/', 'destroy')->name('accounts.destroy');
 });
 // Financial_Statment_Controller
