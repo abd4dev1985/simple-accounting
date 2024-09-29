@@ -47,11 +47,9 @@ class AccountingEnrty
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
             $line['date'] = $input['date'];
-            $line['customfields'] =  json_encode($line['customfields']) ;
-            //$line['equivalent_credit_amount'] = ($line['credit_amount'])? $line['credit_amount*'] * $line['currency_rate']: null;
+            $line['customfields'] =  ( array_key_exists('customfields',$line) )?  json_encode($line['customfields']):null ;
             unset($line['account']);
-            //unset($line['currency_rate']);
-            $line['currency_id'] = $line['currency']['id'];
+            $line['currency_id'] = ($line['currency']['id'])?? 1 ;
             unset($line['currency']);
             unset($line['cost_center']);
             return $line;
@@ -59,24 +57,11 @@ class AccountingEnrty
         
         $data = $data->toArray();
         EntryLines::upsert($data,['entry_id']);
-        /*
-         $data=$data->mapWithKeys(function(array $line,int  $key){
-           return [ $line['account']['id']=>[
-                'debit_amount'=> $line['debit_amount'],
-                'credit_amount' => $line['credit_amount'],
-                "discreption" => $line['discreption'],
-                'cost_center_id'=> $line['cost_center']['id']?? null,
-           ] ];
-         });
-        $entry->accounts()->sync($data);
-        */
-       
         return $entry ;
     }
     
     public function validate(array $input)
     {
-        //dd($input) ;
         $validator = Validator::make($input ,
         [
             'document_number' => ['bail','required', 'numeric','gt:0'],
@@ -165,7 +150,7 @@ class AccountingEnrty
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
             $line['currency_id'] = $line['currency']['id']?? null;
             $line['date'] = $input['date'];
-            $line['customfields'] =  json_encode($line['customfields']) ;
+            $line['customfields'] = ( array_key_exists('customfields',$line) )?  json_encode($line['customfields']):null ;
             unset($line['account'] );
             unset($line['currency']);
             unset($line['cost_center']);
@@ -176,7 +161,8 @@ class AccountingEnrty
         $data = $data->toArray();
         //dd($data);
         $entry->accounts()->detach();
-        DB::table('account_entry')->insert($data);
+        EntryLines::upsert($data,['entry_id']);
+       // DB::table('account_entry')->insert($data);
 
        // EntrLines::upsert($data,['id'],
         //['account_id','debit_amount','credit_amount','description','currency_id','currency_rate',

@@ -19,8 +19,8 @@ class LedgerAccount
 
         $entries = EntryLines::whereIn('account_id',$Accounts_Ids_Array )
         ->whereBetween('date', [ $data['StartDate'] , $data['EndDate']  ])
-        ->where('date','<=',$data['EndDate'])->get()->groupBy('account_id');
-
+        ->where('date','<=',$data['EndDate'])
+        ->get()->groupBy('account_id');
         // get Collection of Previous balances of acounts 
         $Previous_Balances_Collection = EntryLines::selectRaw('
         SUM( IFNULL(debit_amount,0) - IFNULL(credit_amount,0) )  as balance ,

@@ -26,10 +26,10 @@ class DocumentController extends Controller
             case 'entry':
                 return redirect()->route('entry.show',['document_catagory'=>$catagory->name ,'document'=>$document->number ]);
             break;
-            case 'purchase_invoice':
+            case 'purchase':
                 return redirect()->route('purchase.show',['document_catagory'=>$catagory->name ,'document'=>$document->number ]);
             break;
-            case 'sale_invoice':
+            case 'sale':
                 return redirect()->route('sale.show',['document_catagory'=>$catagory->name ,'document'=>$document->number ]);
             break; 
         }

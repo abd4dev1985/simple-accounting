@@ -4,23 +4,17 @@ namespace App\Actions;
 
 use App\Models\Document;
 use App\Models\Document_catagory;
-use App\Models\Entry;
 use App\Models\Purchase;
 use App\Models\Product;
 use App\Models\Account ;
-use App\Models\EntryLines ;
 use App\Models\Invoice as Invoice_line;
 use App\Models\Sale;
 use App\Actions\Inventory\Inventory;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
 use App\Rules\CompositeUnique;
-use Closure;
 use App\Actions\AccountingEnrty;
-
 
 class Invoice 
 {
@@ -30,19 +24,16 @@ class Invoice
     }
 
     public $document;
-    public $lines;
     public $validation_is_failed;
     public $validator ;
-    public $Errors;
     public $entry ;
-    public $tota_ammount ;
+    public $total_ammount ;
     public $Credit_Or_Debit_Account ;
     public $date ;
     public $description ;
 
     /**
      * Create a new invoice for transaction.
-     *   @param  Document  $document
      *   @param  array  $input
      */
     public function create( array $input )
@@ -50,11 +41,9 @@ class Invoice
         $document = Document::create([ 
             'number'=> $input['document_number'] ,
             'document_catagory_id' => $this->document_catagory_id ,
-             // 'entry_id'=> $entry->id,
             'date'=>$input['date'],
         ]);
         $catagory_name = Document_catagory::find($this->document_catagory_id )->name ;
-        $description = $catagory_name.' number'. $input['document_number'] ;
 
         switch ($this->invoice_type) {
             case 'purchase':
@@ -65,11 +54,11 @@ class Invoice
             break;     
         }
         $data =[];
-        $tota_ammount=0;
+        $total_ammount=0;
 
         $lines = $input['lines'];
         foreach ($lines as $index=> $line) {
-            $tota_ammount+=$line['ammount'] ;
+            $total_ammount +=$line['ammount'] ;
             $data[$index] =[
                 'invoiceable_id'=>$invoice->id,
                 'invoiceable_type' => $this->invoice_type,
@@ -85,35 +74,21 @@ class Invoice
                 'customfields' => json_encode($line['customfields']),
             ];
         }
+        $this->Credit_Or_Debit_Account = $input['Client_Or_Vendor_Account'] ;
+        $this->total_ammount = $total_ammount ;
+        $this->description = $catagory_name.' number'. $input['document_number'] ;
 
-        Invoice_line::upsert($data,['invoiceable_id']); 
-        $cash_account =Account::find(12);
-        $this->Credit_Or_Debit_Account = ($input['Client_Or_Vendor_Account'])? $input['Client_Or_Vendor_Account']: $cash_account  ;
-
-        $Credit_Or_Debit_Account_id  = ($input['Client_Or_Vendor_Account'])? $input['Client_Or_Vendor_Account']['id']: $cash_account->id ;
-        $entry = Entry::create([]);
-
-        if ($this->invoice_type=='sale') {
-            $entry_lines = [
-                ['entry_id'=> $entry->id,'account_id'=> 22,'credit_amount'=> $tota_ammount,'debit_amount'=>null,'date'=> $input['date'] ,'description'=> $description,         ],
-                ['entry_id'=> $entry->id,'account_id'=> $Credit_Or_Debit_Account_id,'credit_amount'=>null,'debit_amount'=> $tota_ammount ,'date'=> $input['date'],'description'=> $description,  ],
-            ];
-        }
-        if ($this->invoice_type=='purchase') {
-            $entry_lines = [
-                ['entry_id'=> $entry->id,'account_id'=> 18 ,'credit_amount'=>null,'debit_amount'=> $tota_ammount, 'date'=> $input['date'],'description'=> $description,   ],
-                ['entry_id'=> $entry->id,'account_id'=> $Credit_Or_Debit_Account_id, 'credit_amount'=>$tota_ammount,'debit_amount'=> null, 'date'=> $input['date'] ,'description'=> $description,  ],
-            ];
-        }
-        // dd($entry_lines);
-        EntryLines::upsert($entry_lines,['entry_id'],['account_id','credit_amount','debit_amount']);
+        Invoice_line::upsert($data,['invoiceable_id']);
+        $entry = $this->CreateEntry();
         $document->entry_id = $entry?->id ;
         $document->save();
         $this->document  = $document;
-
         return $invoice ;
     }
-    
+    /**
+     * validate invoice input.
+     *
+     */
     public function validate(array $input)
     {
         $validator = Validator::make($input ,
@@ -159,41 +134,64 @@ class Invoice
         return  $validated_data;
     
     }
-
-     /**
-     * make entery lines.
-     *
-     * @param  Document  $document
-     *  @param  array  $input 
+    /**
+     *Setup_Entry_Lines
+     *  @param    $entry 
      */
-    public function MakeEntry()
+    public function Setup_Entry_Lines ($entry=null)
     {
+        $cash_account =Account::find(12);
         $Purchases_account =Account::find(18);
         $sales_account =Account::find(22);
-    
+        $Credit_Or_Debit_Account =  ($this->Credit_Or_Debit_Account)? $this->Credit_Or_Debit_Account: $cash_account  ;
+        $total_ammount =$this->total_ammount;
+
         if ($this->invoice_type=='sale') {
             $entry_lines = [
-                ['account'=> $sales_account,'credit_amount'=> $this->tota_ammount,'debit_amount'=>null,'description'=> $this->description,   ],
-                ['account'=> $this->Credit_Or_Debit_Account,'credit_amount'=>null,'debit_amount'=> $this->tota_ammount ,'description'=> $this->description,  ],
+                ['account'=> $sales_account,'credit_amount'=> $total_ammount,'debit_amount'=>null,'description'=> $this->description,   ],
+                ['account'=> $Credit_Or_Debit_Account,'credit_amount'=>null,'debit_amount'=> $total_ammount ,'description'=> $this->description,  ],
             ];
         }
         if ($this->invoice_type=='purchase') {
             $entry_lines = [
-                ['account'=> $Purchases_account ,'credit_amount'=>null,'debit_amount'=>$this->tota_ammount, 'description'=> $this->description,   ],
-                ['account'=> $this->Credit_Or_Debit_Account, 'credit_amount'=> $this->tota_ammount,'debit_amount'=> null, 'description'=> $this->description,  ],
+                ['account'=> $Purchases_account ,'credit_amount'=>null,'debit_amount'=>$total_ammount, 'description'=> $this->description,   ],
+                ['account'=> $Credit_Or_Debit_Account, 'credit_amount'=> $total_ammount,'debit_amount'=> null, 'description'=> $this->description,  ],
             ];
         }
 
-        $AccountingEnrty= app(AccountingEnrty::class);
-
-
-        EntryLines::upsert($entry_lines,['entry_id'],['account_id','credit_amount','debit_amount']);
-        $document->entry_id = $entry?->id ;
-        $document->save();
-        $this->document  = $document;
-
+        if ($entry) {
+            foreach ($entry_lines as $line) {
+                $line['entry_id'] = $entry->id;
+                unset($line['description'] );
+            }
+        }
+        return  $entry_lines ;
     }
-   
+     /**
+     * create entery for invoice .
+     */
+    public function CreateEntry()
+    {
+        $data=[];
+        $data['entry_lines']=$this->Setup_Entry_Lines();
+        $data['date']=$this->date;
+        $entry = app(AccountingEnrty::class)->create($data);
+        return  $entry ;
+    }
+
+    /**
+     * update entery for invoice .
+     **  @param    $entry 
+     */
+    public function UpdateEntry($entry)
+    {
+        $data=[];
+        $data['entry_lines']=$this->Setup_Entry_Lines($entry);
+        $data['date']=$this->date;
+        $entry = app(AccountingEnrty::class)->UpdatLines($entry,$data);
+        return  $entry ;
+    }
+
     /**
      * updat invoice lines.
      *
@@ -204,13 +202,12 @@ class Invoice
     {
         $invoice_type=$this->invoice_type ;
         $invoice= $document->$invoice_type ;
-    
         $data =[];
-        $tota_ammount=0;
+        $total_ammount=0;
 
         $lines = $input['lines'];
         foreach ($lines as $index=> $line) {
-            $tota_ammount+=$line['ammount'];
+            $total_ammount+=$line['ammount'];
             $data[$index] =[
                 'invoiceable_id'=>$invoice->id,
                 'invoiceable_type' => $this->invoice_type,
@@ -226,16 +223,22 @@ class Invoice
                 'customfields' => json_encode($line['customfields']),
             ];
         }
-       //dd($data);
         $document->date = $input['date']    ; $document->save();
         $invoice->date = $input['date']     ; $invoice->save();
 
         $invoice->products()->detach();
         DB::table('invoices')->insert($data);
-       // Invoice_line::upsert($data,['invoiceable_id',],
-        //['product_id','quantity','price','ammount','description','currency_id','currency_rate',
-        //'cost_center_id','customfields','date']);
-      
+
+        $this->Credit_Or_Debit_Account = $input['Client_Or_Vendor_Account'] ;
+        $this->total_ammount = $total_ammount ;
+        $entry = $document->entry ;
+        $this->description = $entry->accounts->first()->pivot->description ;
+
+
+
+        $this->UpdateEntry($entry);
+        
+       
     }
     
    

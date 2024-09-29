@@ -72,8 +72,8 @@ class DatabaseManager
 
 
       Document_catagory::upsert([
-        ['name'=>'purchase_invoice','type' => 'purchase_invoice'],
-        [ 'name'=>'sale_invoice','type' => 'sale_invoice' ],
+        ['name'=>'General purchase','type' => 'purchase'],
+        [ 'name'=>'General sale','type' => 'sale' ],
         [ 'name'=>'general_income_receipts','type' => 'income_receipts' ],
         [ 'name'=>'general_outcome_receipts','type' => 'outcome_receipts' ],
         [ 'name'=>'general_entry','type' => 'entry' ],

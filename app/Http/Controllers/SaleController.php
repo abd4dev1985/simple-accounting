@@ -7,14 +7,16 @@ use App\Models\Document_catagory;
 use App\Models\Document;
 use App\Models\Invoice as Invoice_line  ;
 use App\Models\Currency;
-use App\Actions\AccountingEnrty;
 use App\Actions\Invoice;
+use App\Actions\Invoice\CreateInvoice;
+use App\Actions\Invoice\UpdateInvoice;
+use App\Actions\Invoice\ValidateInvoice;
+
 use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use App\Models\Account;
 use App\Models\CustomField;
-use App\Models\EntrLines;
 use App\Models\Entry;
 use Illuminate\Support\Facades\DB;
 
@@ -44,23 +46,21 @@ class SaleController extends Controller
      */
     public function create(Document_catagory $document_catagory)
     {
-        {
-            $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
-            return Inertia::render('Invoice', [
-                'document_catagory'=> $document_catagory ,
-                'new_document_number' =>$last_document ?->number + 1,
-                'last_document'=> $last_document ,
-                'invoice_type'=>'sale',
-                'operation'=>'create',
-                'columns_count'=>8,
-                'store_url'=>route('sale.store',[
-                    'document_catagory'=> $document_catagory->id,
-                ]),
-                'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
-                'cash_account'=>Account::find(12),
-                'default_account'=>Account::find(22),
-            ]);
-        }
+        $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
+        return Inertia::render('Invoice', [
+            'document_catagory'=> $document_catagory ,
+            'new_document_number' =>$last_document ?->number + 1,
+            'last_document'=> $last_document ,
+            'invoice_type'=>'sale',
+            'operation'=>'create',
+            'columns_count'=>8,
+            'store_url'=>route('sale.store',[
+                'document_catagory'=> $document_catagory->id,
+            ]),
+            'customfields'=>CustomField::all('name')->map(function($Field){return $Field->name;})->toArray(),
+            'cash_account'=>Account::find(12),
+            'default_account'=>Account::find(22),
+        ]);
     }
 
     /**
@@ -68,41 +68,31 @@ class SaleController extends Controller
      */
     public function store(Document_catagory $document_catagory, Request $request )
     {
-        DB::transaction(function () use($document_catagory,$request ) {
-            $request['operation']='create';
-            $Invoice_Action = app(Invoice::class,['document_catagory_id'=>$document_catagory->id ,'invoice_type' =>'sale']);
-            $invoice_data =  $Invoice_Action->validate($request->all());
-            if (  $Invoice_Action->validation_is_failed) {  
-                return back()->withErrors($Invoice_Action->validator)->withInput();
-            }
+        $request['operation']='create';
+        $Invoice_validation = app(ValidateInvoice::class);
+        $invoice_data =  $Invoice_validation->validate($request->all());
+        if (  $Invoice_validation->validation_is_failed) {  
+            return back()->withErrors($Invoice_validation->validator)->withInput();
+        }
+        $document = Document::create([ 
+            'number'=> $invoice_data['document_number'] ,
+            'document_catagory_id' => $document_catagory->id ,
+            'date'=>$invoice_data['date'],
+        ]);
+        $sale = Sale::create(['document_id'=>$document->id]);
 
-           //  $Accounting_Enrty_Action = app(AccountingEnrty::class);
-           // $entry_data =  $Accounting_Enrty_Action->validate($request->all());
-           // if (  $Accounting_Enrty_Action->validation_is_failed) {  
-           //     return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
-           // }
-            //dd($invoice_data);
-           // $entry =  $Accounting_Enrty_Action->create( $entry_data);
+        app(CreateInvoice::class,['invoice'=>$sale ,'document' => $document])->create($invoice_data);
 
-           // $document = Document::create([ 
-             //   'number'=> $entry_data['document_number'] ,
-             //  'document_catagory_id' => $document_catagory->id ,
-             //   'entry_id'=> $entry->id,
-             //   'date'=>$entry_data['date'],
-            //]);
-            
-            $sales = $Invoice_Action->create($invoice_data);
-            $document = $Invoice_Action->document;
+        $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
+        if ( $document->number > $last_document?->number) { 
+            Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
+        }
 
-            $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
-            if ( $document->number > $last_document?->number) { 
-               Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
-            }
-
-            return back()->with('success','ok');
-        });
+        return back()->with('success','ok'); 
     }
-
+    /**
+     * get next  invoice document.
+     */
     public function next(Document_catagory $document_catagory, Document $document)
     {
         $next_document = Document::where('number','>',$document->number)
@@ -114,8 +104,10 @@ class SaleController extends Controller
         }else{
             return back();
         }
-      
     }
+    /**
+     * get pervious invoice document.
+     */
     public function pervious(Document_catagory $document_catagory, Document $document)
     {
         $pervious_document=Document::where('number','<',$document->number)
@@ -127,7 +119,6 @@ class SaleController extends Controller
         } else {
             return back();
         }   
-
     }
 
     /**
@@ -166,37 +157,20 @@ class SaleController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Sale $sale)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update( Document_catagory $document_catagory, Document $document,Request $request )
     {
-        //dd([$request->entry_lines,$request ->lines]);
         $request['operation']='update';
-        $Invoice_Action= app(Invoice::class,['document_catagory_id'=>$document_catagory->id ,'invoice_type' => 'sale']);
-        $invoice_data =  $Invoice_Action->validate($request->all());
-        if (  $Invoice_Action->validation_is_failed) {  
-            return back()->withErrors($Invoice_Action->validator)->withInput();
+        $Invoice_validation = app(ValidateInvoice::class);
+        $invoice_data =  $Invoice_validation->validate($request->all());
+        if (  $Invoice_validation->validation_is_failed) {  
+            return back()->withErrors($Invoice_validation->validator)->withInput();
         }
-        $Invoice_Action->UpdatLines($document, $invoice_data);
-        $Accounting_Enrty_Action = app(AccountingEnrty::class);
-        $entry_data =  $Accounting_Enrty_Action->validate($request->all());
-        if (  $Accounting_Enrty_Action->validation_is_failed) {  
-            return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
-        }
-        $entry_data =  $Accounting_Enrty_Action->validate($request->all());
-        $Accounting_Enrty_Action->UpdatLines($document->entry, $entry_data);
-        
-        
+        $sale = $document->sale;
+        app(UpdateInvoice::class,['invoice'=>$sale ,'document' => $document])->update($invoice_data);
+        return back()->with('success','ok');  
     }
-
     /**
      * Remove the specified resource from storage.
      */

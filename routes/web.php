@@ -21,6 +21,8 @@ use App\Actions\ImportExcelFile;
 use App\Http\Controllers\JournalEntryController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\InvoiceController;
+
 use App\Http\Controllers\Financial_Statment_Controller;
 use App\Http\Controllers\DocumentController;
 
@@ -135,6 +137,22 @@ Route::controller(SaleController::class)->group(function () {
     Route::get('/create_sale/{document_catagory:name}/documents', 'create')->name('sale.create');
     Route::post('/sale/document_catagories/{document_catagory}', 'store')->name('sale.store');
 });
+
+Route::controller(InvoiceController::class)->group(function () {
+    Route::get('/invoice/{document_catagory:name}/documents/{document:number}', 'show')->name('sale.show');
+    Route::get('/next_sale/{document_catagory:name}/documents/{document:number}', 'next')->name('sale.next');
+    Route::get('/pervious_sale/{document_catagory:name}/documents/{document:number}', 'pervious')->name('sale.pervious');
+    Route::put('/sale/{document_catagory:name}/documents/{document:number}', 'update')->name('sale.update');
+    Route::delete('/sale/{document_catagory:name}/documents/{document:number}', 'destroy')->name('sale.delete');
+    Route::get('/sale/document_catagories/{document_catagory:name}/documents', 'index')->name('sale.index');
+    Route::get('/create_sale/{document_catagory:name}/documents', 'create')->name('sale.create');
+    Route::post('/sale/document_catagories/{document_catagory}', 'store')->name('sale.store');
+});
+
+
+
+
+
 
 Route::controller(AccountsController::class)->group(function () {
     //Route::get('/account/ledgerBookForm/{account?}','ledgerBook_form')->name('accounts.ledgerBookForm');
