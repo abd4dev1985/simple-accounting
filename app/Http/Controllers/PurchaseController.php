@@ -169,25 +169,6 @@ class PurchaseController extends Controller
         app(UpdateInvoice::class,['invoice'=>$purchase ,'document' => $document])->update($invoice_data);
         return back()->with('success','ok');   
         
-        
-        
-        //dd([$request->entry_lines,$request ->lines]);
-        $request['operation']='update';
-        $Invoice_Action= app(Invoice::class,['document_catagory_id'=>$document_catagory->id ,'invoice_type' => 'purchase']);
-        $invoice_data =  $Invoice_Action->validate($request->all());
-        if (  $Invoice_Action->validation_is_failed) {  
-            return back()->withErrors($Invoice_Action->validator)->withInput();
-        }
-        $Invoice_Action->UpdatLines($document, $invoice_data);
-        $Accounting_Enrty_Action = app(AccountingEnrty::class);
-        $entry_data =  $Accounting_Enrty_Action->validate($request->all());
-        if (  $Accounting_Enrty_Action->validation_is_failed) {  
-            return back()->withErrors($Accounting_Enrty_Action->validator)->withInput();
-        }
-        $entry_data =  $Accounting_Enrty_Action->validate($request->all());
-        $Accounting_Enrty_Action->UpdatLines($document->entry, $entry_data);
-        
-        
     }
 
     /**

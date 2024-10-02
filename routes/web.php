@@ -5,7 +5,6 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Cache;
 use App\Actions\Finance\FinancialStatment;
-
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
@@ -139,14 +138,14 @@ Route::controller(SaleController::class)->group(function () {
 });
 
 Route::controller(InvoiceController::class)->group(function () {
-    Route::get('/invoice/{document_catagory:name}/documents/{document:number}', 'show')->name('sale.show');
-    Route::get('/next_sale/{document_catagory:name}/documents/{document:number}', 'next')->name('sale.next');
-    Route::get('/pervious_sale/{document_catagory:name}/documents/{document:number}', 'pervious')->name('sale.pervious');
-    Route::put('/sale/{document_catagory:name}/documents/{document:number}', 'update')->name('sale.update');
-    Route::delete('/sale/{document_catagory:name}/documents/{document:number}', 'destroy')->name('sale.delete');
-    Route::get('/sale/document_catagories/{document_catagory:name}/documents', 'index')->name('sale.index');
-    Route::get('/create_sale/{document_catagory:name}/documents', 'create')->name('sale.create');
-    Route::post('/sale/document_catagories/{document_catagory}', 'store')->name('sale.store');
+    Route::get('/invoice/{document_catagory:name}/documents/{document:number}', 'show')->name('invoice.show');
+    Route::get('/next_invoice/{document_catagory:name}/documents/{document:number}', 'next')->name('invoice.next');
+    Route::get('/pervious_invoice/{document_catagory:name}/documents/{document:number}', 'pervious')->name('invoice.pervious');
+    Route::put('/invoice/{document_catagory:name}/documents/{document:number}', 'update')->name('invoice.update');
+    Route::delete('/invoice/{document_catagory:name}/documents/{document:number}', 'destroy')->name('invoice.delete');
+    Route::get('/invoice/document_catagories/{document_catagory:name}/documents', 'index')->name('invoice.index');
+    Route::get('/create_invoice/{document_catagory:name}/documents', 'create')->name('invoice.create');
+    Route::post('/invoice/document_catagories/{document_catagory}', 'store')->name('invoice.store');
 });
 
 
@@ -190,6 +189,16 @@ Route::get('/cleanjson', function () {
   
 })->middleware('CurrentDatabase');
 
+
+Route::get('/test_transaction', function (Request $request) {
+    DB::connection( 'tentant')->transaction(function () {
+        Account::create(['name'=>'test ggggg', 'number'=>45578 ,'statment_id'=>1]);
+        Account::create(['name'=>'test test', 'number'=>4541,'statment_id'=>1]);
+     
+    });
+    return Account::all() ;
+    
+  })->middleware('CurrentDatabase');
 
 Route::get('/balance', function () {
    Account::where('id','>',0)->update(['balance'=>null]);

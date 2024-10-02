@@ -68,17 +68,13 @@ class JournalEntryController extends Controller
     public function store(Document_catagory $document_catagory, Request $request)
     {
         // App::setLocale('ar');
-        $AccountingEnrty= app(AccountingEnrty::class);
-        $validated_data =  $AccountingEnrty->validate($request->all());
-        if (  $AccountingEnrty->validation_is_failed) {  
-            return back()->withErrors($AccountingEnrty->validator)->withInput();
-        }
-        $entry = $AccountingEnrty->create($validated_data);
+        $AccountingEnrty = app(AccountingEnrty::class);
+        $entry = $AccountingEnrty->create($request->all());
         $document = Document::create([ 
-            'number'=> $validated_data['document_number'] ,
+            'number'=> $request['document_number'] ,
             'document_catagory_id' => $document_catagory->id ,
             'entry_id'=> $entry->id,
-            'date'=>$validated_data['date'],
+            'date'=>$request['date'],
         ]);
 
         $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
@@ -142,13 +138,9 @@ class JournalEntryController extends Controller
      */
     public function update( Document_catagory $document_catagory ,Document $document,Request $request)
     {   
-        $AccountingEnrty= app(AccountingEnrty::class);
-        $validated_data =  $AccountingEnrty->validate($request->all());
-        if (  $AccountingEnrty->validation_is_failed) {  
-            return back()->withErrors($AccountingEnrty->validator)->withInput();
-        }
-        $entry = $AccountingEnrty->UpdatLines($document->entry,$validated_data);
-        $document->date = $request->date   ; $document->save();
+        app(AccountingEnrty::class)->UpdatLines($document->entry,$request->all());
+        $document->date = $request->date   ;
+        $document->save();
         return back()->with('success','ok');
     }
 

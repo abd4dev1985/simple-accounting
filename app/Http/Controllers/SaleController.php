@@ -69,25 +69,21 @@ class SaleController extends Controller
     public function store(Document_catagory $document_catagory, Request $request )
     {
         $request['operation']='create';
-        $Invoice_validation = app(ValidateInvoice::class);
-        $invoice_data =  $Invoice_validation->validate($request->all());
-        if (  $Invoice_validation->validation_is_failed) {  
-            return back()->withErrors($Invoice_validation->validator)->withInput();
-        }
+        dd($request->all());
+        $valid_data = app(ValidateInvoice::class)->validate($request->all());
         $document = Document::create([ 
-            'number'=> $invoice_data['document_number'] ,
+            'number'=> $valid_data['document_number'] ,
             'document_catagory_id' => $document_catagory->id ,
-            'date'=>$invoice_data['date'],
+            'date'=>$valid_data['date'],
         ]);
         $sale = Sale::create(['document_id'=>$document->id]);
 
-        app(CreateInvoice::class,['invoice'=>$sale ,'document' => $document])->create($invoice_data);
-
+        app(CreateInvoice::class,['invoice'=>$sale ,'document' => $document])->create($valid_data);
+       
         $last_document=Cache::store('tentant')->get('last '.$document_catagory->name);
         if ( $document->number > $last_document?->number) { 
             Cache::store('tentant')->put('last '.$document_catagory->name,  $document);  
         }
-
         return back()->with('success','ok'); 
     }
     /**
@@ -139,10 +135,12 @@ class SaleController extends Controller
         $last_document_number=Cache::store('tentant')->get('last '.$document_catagory->name);
         $invoice = $sale ->products->first(); 
         //dd( $invoice->pivot);
+        $Invoice_Currency = ['name'=>'fff', 'id'>55, 'rate'=>15400];
         return Inertia::render('Invoice', [
             'document_catagory'=> $document_catagory ,'document' => $document ,
             'invoice_type'=>'sale','operation'=>'update','columns_count'=>8,
             'currency_id'=> $invoice->pivot->currency_id , 
+            'Invoice_Currency' =>  $Invoice_Currency ,
             'Invoice_Currency_Rate'=>$invoice->pivot->currency_rate  ,
             'operation'=>'update',
             'invoice_lines'=>$invoice_line,'entry_lines'=>$entry_lines,
@@ -162,13 +160,10 @@ class SaleController extends Controller
     public function update( Document_catagory $document_catagory, Document $document,Request $request )
     {
         $request['operation']='update';
-        $Invoice_validation = app(ValidateInvoice::class);
-        $invoice_data =  $Invoice_validation->validate($request->all());
-        if (  $Invoice_validation->validation_is_failed) {  
-            return back()->withErrors($Invoice_validation->validator)->withInput();
-        }
+        //dd($request->all());
+        $valid_data = app(ValidateInvoice::class)->validate($request->all());
         $sale = $document->sale;
-        app(UpdateInvoice::class,['invoice'=>$sale ,'document' => $document])->update($invoice_data);
+        app(UpdateInvoice::class,['invoice'=>$sale ,'document' => $document])->update($valid_data);
         return back()->with('success','ok');  
     }
     /**

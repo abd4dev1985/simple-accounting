@@ -19,8 +19,9 @@ class Balanced implements ValidationRule
         $total_credit_amount =0 ;
 
         foreach ($lines as $key=> $line) {
-            $total_debit_amount += $line['debit_amount']*$line['currency_rate'];
-            $total_credit_amount += $line['credit_amount']*$line['currency_rate'] ;
+            $currency_rate= ( array_key_exists('currency_rate',$line) )? $line['currency_rate']:1;
+            $total_debit_amount += $line['debit_amount']* $currency_rate;
+            $total_credit_amount += $line['credit_amount'] * $currency_rate ;
         }
         //check the balance
         if ($total_credit_amount!=$total_debit_amount ) {

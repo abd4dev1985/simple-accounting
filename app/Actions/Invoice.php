@@ -3,65 +3,50 @@
 namespace App\Actions;
 
 use App\Models\Document;
-use App\Models\Document_catagory;
-use App\Models\Purchase;
 use App\Models\Product;
 use App\Models\Account ;
 use App\Models\Invoice as Invoice_line;
-use App\Models\Sale;
 use App\Actions\Inventory\Inventory;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use App\Rules\CompositeUnique;
 use App\Actions\AccountingEnrty;
+use Illuminate\Support\Facades\DB;
 
 class Invoice 
 {
-    public function __construct( public  $invoice_type , public $document_catagory_id)
+    public function __construct( public  $invoice , public $document)
     {
 
     }
 
-    public $document;
-    public $validation_is_failed;
+    public $validation_is_failed = true;
     public $validator ;
     public $entry ;
     public $total_ammount ;
     public $Credit_Or_Debit_Account ;
     public $date ;
     public $description ;
+    public $Invoice_Currency ;
+    public $invoice_type ;
 
     /**
      * Create a new invoice for transaction.
      *   @param  array  $input
      */
     public function create( array $input )
-    {
-        $document = Document::create([ 
-            'number'=> $input['document_number'] ,
-            'document_catagory_id' => $this->document_catagory_id ,
-            'date'=>$input['date'],
-        ]);
-        $catagory_name = Document_catagory::find($this->document_catagory_id )->name ;
-
-        switch ($this->invoice_type) {
-            case 'purchase':
-                $invoice = Purchase::create(['document_id'=>$document->id]);
-            break;
-            case 'sale':
-                $invoice = Sale::create(['document_id'=>$document->id]);
-            break;     
-        }
+    {   
+        $validated_input =($this->validation_is_failed)? $this->validate($input):$input;
+        $this->invoice_type=$this->document->document_catagory->type;
+        
         $data =[];
         $total_ammount=0;
-
-        $lines = $input['lines'];
+        $lines = $validated_input['lines'];
         foreach ($lines as $index=> $line) {
-            $total_ammount +=$line['ammount'] ;
+            $total_ammount += $line['ammount'] ;
             $data[$index] =[
-                'invoiceable_id'=>$invoice->id,
-                'invoiceable_type' => $this->invoice_type,
+                'invoiceable_id'=>$this->invoice->id,
+                'invoiceable_type' => $this->document->document_catagory->type,
                 'product_id'=> $line['product']['id'],
                 'quantity'=>$line['quantity'],
                 'price'=>$line['price'],
@@ -69,21 +54,21 @@ class Invoice
                 'description'=> $line['description'],
                 'currency_id'=>$line['currency']['id']??null,
                 'currency_rate'=> $line['currency_rate'],
-                'date'=>$input['date'],
+                'date'=>$validated_input['date'],
                 'cost_center_id'=> $line['cost_center']['id']?? null, 
                 'customfields' => json_encode($line['customfields']),
             ];
         }
-        $this->Credit_Or_Debit_Account = $input['Client_Or_Vendor_Account'] ;
-        $this->total_ammount = $total_ammount ;
-        $this->description = $catagory_name.' number'. $input['document_number'] ;
-
         Invoice_line::upsert($data,['invoiceable_id']);
+        // create accounting entry 
+        $this->Credit_Or_Debit_Account = $validated_input['Client_Or_Vendor_Account'] ;
+        $this->total_ammount = $total_ammount ;
+        $this->description = $this->document->document_catagory->name.' number'. $validated_input['document_number'] ;
+        $this->Invoice_Currency= $validated_input['Invoice_Currency']  ;
         $entry = $this->CreateEntry();
-        $document->entry_id = $entry?->id ;
-        $document->save();
-        $this->document  = $document;
-        return $invoice ;
+        $this->document->entry_id = $entry?->id ;
+        $this->document->save();
+        
     }
     /**
      * validate invoice input.
@@ -98,6 +83,7 @@ class Invoice
             ],
             'default_account'=>'required',
             'PaymentMethod'=>'required',
+            'Invoice_Currency' => 'required' ,
             'Client_Or_Vendor_Account'=>'required_if:PaymentMethod,credit',
             'date' => ['required', 'date'],
             'document_catagory_id' => ['required', 'numeric','exists:tentant.document_catagories,id'],
@@ -123,16 +109,11 @@ class Invoice
             $products = Product::all()->random(10);
             $product_count = app(Inventory::class)->CountProducts( $products,today() );
         });
-
-        if ($validator->fails()) {
-             $this->validation_is_failed=true;
-             $this->validator=$validator;
-              return back()->withErrors($validator)->withInput();
-         }
-        
+ 
+        $validator->validate();
         $validated_data = $validator->validated();
+        $this->validation_is_failed=false;
         return  $validated_data;
-    
     }
     /**
      *Setup_Entry_Lines
@@ -145,20 +126,21 @@ class Invoice
         $sales_account =Account::find(22);
         $Credit_Or_Debit_Account =  ($this->Credit_Or_Debit_Account)? $this->Credit_Or_Debit_Account: $cash_account  ;
         $total_ammount =$this->total_ammount;
+        $currency_id = $this->Invoice_Currency['id'];
+        $currency_rate = $this->Invoice_Currency['rate'];
 
         if ($this->invoice_type=='sale') {
             $entry_lines = [
-                ['account'=> $sales_account,'credit_amount'=> $total_ammount,'debit_amount'=>null,'description'=> $this->description,   ],
-                ['account'=> $Credit_Or_Debit_Account,'credit_amount'=>null,'debit_amount'=> $total_ammount ,'description'=> $this->description,  ],
+                ['account'=> $sales_account,'credit_amount'=> $total_ammount,'debit_amount'=>null,'description'=> $this->description, 'currency_id'=>$currency_id,'currency_rate'=> $currency_rate ],
+                ['account'=> $Credit_Or_Debit_Account,'credit_amount'=>null,'debit_amount'=> $total_ammount ,'description'=> $this->description, 'currency_id'=>$currency_id ,'currency_rate'=>$currency_rate ],
             ];
         }
         if ($this->invoice_type=='purchase') {
             $entry_lines = [
-                ['account'=> $Purchases_account ,'credit_amount'=>null,'debit_amount'=>$total_ammount, 'description'=> $this->description,   ],
-                ['account'=> $Credit_Or_Debit_Account, 'credit_amount'=> $total_ammount,'debit_amount'=> null, 'description'=> $this->description,  ],
+                ['account'=> $Purchases_account ,'credit_amount'=>null,'debit_amount'=>$total_ammount, 'description'=> $this->description, 'currency_id'=>$currency_id,'currency_rate'=>$currency_rate  ],
+                ['account'=> $Credit_Or_Debit_Account, 'credit_amount'=> $total_ammount,'debit_amount'=> null, 'description'=> $this->description, 'currency_id'=>$currency_id ,'currency_rate'=>$currency_rate ],
             ];
         }
-
         if ($entry) {
             foreach ($entry_lines as $line) {
                 $line['entry_id'] = $entry->id;
@@ -174,6 +156,7 @@ class Invoice
     {
         $data=[];
         $data['entry_lines']=$this->Setup_Entry_Lines();
+        // dd($data['entry_lines']);
         $data['date']=$this->date;
         $entry = app(AccountingEnrty::class)->create($data);
         return  $entry ;
@@ -198,19 +181,19 @@ class Invoice
      * @param  Document  $document
      *  @param  array  $input 
      */
-    public function UpdatLines(Document $document ,array $input )
+    public function UpdatLines(array $input )
     {
-        $invoice_type=$this->invoice_type ;
-        $invoice= $document->$invoice_type ;
+        $validated_input = $this->validate($input);
+        $this->invoice_type=$this->document->document_catagory->type;
+
         $data =[];
         $total_ammount=0;
-
-        $lines = $input['lines'];
+        $lines = $validated_input['lines'];
         foreach ($lines as $index=> $line) {
             $total_ammount+=$line['ammount'];
             $data[$index] =[
-                'invoiceable_id'=>$invoice->id,
-                'invoiceable_type' => $this->invoice_type,
+                'invoiceable_id'=>$this->invoice->id,
+                'invoiceable_type' =>  $this->invoice_type ,
                 'product_id'=> $line['product']['id'],
                 'quantity'=>$line['quantity'],
                 'price'=>$line['price'],
@@ -218,27 +201,26 @@ class Invoice
                 'description'=> $line['description'],
                 'currency_id'=>$line['currency']['id']??null,
                 'currency_rate'=> $line['currency_rate'],
-                'date'=>$input['date'],
+                'date'=>$validated_input['date'],
                 'cost_center_id'=> $line['cost_center']['id']?? null, 
                 'customfields' => json_encode($line['customfields']),
             ];
         }
-        $document->date = $input['date']    ; $document->save();
-        $invoice->date = $input['date']     ; $invoice->save();
+        $this->document->date = $validated_input['date'];
+        $this->document->save();
+        $this->invoice->date = $validated_input['date'] ;
+        $this->invoice->save();
 
-        $invoice->products()->detach();
+        $this->invoice->products()->detach();
         DB::table('invoices')->insert($data);
 
-        $this->Credit_Or_Debit_Account = $input['Client_Or_Vendor_Account'] ;
+        $this->Credit_Or_Debit_Account = $validated_input['Client_Or_Vendor_Account'] ;
+        $this->Invoice_Currency= $validated_input['Invoice_Currency']  ;
         $this->total_ammount = $total_ammount ;
-        $entry = $document->entry ;
+        $entry = $this->document->entry ;
         $this->description = $entry->accounts->first()->pivot->description ;
-
-
-
         $this->UpdateEntry($entry);
         
-       
     }
     
    

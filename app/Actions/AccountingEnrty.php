@@ -6,14 +6,7 @@ use App\Models\Account;
 use App\Models\Entry;
 use App\Models\EntryLines;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Cache;
-
-
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Http\Request;
-use Illuminate\Support\Fluent ;
 use Illuminate\Validation\Rule;
 use App\Rules\Balanced;
 use Closure;
@@ -26,10 +19,6 @@ class AccountingEnrty
     public $validator ;
     public $Errors;
     public $document_catagory_id ;
-    
-
-
-
     /**
      * Create a new entry for transaction.
      *
@@ -37,16 +26,15 @@ class AccountingEnrty
      */
     public function create(array $input )
     {
-        //dd($input );
+        $validated_data = $this->validate($input);
         $entry = Entry::create([]);
 
-         $data = collect($input['entry_lines']);
-
-         $data= $data->map(function  (array $line ) use( $entry,$input)  {
+        $data = collect($validated_data['entry_lines']);
+        $data= $data->map(function  (array $line ) use( $entry,$validated_data)  {
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
-            $line['date'] = $input['date'];
+            $line['date'] = $validated_data['date'];
             $line['customfields'] =  ( array_key_exists('customfields',$line) )?  json_encode($line['customfields']):null ;
             unset($line['account']);
             $line['currency_id'] = ($line['currency']['id'])?? 1 ;
@@ -79,10 +67,8 @@ class AccountingEnrty
            }),
 
             'entry_lines.*.account.id' => 'nullable|required_with:entry_lines.*.credit_amount,entry_lines.*.debit_amount',
-           
             'entry_lines.*.account.id' => [
-                'nullable',
-                'required_with:entry_lines.*.credit_amount,entry_lines.*.debit_amount',
+                'nullable','required_with:entry_lines.*.credit_amount,entry_lines.*.debit_amount',
                 function (string $attribute, mixed $value, Closure $fail){
                     $account = Account::find($value);
                     if ( $account->has_sons_accounts) {
@@ -90,12 +76,11 @@ class AccountingEnrty
                     }
                 },
             ],
-
             'entry_lines.*.debit_amount' => 'nullable|numeric|prohibits:entry_lines.*.credit_amount|gt:0',
             'entry_lines.*.credit_amount' => 'nullable|numeric|prohibits:entry_lines.*.debit_amount|gt:0',
         ],
         $masge=[
-            'entry_lines.*.account.id.required_with' => 'the account field in line '. intval(':index') .' is required',
+            'entry_lines.*.account.id.required_with' => 'the account field in line '. ':index' . ' is required',
         ],
         [
           //  'entry_lines.*.account.id' => str_split(':attribute')[12] ,
@@ -111,8 +96,9 @@ class AccountingEnrty
             $total_credit_amount =0 ;
 
             foreach ($lines as $key=> $line) {
-                $total_debit_amount += $line['debit_amount']*$line['currency_rate'];
-                $total_credit_amount += $line['credit_amount']*$line['currency_rate'] ;
+                $currency_rate= ( array_key_exists('currency_rate',$line) )? $line['currency_rate']:1;
+                $total_debit_amount += $line['debit_amount']*$currency_rate;
+                $total_credit_amount += $line['credit_amount']*$currency_rate ;
                 // check every line dose not have present account without amount against it (debit or credit)
                 if ($line['account'] !=null && ($line['debit_amount']==null && $line['credit_amount']==null) ) {
                     $validator->errors()->add(
@@ -121,19 +107,12 @@ class AccountingEnrty
                 }  
             }
         });
-    
-        if ($validator->fails()) {
-             $this->validation_is_failed=true;
-             $this->validator=$validator;
-              return back()->withErrors($validator)->withInput();
-            // return $validator ;
-         }
-        
+
+        $validator->validate();
         $validated_data = $validator->validated();
         return  $validated_data;
     
     }
-   
     /**
      * updat entery lines.
      *
@@ -142,14 +121,14 @@ class AccountingEnrty
      */
     public function UpdatLines(Entry $entry ,array $input )
     {
-         $data = collect($input['entry_lines']);
-         //dd($input['entry_lines']);
-         $data= $data->map(function  (array $line ) use( $entry,$input )  {
+        $validated_data = $this->validate($input);
+        $data = collect($validated_data['entry_lines']);
+        $data= $data->map(function  (array $line ) use( $entry,$validated_data )  {
             $line['entry_id'] = $entry->id;
             $line['account_id'] = $line['account']['id'];
             $line['cost_center_id'] =  $line['cost_center']['id']?? null;
             $line['currency_id'] = $line['currency']['id']?? null;
-            $line['date'] = $input['date'];
+            $line['date'] = $validated_data['date'];
             $line['customfields'] = ( array_key_exists('customfields',$line) )?  json_encode($line['customfields']):null ;
             unset($line['account'] );
             unset($line['currency']);
@@ -159,11 +138,9 @@ class AccountingEnrty
         });
        
         $data = $data->toArray();
-        //dd($data);
         $entry->accounts()->detach();
         EntryLines::upsert($data,['entry_id']);
        // DB::table('account_entry')->insert($data);
-
        // EntrLines::upsert($data,['id'],
         //['account_id','debit_amount','credit_amount','description','currency_id','currency_rate',
         //'cost_center_id','customfields','date']);

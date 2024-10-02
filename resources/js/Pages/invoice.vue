@@ -48,6 +48,7 @@ let props =defineProps({
     last_document: {  } ,
     new_document_number:{     },
     currency_id:{},
+    Invoice_Currency:{},
     Invoice_Currency_Rate:{},
     invoice_lines:{type:Array,default:[]},
     invoice_type:{},
@@ -121,13 +122,16 @@ let AvailablePaymentMethod=ref([{name:'cash'},{name:'credit'}])
 function select_currency(){
   for (let index = 0; index < currencies.length; index++) {
     if (currencies[index].id==props.currency_id) {
-        return { id:currencies[index].id , name:currencies[index].name }
+        return { id:currencies[index].id , name:currencies[index].name , rate:currencies[index].default_rate}
     }  
   }
-  return { id:currencies[0].id , name:currencies[0].name }
+  return { id:currencies[0].id , name:currencies[0].name,rate:currencies[0].default_rate }
 }
 
 let Invoice_Currency =ref( select_currency() )
+console.log(props.Invoice_Currency
+  
+)
 let Invoice_Currency_Rate =ref((props.document)?  props.Invoice_Currency_Rate  :1  )
 
 // create copy of invoce lines props
@@ -252,6 +256,7 @@ function update_document() {
     default_account:default_account.value,
     PaymentMethod:PaymentMethod.value.name,
     Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
+    Invoice_Currency:Invoice_Currency.value ,
     document_catagory_id:page.props.document_catagory.id ,
     lines:Invoice_Lines.value ,
     date:DateObject.ToString(document_date.value) ,
@@ -284,6 +289,7 @@ function create_document(){
         default_account:default_account.value,
         PaymentMethod:PaymentMethod.value.name,
         Client_Or_Vendor_Account:Client_Or_Vendor_Account.value,
+        Invoice_Currency:Invoice_Currency.value ,
         document_catagory_id:page.props.document_catagory.id ,
         lines:x ,
         date:DateObject.ToString(document_date.value) ,

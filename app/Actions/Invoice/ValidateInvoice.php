@@ -30,6 +30,7 @@ class ValidateInvoice
             'default_account'=>'required',
             'PaymentMethod'=>'required',
             'Client_Or_Vendor_Account'=>'required_if:PaymentMethod,credit',
+            'Invoice_Currency' => 'required' ,
             'date' => ['required', 'date'],
             'document_catagory_id' => ['required', 'numeric','exists:tentant.document_catagories,id'],
             'lines.*.product' => 'nullable|array|required_with:lines.*.price,lines.*.quantity' ,
@@ -55,11 +56,11 @@ class ValidateInvoice
             $product_count = app(Inventory::class)->CountProducts( $products,today() );
         });
 
+        $validator->validate();
         if ($validator->fails()) {
-             $this->validation_is_failed=true;
-             $this->validator=$validator;
-              return back()->withErrors($validator)->withInput();
-         }
+            $this->validation_is_failed=true;
+            $this->validator=$validator;
+        }
         
         $validated_data = $validator->validated();
         return  $validated_data;
